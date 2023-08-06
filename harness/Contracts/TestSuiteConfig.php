@@ -10,8 +10,4 @@ interface TestSuiteConfig extends Config
      * @return string[]
      */
     public function paths(): array;
-
-    public function cache(): bool;
-
-    public function testRunnerMode(): TestRunnerMode;
 }

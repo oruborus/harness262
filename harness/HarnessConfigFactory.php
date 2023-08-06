@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness;
 
+use Oru\EcmaScript\Harness\Contracts\Config;
 use Oru\EcmaScript\Harness\Contracts\ConfigFactory;
 use Oru\EcmaScript\Harness\Contracts\OutputConfig;
 use Oru\EcmaScript\Harness\Contracts\OutputType;
 use Oru\EcmaScript\Harness\Contracts\PrinterConfig;
 use Oru\EcmaScript\Harness\Contracts\PrinterVerbosity;
-use Oru\EcmaScript\Harness\Contracts\TestRunnerMode;
 use Oru\EcmaScript\Harness\Contracts\TestSuiteConfig;
 
 use function array_filter;
@@ -39,7 +39,7 @@ final readonly class HarnessConfigFactory implements ConfigFactory
                     implode(
                         array_filter(
                             $input,
-                            static fn (string $option): bool => str_starts_with($option, '-') && !str_starts_with($option, '--')
+                            static fn (string $option): bool => str_starts_with($option, '-')
                         )
                     )
                 ),
@@ -71,8 +71,6 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             static fn (string $option): bool => !str_starts_with($option, '-')
         );
 
-        $cache = (!in_array('n', $shortOptions, true) && !array_key_exists('no-cache', $longOptions));
-
         $verbosity = PrinterVerbosity::Normal;
         if (
             (in_array('v', $shortOptions, true) || array_key_exists('verbose', $longOptions))
@@ -87,25 +85,13 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             $verbosity = PrinterVerbosity::Silent;
         }
 
-        $testRunnerMode = TestRunnerMode::Parallel;
-
-        if (array_key_exists('async', $longOptions)) {
-            $testRunnerMode = TestRunnerMode::Async;
-        }
-
-        if (array_key_exists('debug', $longOptions)) {
-            $testRunnerMode = TestRunnerMode::Linear;
-        }
-
-        return new class($paths, $cache, $testRunnerMode, $verbosity) implements OutputConfig, PrinterConfig, TestSuiteConfig
+        return new class($paths, $verbosity) implements OutputConfig, PrinterConfig, TestSuiteConfig
         {
             public function __construct(
                 /**
                  * @var string[] $paths
                  */
                 private array $paths,
-                private bool $cache,
-                private TestRunnerMode $testRunnerMode,
                 private PrinterVerbosity $printerVerbosity
             ) {
             }
@@ -116,11 +102,6 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             public function paths(): array
             {
                 return $this->paths;
-            }
-
-            public function cache(): bool
-            {
-                return $this->cache;
             }
 
             /**
@@ -134,11 +115,6 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             public function verbosity(): PrinterVerbosity
             {
                 return $this->printerVerbosity;
-            }
-
-            public function testRunnerMode(): TestRunnerMode
-            {
-                return $this->testRunnerMode;
             }
         };
     }

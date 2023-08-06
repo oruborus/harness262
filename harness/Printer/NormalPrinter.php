@@ -9,12 +9,9 @@ use Oru\EcmaScript\Harness\Contracts\Printer;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 
-use function assert;
 use function array_filter;
 use function count;
-use function date;
 use function intdiv;
-use function is_null;
 use function str_pad;
 use function strlen;
 
@@ -22,7 +19,7 @@ use const STR_PAD_LEFT;
 
 final class NormalPrinter implements Printer
 {
-    public const STEPS_PER_LINE = 63;
+    private const STEPS_PER_LINE = 63;
 
     private int $stepsPerformed = 0;
 
@@ -68,17 +65,10 @@ final class NormalPrinter implements Printer
             return;
         }
 
-        $this->output->writeLn($this->getStatusLineEnd());
-    }
-
-    private function getStatusLineEnd(): string
-    {
-        assert(!is_null($this->stepsPlanned));
-
         $stepsPerformedString = str_pad((string) $this->stepsPerformed, strlen((string) $this->stepsPlanned), ' ', STR_PAD_LEFT);
         $percentageString     = str_pad((string) intdiv($this->stepsPerformed * 100, $this->stepsPlanned), 3, ' ', STR_PAD_LEFT);
 
-        return " {$stepsPerformedString} / {$this->stepsPlanned} ({$percentageString}%)";
+        $this->output->writeLn(" {$stepsPerformedString} / {$this->stepsPlanned} ({$percentageString}%)");
     }
 
     /**
@@ -98,13 +88,12 @@ final class NormalPrinter implements Printer
 
         $this->output->writeLn('');
         if (count($failures) > 0 && count($errors) > 0) {
-            $this->output->writeLn('There where error(s) and failure(s)!');
-        } elseif (count($failures) > 0) {
-            $this->output->writeLn('There where failure(s)!');
-        } else {
+            $this->output->writeLn('There where error(s) and failure(s!');
+        } elseif (count($errors) > 0) {
             $this->output->writeLn('There where error(s)!');
+        } else {
+            $this->output->writeLn('There where failure(s)!');
         }
-
         $this->output->writeLn('');
 
         if (count($failures) > 0) {
@@ -124,23 +113,30 @@ final class NormalPrinter implements Printer
 
     private function printLastStep(): void
     {
-        if ($this->stepsPerformed % static::STEPS_PER_LINE === 0) {
+        if ($this->stepsPerformed % static::STEPS_PER_LINE > 0) {
+            $stepsPerformedString = str_pad((string) $this->stepsPerformed, strlen((string) $this->stepsPlanned), ' ', STR_PAD_LEFT);
+            $percentageString     = str_pad((string) intdiv($this->stepsPerformed * 100, $this->stepsPlanned), 3, ' ', STR_PAD_LEFT);
+            $fillString           = str_pad('', static::STEPS_PER_LINE - $this->stepsPerformed % static::STEPS_PER_LINE, ' ');
+
+            $this->output->writeLn("{$fillString} {$stepsPerformedString} / {$this->stepsPlanned} ({$percentageString}%)");
             $this->output->writeLn('');
-            return;
         }
-
-        $fillString = str_pad('', static::STEPS_PER_LINE - $this->stepsPerformed % static::STEPS_PER_LINE, ' ');
-
-        $this->output->writeLn("{$fillString}{$this->getStatusLineEnd()}");
-        $this->output->writeLn('');
     }
 
     private function printDuration(int $duration): void
     {
-        $format = $duration >= 3600 ? 'H:i:s' : 'i:s';
+        $seconds = str_pad((string) ($duration % 60), 2, '0', STR_PAD_LEFT);
+        $minutes = str_pad((string) (intdiv($duration, 60) % 60), 2, '0', STR_PAD_LEFT);
+        $hours   = str_pad((string) intdiv($duration, 60 * 60), 2, '0', STR_PAD_LEFT);
 
         $this->output->write('Duration: ');
-        $this->output->write(date($format, $duration));
+        if ($hours !== '00') {
+            $this->output->write($hours);
+            $this->output->write(':');
+        }
+        $this->output->write($minutes);
+        $this->output->write(':');
+        $this->output->write($seconds);
         $this->output->writeLn('');
     }
 
@@ -151,13 +147,11 @@ final class NormalPrinter implements Printer
     {
         $count = 0;
         foreach ($testResults as $testResult) {
-            $throwable = $testResult->throwable();
-            assert(!is_null($throwable));
             $count++;
             $this->output->writeLn("{$count}:");
-            $this->output->writeLn($throwable->__toString());
+            $this->output->writeLn($testResult->throwable()->__toString());
             $this->output->writeLn('');
-            $this->output->writeLn($throwable->getTraceAsString());
+            $this->output->writeLn($testResult->throwable()->getTraceAsString());
             $this->output->writeLn('');
         }
     }

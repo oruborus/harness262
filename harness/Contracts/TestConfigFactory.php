@@ -7,7 +7,7 @@ namespace Oru\EcmaScript\Harness\Contracts;
 interface TestConfigFactory
 {
     /**
-     * @return TestConfig[]
+     * @return TestSuiteConfig[]
      */
     public function make(string $path): array;
 }
