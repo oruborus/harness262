@@ -8,29 +8,18 @@ use Oru\EcmaScript\Harness\Contracts\TestConfig;
 
 final readonly class GenericTestConfig implements TestConfig
 {
+    /**
+     * @param string[] $flags
+     * @param string[] $includes
+     * @param string[] $features
+     * @param array{'phase':'parse'|'resolution'|'runtime','type':string} $negative
+     */
     public function __construct(
         private string $path,
-
         private string $content,
-
-        /**
-         * @var string[] $flags
-         */
         private array $flags,
-
-        /**
-         * @var string[] $includes
-         */
         private array $includes,
-
-        /**
-         * @var string[] $features
-         */
         private array $features,
-
-        /**
-         * @var array{'phase':'parse'|'resolution'|'runtime','type':string} $negative
-         */
         private array $negative
     ) {
     }

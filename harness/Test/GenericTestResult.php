@@ -10,16 +10,13 @@ use Throwable;
 
 final readonly class GenericTestResult implements TestResult
 {
+    /**
+     * @param string[] $usedFiles
+     */
     public function __construct(
         private TestResultState $state,
-
-        /**
-         * @var string[] $usedFiles
-         */
         private array $usedFiles,
-
         private int $duration,
-
         private ?Throwable $throwable = null,
     ) {
     }

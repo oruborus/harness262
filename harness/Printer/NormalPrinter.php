@@ -19,7 +19,7 @@ use const STR_PAD_LEFT;
 
 final class NormalPrinter implements Printer
 {
-    private const STEPS_PER_LINE = 63;
+    public const STEPS_PER_LINE = 63;
 
     private int $stepsPerformed = 0;
 
@@ -88,7 +88,7 @@ final class NormalPrinter implements Printer
 
         $this->output->writeLn('');
         if (count($failures) > 0 && count($errors) > 0) {
-            $this->output->writeLn('There where error(s) and failure(s!');
+            $this->output->writeLn('There where error(s) and failure(s)!');
         } elseif (count($errors) > 0) {
             $this->output->writeLn('There where error(s)!');
         } else {
