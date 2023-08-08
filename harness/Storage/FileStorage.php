@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace Oru\EcmaScript\Harness\Storage;
 
 use Oru\EcmaScript\Harness\Contracts\Storage;
-use RuntimeException;
+use Throwable;
 
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
-use function is_string;
+use function json_decode;
+use function json_encode;
 use function mkdir;
+use function serialize;
+use function unserialize;
 
-use const DIRECTORY_SEPARATOR;
+use const JSON_THROW_ON_ERROR;
 
 final readonly class FileStorage implements Storage
 {
@@ -21,36 +24,35 @@ final readonly class FileStorage implements Storage
         private string $basePath
     ) {
         if (!file_exists($this->basePath)) {
-            mkdir($this->basePath, recursive: true);
+            mkdir($this->basePath, 0777, true);
         }
     }
 
-    /**
-     * @throws RuntimeException 
-     */
     public function put(string $key, mixed $content): void
     {
-        if (!is_string($content)) {
-            throw new RuntimeException('Content must be of type string');
-        }
+        $prefixedKey = $this->basePath . '/' . $key;
 
-        $prefixedKey = $this->basePath . DIRECTORY_SEPARATOR . $key;
+        $serializedContent = serialize($content);
 
-        file_put_contents($prefixedKey, $content);
+        $stringContent = json_encode($serializedContent, JSON_THROW_ON_ERROR);
+
+        file_put_contents($prefixedKey, $stringContent);
     }
 
-    public function get(string $key): ?string
+    public function get(string $key): mixed
     {
-        $prefixedKey = $this->basePath . DIRECTORY_SEPARATOR . $key;
+        $prefixedKey = $this->basePath . '/' . $key;
 
         if (!file_exists($prefixedKey)) {
             return null;
         }
 
-        $content = @file_get_contents($prefixedKey);
-        if ($content === false) {
+        $stringContent = @file_get_contents($prefixedKey);
+        if ($stringContent === false) {
             return null;
         }
+
+        $content = unserialize(json_decode($stringContent, null, JSON_THROW_ON_ERROR));
 
         return $content;
     }

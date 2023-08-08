@@ -11,18 +11,17 @@ use Oru\EcmaScript\Harness\Contracts\OutputType;
 use Oru\EcmaScript\Harness\Output\ConsoleOutput;
 use Oru\EcmaScript\Harness\Output\GenericOutputFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(GenericOutputFactory::class)]
 final class GenericOutputFactoryTest extends TestCase
 {
     /**
+     * @test
+     * @dataProvider provideOutputConfiguration
+     *
      * @param class-string<Output> $outputClassname
      */
-    #[Test]
-    #[DataProvider('provideOutputConfiguration')]
     public function returnsTheCorrectOutputClassBasedOnConfiguration(OutputConfig $config, string $outputClassname): void
     {
         $factory = new GenericOutputFactory();

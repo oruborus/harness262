@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Tests\Harness\Unit\Storage;
 
 use Oru\EcmaScript\Harness\Storage\FileStorage;
-use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\Test;
 use Tests\Test262\TestCase;
 
 use function file_exists;
@@ -19,7 +17,9 @@ use function unlink;
 #[CoversClass(FileStorage::class)]
 final class FileStorageTest extends TestCase
 {
-    #[After]
+    /**
+     * @after
+     */
     public function cleanLocalFileSystem(): void
     {
         if (file_exists(__DIR__ . '/test')) {
@@ -31,7 +31,9 @@ final class FileStorageTest extends TestCase
         }
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function createsBaseDirectoryWhenItNotExists(): void
     {
         new FileStorage(__DIR__ . '/test');
@@ -39,11 +41,13 @@ final class FileStorageTest extends TestCase
         $this->assertDirectoryExists(__DIR__ . '/test');
     }
 
-    #[Test]
-    public function canStoreStringsInFile(): void
+    /**
+     * @test
+     */
+    public function canStoreObjectsInFile(): void
     {
         $storage = new FileStorage(__DIR__);
-        $expected = 'TESTTESTTEST';
+        $expected = (object)['a' => 123];
 
         $storage->put('test', $expected);
         $actual = $storage->get('test');
@@ -52,16 +56,25 @@ final class FileStorageTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    #[Test]
-    public function failsIfProvidedContentIsNotString(): void
+    /**
+     * @test
+     */
+    public function canStoreNameSpacedObjectsInFile(): void
     {
-        $this->expectExceptionMessage('Content must be of type string');
         $storage = new FileStorage(__DIR__);
 
-        $storage->put('test', 123);
+        $expected = new FileStorageFixture('A');
+
+        $storage->put('test', $expected);
+        $actual = $storage->get('test');
+
+        $this->assertFileExists(__DIR__ . '/test');
+        $this->assertEquals($expected, $actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullIfFileDoesNotExist(): void
     {
         $storage = new FileStorage(__DIR__);
@@ -72,7 +85,9 @@ final class FileStorageTest extends TestCase
         $this->assertNull($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullIfFileCannotBeRead(): void
     {
         mkdir(__DIR__ . '/test');

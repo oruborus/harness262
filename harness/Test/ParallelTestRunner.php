@@ -213,7 +213,7 @@ final class ParallelTestRunner
         $factory = $agent->getInterpreter()->getValueFactory();
 
         if (!$completion instanceof ThrowCompletion) {
-            return new GenericTestResult(TestResultState::Fail, [], 0, 'Expected `ThrowCompletion`');
+            return new GenericTestResult(TestResultState::Fail, [], 0, new RuntimeException('Expected `ThrowCompletion`'));
         }
 
         /**

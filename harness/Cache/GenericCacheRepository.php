@@ -44,14 +44,11 @@ final readonly class GenericCacheRepository implements CacheRepository
     {
         $key = $this->hashKey($config);
 
-        // FIXME: $this->storage should return a ResultRecord which encapsulates the validation logic
-        /** @psalm-suppress MixedAssignment */
         $content = $this->storage->get($key);
 
         if (!$this->validateResultRecord($content, $key)) {
             return null;
         }
-        /** @var object{result: TestResult, hash: string usedFiles: array<string, string>} $content */
 
         return $content->result;
     }
@@ -73,18 +70,6 @@ final readonly class GenericCacheRepository implements CacheRepository
         if (!isset($resultRecord->usedFiles)) {
             return false;
         }
-
-        if (!is_array($resultRecord->usedFiles)) {
-            return false;
-        }
-
-        if (
-            array_filter($resultRecord->usedFiles, is_string(...)) !== $resultRecord->usedFiles
-            || array_filter(array_keys($resultRecord->usedFiles), is_string(...)) !== array_keys($resultRecord->usedFiles)
-        ) {
-            return false;
-        }
-        /** @var array<string, string> $resultRecord->usedFiles */
 
         if ($hash !== $resultRecord->hash) {
             return false;

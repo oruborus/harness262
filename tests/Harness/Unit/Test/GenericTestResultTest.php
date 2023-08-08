@@ -7,14 +7,15 @@ namespace Tests\Harness\Unit\Test;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use Oru\EcmaScript\Harness\Test\GenericTestResult;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 #[CoversClass(GenericTestResult::class)]
 final class GenericTestResultTest extends TestCase
 {
-    #[Test]
+    /**
+     * @test
+     */
     public function actsAsValueObject(): void
     {
         $expectedState = TestResultState::Error;
