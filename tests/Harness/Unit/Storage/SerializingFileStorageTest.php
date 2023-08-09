@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Harness\Unit\Storage;
 
-use Oru\EcmaScript\Harness\Storage\FileStorage;
+use Oru\EcmaScript\Harness\Storage\SerializingFileStorage;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\Test262\TestCase;
 
@@ -14,8 +14,8 @@ use function mkdir;
 use function rmdir;
 use function unlink;
 
-#[CoversClass(FileStorage::class)]
-final class FileStorageTest extends TestCase
+#[CoversClass(SerializingFileStorage::class)]
+final class SerializingFileStorageTest extends TestCase
 {
     /**
      * @after
@@ -36,7 +36,7 @@ final class FileStorageTest extends TestCase
      */
     public function createsBaseDirectoryWhenItNotExists(): void
     {
-        new FileStorage(__DIR__ . '/test');
+        new SerializingFileStorage(__DIR__ . '/test');
 
         $this->assertDirectoryExists(__DIR__ . '/test');
     }
@@ -44,10 +44,10 @@ final class FileStorageTest extends TestCase
     /**
      * @test
      */
-    public function canStoreStringsInFile(): void
+    public function canStoreObjectsInFile(): void
     {
-        $storage = new FileStorage(__DIR__);
-        $expected = 'TESTTESTTEST';
+        $storage = new SerializingFileStorage(__DIR__);
+        $expected = (object)['a' => 123];
 
         $storage->put('test', $expected);
         $actual = $storage->get('test');
@@ -59,12 +59,17 @@ final class FileStorageTest extends TestCase
     /**
      * @test
      */
-    public function failsIfProvidedContentIsNotString(): void
+    public function canStoreNameSpacedObjectsInFile(): void
     {
-        $this->expectExceptionMessage('Content must be of type string');
-        $storage = new FileStorage(__DIR__);
+        $storage = new SerializingFileStorage(__DIR__);
 
-        $storage->put('test', 123);
+        $expected = new FileStorageFixture('A');
+
+        $storage->put('test', $expected);
+        $actual = $storage->get('test');
+
+        $this->assertFileExists(__DIR__ . '/test');
+        $this->assertEquals($expected, $actual);
     }
 
     /**
@@ -72,7 +77,7 @@ final class FileStorageTest extends TestCase
      */
     public function returnsNullIfFileDoesNotExist(): void
     {
-        $storage = new FileStorage(__DIR__);
+        $storage = new SerializingFileStorage(__DIR__);
 
         $actual = $storage->get('test');
 
@@ -86,7 +91,7 @@ final class FileStorageTest extends TestCase
     public function returnsNullIfFileCannotBeRead(): void
     {
         mkdir(__DIR__ . '/test');
-        $storage = new FileStorage(__DIR__);
+        $storage = new SerializingFileStorage(__DIR__);
 
         $actual = $storage->get('test');
 
