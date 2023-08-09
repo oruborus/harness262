@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Oru\EcmaScript\Harness\Storage;
 
 use Oru\EcmaScript\Harness\Contracts\Storage;
+use Throwable;
 
-use function assert;
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
@@ -25,7 +25,7 @@ final readonly class SerializingFileStorage implements Storage
         private string $basePath
     ) {
         if (!file_exists($this->basePath)) {
-            mkdir(directory: $this->basePath, recursive: true);
+            mkdir($this->basePath, 0777, true);
         }
     }
 
@@ -53,8 +53,8 @@ final readonly class SerializingFileStorage implements Storage
             return null;
         }
 
-        $decodedContent = json_decode($stringContent, null, JSON_THROW_ON_ERROR);
-        assert(is_string($decodedContent));
-        return unserialize($decodedContent);
+        $content = unserialize(json_decode($stringContent, null, JSON_THROW_ON_ERROR));
+
+        return $content;
     }
 }

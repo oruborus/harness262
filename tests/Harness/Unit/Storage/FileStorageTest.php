@@ -44,10 +44,10 @@ final class FileStorageTest extends TestCase
     /**
      * @test
      */
-    public function canStoreObjectsInFile(): void
+    public function canStoreStringsInFile(): void
     {
         $storage = new FileStorage(__DIR__);
-        $expected = (object)['a' => 123];
+        $expected = 'TESTTESTTEST';
 
         $storage->put('test', $expected);
         $actual = $storage->get('test');
@@ -59,17 +59,12 @@ final class FileStorageTest extends TestCase
     /**
      * @test
      */
-    public function canStoreNameSpacedObjectsInFile(): void
+    public function failsIfProvidedContentIsNotString(): void
     {
+        $this->expectExceptionMessage('Content must be of type string');
         $storage = new FileStorage(__DIR__);
 
-        $expected = new FileStorageFixture('A');
-
-        $storage->put('test', $expected);
-        $actual = $storage->get('test');
-
-        $this->assertFileExists(__DIR__ . '/test');
-        $this->assertEquals($expected, $actual);
+        $storage->put('test', 123);
     }
 
     /**

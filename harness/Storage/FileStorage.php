@@ -5,18 +5,15 @@ declare(strict_types=1);
 namespace Oru\EcmaScript\Harness\Storage;
 
 use Oru\EcmaScript\Harness\Contracts\Storage;
-use Throwable;
+use RuntimeException;
 
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
-use function json_decode;
-use function json_encode;
+use function is_string;
 use function mkdir;
-use function serialize;
-use function unserialize;
 
-use const JSON_THROW_ON_ERROR;
+use const DIRECTORY_SEPARATOR;
 
 final readonly class FileStorage implements Storage
 {
@@ -30,29 +27,27 @@ final readonly class FileStorage implements Storage
 
     public function put(string $key, mixed $content): void
     {
-        $prefixedKey = $this->basePath . '/' . $key;
+        if (!is_string($content)) {
+            throw new RuntimeException('Content must be of type string');
+        }
 
-        $serializedContent = serialize($content);
+        $prefixedKey = $this->basePath . DIRECTORY_SEPARATOR . $key;
 
-        $stringContent = json_encode($serializedContent, JSON_THROW_ON_ERROR);
-
-        file_put_contents($prefixedKey, $stringContent);
+        file_put_contents($prefixedKey, $content);
     }
 
-    public function get(string $key): mixed
+    public function get(string $key): ?string
     {
-        $prefixedKey = $this->basePath . '/' . $key;
+        $prefixedKey = $this->basePath . DIRECTORY_SEPARATOR . $key;
 
         if (!file_exists($prefixedKey)) {
             return null;
         }
 
-        $stringContent = @file_get_contents($prefixedKey);
-        if ($stringContent === false) {
+        $content = @file_get_contents($prefixedKey);
+        if ($content === false) {
             return null;
         }
-
-        $content = unserialize(json_decode($stringContent, null, JSON_THROW_ON_ERROR));
 
         return $content;
     }

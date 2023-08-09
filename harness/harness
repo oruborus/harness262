@@ -11,6 +11,7 @@ use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use Oru\EcmaScript\Harness\Output\GenericOutputFactory;
 use Oru\EcmaScript\Harness\Printer\GenericPrinterFactory;
 use Oru\EcmaScript\Harness\Storage\FileStorage;
+use Oru\EcmaScript\Harness\Storage\SerializingFileStorage;
 use Oru\EcmaScript\Harness\Test\GenericTestConfigFactory;
 use Oru\EcmaScript\Harness\Test\GenericTestResult;
 use Oru\EcmaScript\Harness\Test\ParallelTestRunner;
@@ -33,10 +34,11 @@ $arguments = $argv;
 
 array_shift($arguments);
 
-$storage           = new FileStorage('./.harness/cache');
-$cacheRepository   = new GenericCacheRepository($storage);
+$testStorage       = new FileStorage('.');
+$cacheStorage      = new SerializingFileStorage('./.harness/cache');
+$cacheRepository   = new GenericCacheRepository($cacheStorage);
 $configFactory     = new HarnessConfigFactory();
-$testConfigFactory = new GenericTestConfigFactory();
+$testConfigFactory = new GenericTestConfigFactory($testStorage);
 $printerFactory    = new GenericPrinterFactory();
 $outputFactory     = new GenericOutputFactory();
 
