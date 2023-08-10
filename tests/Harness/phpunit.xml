@@ -2,7 +2,7 @@
 <phpunit
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
-    bootstrap="../vendor/autoload.php"
+    bootstrap="../../vendor/autoload.php"
     displayDetailsOnTestsThatTriggerWarnings="true"
     executionOrder="depends,defects"
     beStrictAboutOutputDuringTests="true"
@@ -10,12 +10,12 @@
     failOnWarning="true"
     defaultTestSuite="default"
     cacheResult="true"
-    cacheDirectory="../.phpunit/harness/cache"
+    cacheDirectory="../../.phpunit/harness/cache"
     requireCoverageMetadata="true"
     beStrictAboutCoverageMetadata="false">
     <testsuites>
         <testsuite name="default">
-            <directory>tests/Harness</directory>
+            <directory>.</directory>
         </testsuite>
     </testsuites>
     <coverage
@@ -24,12 +24,12 @@
         ignoreDeprecatedCodeUnits="true"
         disableCodeCoverageIgnore="true">
         <report>
-            <html outputDirectory="../.phpunit/harness/coverage" lowUpperBound="50" highLowerBound="90"/>
+            <html outputDirectory="../../.phpunit/harness/coverage" lowUpperBound="50" highLowerBound="90"/>
         </report>
     </coverage>
     <source>
         <include>
-            <directory suffix=".php">.</directory>
+            <directory suffix=".php">../../harness</directory>
         </include>
     </source>
 </phpunit>
