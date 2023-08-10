@@ -1,4 +1,5 @@
 /.harness/
+/.infection/
 /.phpunit/
 /.profiles/
 /.vscode/

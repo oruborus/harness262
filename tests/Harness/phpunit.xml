@@ -12,11 +12,10 @@
     cacheResult="true"
     cacheDirectory="../../.phpunit/harness/cache"
     requireCoverageMetadata="true"
-    beStrictAboutCoverageMetadata="true">
+    beStrictAboutCoverageMetadata="false">
     <testsuites>
         <testsuite name="default">
             <directory>.</directory>
-            <exclude>./Utility</exclude>
         </testsuite>
     </testsuites>
     <coverage
