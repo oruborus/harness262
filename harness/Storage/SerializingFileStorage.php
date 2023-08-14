@@ -25,7 +25,7 @@ final readonly class SerializingFileStorage implements Storage
         private string $basePath
     ) {
         if (!file_exists($this->basePath)) {
-            mkdir($this->basePath, 0777, true);
+            mkdir(directory: $this->basePath, recursive: true);
         }
     }
 

@@ -7,8 +7,8 @@ namespace Tests\Harness\Unit\Cache;
 use Generator;
 use Oru\EcmaScript\Harness\Cache\GenericCacheRepository;
 use Oru\EcmaScript\Harness\Contracts\Storage;
+use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
-use Oru\EcmaScript\Harness\Test\GenericTestConfig;
 use Oru\EcmaScript\Harness\Test\GenericTestResult;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -64,7 +64,7 @@ final class GenericCacheRepositoryTest extends TestCase
     public function returnsNullWhenNoCacheForConfigExists(): void
     {
         $repository = new GenericCacheRepository($this->getStorage());
-        $config = new GenericTestConfig('Test', 'Content', [], [], [], []);
+        $config = $this->createMock(TestConfig::class);
 
         $actual = $repository->get($config);
 
@@ -77,7 +77,7 @@ final class GenericCacheRepositoryTest extends TestCase
     public function returnsEqualResultWhenCacheFileExists(): void
     {
         $repository = new GenericCacheRepository($this->getStorage());
-        $config = new GenericTestConfig('Test', 'Content', [], [], [], []);
+        $config = $this->createMock(TestConfig::class);
         $result = new GenericTestResult(TestResultState::Success, [__DIR__ . '/A', __DIR__ . '/B'], 0);
 
         $repository->set($config, $result);
@@ -92,7 +92,7 @@ final class GenericCacheRepositoryTest extends TestCase
     public function returnsNullWhenCacheFileExistsButUsedFileWasChanged(): void
     {
         $repository = new GenericCacheRepository($this->getStorage());
-        $config = new GenericTestConfig('Test', 'Content', [], [], [], []);
+        $config = $this->createMock(TestConfig::class);
         $result = new GenericTestResult(TestResultState::Success, [__DIR__ . '/A', __DIR__ . '/B'], 0);
 
         $repository->set($config, $result);
@@ -109,7 +109,7 @@ final class GenericCacheRepositoryTest extends TestCase
     public function returnsNullWhenCachedDataIsMalformed(mixed $data): void
     {
         $repository = new GenericCacheRepository($this->getStorage(['1' => $data]), static fn (mixed $_): string => '1');
-        $config = new GenericTestConfig('Test', 'Content', [], [], [], []);
+        $config = $this->createMock(TestConfig::class);
 
         $actual = $repository->get($config);
 

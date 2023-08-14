@@ -71,6 +71,8 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             static fn (string $option): bool => !str_starts_with($option, '-')
         );
 
+        $cache = (!in_array('n', $shortOptions, true) && !array_key_exists('no-cache', $longOptions));
+
         $verbosity = PrinterVerbosity::Normal;
         if (
             (in_array('v', $shortOptions, true) || array_key_exists('verbose', $longOptions))
@@ -85,13 +87,15 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             $verbosity = PrinterVerbosity::Silent;
         }
 
-        return new class($paths, $verbosity) implements OutputConfig, PrinterConfig, TestSuiteConfig
+
+        return new class($paths, $cache, $verbosity) implements OutputConfig, PrinterConfig, TestSuiteConfig
         {
             public function __construct(
                 /**
                  * @var string[] $paths
                  */
                 private array $paths,
+                private bool $cache,
                 private PrinterVerbosity $printerVerbosity
             ) {
             }
@@ -102,6 +106,11 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             public function paths(): array
             {
                 return $this->paths;
+            }
+
+            public function cache(): bool
+            {
+                return $this->cache;
             }
 
             /**

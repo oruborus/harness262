@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness\Contracts;
 
-use RuntimeException;
-
-enum TestConfigInclude: string
+enum FrontmatterInclude: string
 {
+    public const basePath = './vendor/tc39/test262/harness/';
+
     case assert                    = './vendor/tc39/test262/harness/assert.js';
     case assertRelativeDateMs      = './vendor/tc39/test262/harness/assertRelativeDateMs.js';
     case asyncGc                   = './vendor/tc39/test262/harness/async-gc.js';
@@ -40,43 +40,4 @@ enum TestConfigInclude: string
     case timer                     = './vendor/tc39/test262/harness/timer.js';
     case typeCoercion              = './vendor/tc39/test262/harness/typeCoercion.js';
     case wellKnownIntrinsicObjects = './vendor/tc39/test262/harness/wellKnownIntrinsicObjects.js';
-
-    public static function fromString(string $include): static
-    {
-        return match ($include) {
-            'assert.js'                    => static::assert,
-            'assertRelativeDateMs.js'      => static::assertRelativeDateMs,
-            'async-gc.js'                  => static::asyncGc,
-            'asyncHelpers.js'              => static::asyncHelpers,
-            'atomicsHelper.js'             => static::atomicsHelper,
-            'byteConversionValues.js'      => static::byteConversionValues,
-            'compareArray.js'              => static::compareArray,
-            'compareIterator.js'           => static::compareIterator,
-            'dateConstants.js'             => static::dateConstants,
-            'decimalToHexString.js'        => static::decimalToHexString,
-            'deepEqual.js'                 => static::deepEqual,
-            'detachArrayBuffer.js'         => static::detachArrayBuffer,
-            'doneprintHandle.js'           => static::doneprintHandle,
-            'fnGlobalObject.js'            => static::fnGlobalObject,
-            'hidden-constructors.js'       => static::hiddenConstructors,
-            'isConstructor.js'             => static::isConstructor,
-            'nans.js'                      => static::nans,
-            'nativeFunctionMatcher.js'     => static::nativeFunctionMatcher,
-            'promiseHelper.js'             => static::promiseHelper,
-            'propertyHelper.js'            => static::propertyHelper,
-            'proxyTrapsHelper.js'          => static::proxyTrapsHelper,
-            'regExpUtils.js'               => static::regExpUtils,
-            'sta.js'                       => static::sta,
-            'tcoHelper.js'                 => static::tcoHelper,
-            'temporalHelpers.js'           => static::temporalHelpers,
-            'testAtomics.js'               => static::testAtomics,
-            'testBigIntTypedArray.js'      => static::testBigIntTypedArray,
-            'testIntl.js'                  => static::testIntl,
-            'testTypedArray.js'            => static::testTypedArray,
-            'timer.js'                     => static::timer,
-            'typeCoercion.js'              => static::typeCoercion,
-            'wellKnownIntrinsicObjects.js' => static::wellKnownIntrinsicObjects,
-            default => throw new RuntimeException("Unknown include `{$include}`")
-        };
-    }
 }

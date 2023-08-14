@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Harness\Unit\Test;
 
-use Generator;
 use Oru\EcmaScript\Harness\Contracts\Storage;
-use Oru\EcmaScript\Harness\Contracts\TestConfigFlag;
-use Oru\EcmaScript\Harness\Contracts\TestConfigInclude;
+use Oru\EcmaScript\Harness\Frontmatter\GenericFrontmatter;
+use Oru\EcmaScript\Harness\Test\Exception\MissingFrontmatterException;
 use Oru\EcmaScript\Harness\Test\GenericTestConfig;
 use Oru\EcmaScript\Harness\Test\GenericTestConfigFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-
-use function array_map;
-use function implode;
 
 #[CoversClass(GenericTestConfigFactory::class)]
 final class GenericTestConfigFactoryTest extends TestCase
@@ -56,41 +52,12 @@ final class GenericTestConfigFactoryTest extends TestCase
     /**
      * @test
      */
-    public function failsWhenProvidedFileHasincompleteMetaDataBlock(): void
+    public function failsOnMissingFrontmatter(): void
     {
-        $path = 'incomplete-meta-data-block';
-        $this->expectExceptionMessage("Could not locate meta data end for file `{$path}`");
+        $this->expectExceptionObject(new MissingFrontmatterException('Provided test file does not contain a frontmatter section'));
 
-        $factory = new GenericTestConfigFactory($this->getStorage(['incomplete-meta-data-block' => '/*---']));
-
-        $factory->make($path);
-    }
-
-    /**
-     * @test
-     * @dataProvider provideEmptyMissingOrMalformedMetaData
-     */
-    public function returnsPairOfBasicTestConfigsWhenMetaDataBlockIsMissingEmptyOrMalformed(string $content): void
-    {
-        $expected = [
-            new GenericTestConfig('content', "\"use strict\";\n{$content}", [], [TestConfigInclude::assert, TestConfigInclude::sta], [], []),
-            new GenericTestConfig('content', $content, [], [TestConfigInclude::assert, TestConfigInclude::sta], [], [])
-        ];
-        $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
-
-        $actual = $factory->make('content');
-
-        $this->assertEqualsCanonicalizing($expected, $actual);
-    }
-
-    /**
-     * @return Generator<string, string[]>
-     */
-    public static function provideEmptyMissingOrMalformedMetaData(): Generator
-    {
-        yield 'missing' => [''];
-        yield 'empty' => ['/*--- ---*/'];
-        yield 'malformed' => ["/*---\na\n   b\n---*/"];
+        $factory = new GenericTestConfigFactory($this->getStorage(['content' => '']));
+        $factory->make('content');
     }
 
     /**
@@ -98,9 +65,10 @@ final class GenericTestConfigFactoryTest extends TestCase
      */
     public function returnsRawTestConfigsWhenRawTagIsPresent(): void
     {
-        $content = "/*---\nflags: [raw]\n---*/";
+        $frontmatter = "description: required\nflags: [raw]";
+        $content = "/*---\n{$frontmatter}\n---*/";
         $expected = [
-            new GenericTestConfig('content', $content, [TestConfigFlag::raw], [], [], [])
+            new GenericTestConfig('content', $content, new GenericFrontmatter($frontmatter))
         ];
         $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
 
@@ -114,9 +82,10 @@ final class GenericTestConfigFactoryTest extends TestCase
      */
     public function returnsModuleTestConfigsWhenModuleTagIsPresent(): void
     {
-        $content = "/*---\nflags: [module]\n---*/";
+        $frontmatter = "description: required\nflags: [module]";
+        $content = "/*---\n{$frontmatter}\n---*/";
         $expected = [
-            new GenericTestConfig('content', $content, [TestConfigFlag::module], [TestConfigInclude::assert, TestConfigInclude::sta], [], [])
+            new GenericTestConfig('content', $content, new GenericFrontmatter($frontmatter))
         ];
         $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
 
@@ -130,9 +99,43 @@ final class GenericTestConfigFactoryTest extends TestCase
      */
     public function returnsNonStrictTestConfigsWhenNoStrictTagIsPresent(): void
     {
-        $content = "/*---\nflags: [noStrict]\n---*/";
+        $frontmatter = "description: required\nflags: [noStrict]";
+        $content = "/*---\n{$frontmatter}\n---*/";
         $expected = [
-            new GenericTestConfig('content', $content, [TestConfigFlag::noStrict], [TestConfigInclude::assert, TestConfigInclude::sta], [], [])
+            new GenericTestConfig('content', $content, new GenericFrontmatter($frontmatter))
+        ];
+        $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
+
+        $actual = $factory->make('content');
+
+        $this->assertEqualsCanonicalizing($expected, $actual);
+    }
+
+    /**
+     * @test
+     */
+    public function emptyLinesAreIgnored(): void
+    {
+        $frontmatter = "description: required\nflags: [noStrict]\n\n\nincludes: [doneprintHandle.js]";
+        $content = "/*---\n{$frontmatter}\n---*/";
+        $expected = [
+            new GenericTestConfig('content', $content, new GenericFrontmatter($frontmatter))
+        ];
+        $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
+
+        $actual = $factory->make('content');
+
+        $this->assertEqualsCanonicalizing($expected, $actual);
+    }
+
+    /**
+     * @test
+     */
+    public function indentationIsHandled(): void
+    {
+        $content = "/*---\n   description: required\n   flags: [noStrict]\n   includes: [doneprintHandle.js]\n---*/";
+        $expected = [
+            new GenericTestConfig('content', $content, new GenericFrontmatter("description: required\nflags: [noStrict]\nincludes: [doneprintHandle.js]"))
         ];
         $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
 
@@ -146,9 +149,10 @@ final class GenericTestConfigFactoryTest extends TestCase
      */
     public function returnsStrictTestConfigsWhenOnlyStrictTagIsPresent(): void
     {
-        $content = "/*---\nflags: [onlyStrict]\n---*/";
+        $frontmatter = "description: required\nflags: [onlyStrict]";
+        $content = "/*---\n{$frontmatter}\n---*/";
         $expected = [
-            new GenericTestConfig('content', "\"use strict\";\n{$content}", [TestConfigFlag::onlyStrict], [TestConfigInclude::assert, TestConfigInclude::sta], [], [])
+            new GenericTestConfig('content', "\"use strict\";\n{$content}", new GenericFrontmatter($frontmatter))
         ];
         $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
 
@@ -160,29 +164,13 @@ final class GenericTestConfigFactoryTest extends TestCase
     /**
      * @test
      */
-    public function includesDonePrintHandleFileWhenAsyncTagIsPresent(): void
+    public function returnsStrictAndNonStrictTestConfigsWhenNoRelatedFlagIsPresent(): void
     {
-        $content = "/*---\nflags: [noStrict, async]\n---*/";
+        $frontmatter = "description: required";
+        $content = "/*---\n{$frontmatter}\n---*/";
         $expected = [
-            new GenericTestConfig('content', $content, [TestConfigFlag::noStrict, TestConfigFlag::async], [TestConfigInclude::assert, TestConfigInclude::sta, TestConfigInclude::doneprintHandle], [], [])
-        ];
-        $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
-
-        $actual = $factory->make('content');
-
-        $this->assertEqualsCanonicalizing($expected, $actual);
-    }
-
-    /**
-     * @test
-     */
-    public function handlesAllPossibleIncludes(): void
-    {
-        $includes = implode(', ', array_map(static fn (TestConfigInclude $i): string => basename($i->value), TestConfigInclude::cases()));
-        $content = "/*---\nincludes: [{$includes}]\n---*/";
-        $expected = [
-            new GenericTestConfig('content', "\"use strict\";\n{$content}", [], TestConfigInclude::cases(), [], []),
-            new GenericTestConfig('content', $content, [], TestConfigInclude::cases(), [], []),
+            new GenericTestConfig('content', "\"use strict\";\n{$content}", new GenericFrontmatter($frontmatter)),
+            new GenericTestConfig('content', $content, new GenericFrontmatter($frontmatter))
         ];
         $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
 

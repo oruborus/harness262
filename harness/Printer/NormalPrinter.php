@@ -11,6 +11,7 @@ use Oru\EcmaScript\Harness\Contracts\TestResultState;
 
 use function array_filter;
 use function count;
+use function date;
 use function intdiv;
 use function str_pad;
 use function strlen;
@@ -65,10 +66,15 @@ final class NormalPrinter implements Printer
             return;
         }
 
+        $this->output->writeLn($this->getStatusLineEnd());
+    }
+
+    private function getStatusLineEnd(): string
+    {
         $stepsPerformedString = str_pad((string) $this->stepsPerformed, strlen((string) $this->stepsPlanned), ' ', STR_PAD_LEFT);
         $percentageString     = str_pad((string) intdiv($this->stepsPerformed * 100, $this->stepsPlanned), 3, ' ', STR_PAD_LEFT);
 
-        $this->output->writeLn(" {$stepsPerformedString} / {$this->stepsPlanned} ({$percentageString}%)");
+        return " {$stepsPerformedString} / {$this->stepsPlanned} ({$percentageString}%)";
     }
 
     /**
@@ -89,11 +95,12 @@ final class NormalPrinter implements Printer
         $this->output->writeLn('');
         if (count($failures) > 0 && count($errors) > 0) {
             $this->output->writeLn('There where error(s) and failure(s)!');
-        } elseif (count($errors) > 0) {
-            $this->output->writeLn('There where error(s)!');
-        } else {
+        } elseif (count($failures) > 0) {
             $this->output->writeLn('There where failure(s)!');
+        } else {
+            $this->output->writeLn('There where error(s)!');
         }
+
         $this->output->writeLn('');
 
         if (count($failures) > 0) {
@@ -113,30 +120,23 @@ final class NormalPrinter implements Printer
 
     private function printLastStep(): void
     {
-        if ($this->stepsPerformed % static::STEPS_PER_LINE > 0) {
-            $stepsPerformedString = str_pad((string) $this->stepsPerformed, strlen((string) $this->stepsPlanned), ' ', STR_PAD_LEFT);
-            $percentageString     = str_pad((string) intdiv($this->stepsPerformed * 100, $this->stepsPlanned), 3, ' ', STR_PAD_LEFT);
-            $fillString           = str_pad('', static::STEPS_PER_LINE - $this->stepsPerformed % static::STEPS_PER_LINE, ' ');
-
-            $this->output->writeLn("{$fillString} {$stepsPerformedString} / {$this->stepsPlanned} ({$percentageString}%)");
+        if ($this->stepsPerformed % static::STEPS_PER_LINE === 0) {
             $this->output->writeLn('');
+            return;
         }
+
+        $fillString = str_pad('', static::STEPS_PER_LINE - $this->stepsPerformed % static::STEPS_PER_LINE, ' ');
+
+        $this->output->writeLn("{$fillString}{$this->getStatusLineEnd()}");
+        $this->output->writeLn('');
     }
 
     private function printDuration(int $duration): void
     {
-        $seconds = str_pad((string) ($duration % 60), 2, '0', STR_PAD_LEFT);
-        $minutes = str_pad((string) (intdiv($duration, 60) % 60), 2, '0', STR_PAD_LEFT);
-        $hours   = str_pad((string) intdiv($duration, 60 * 60), 2, '0', STR_PAD_LEFT);
+        $format = $duration >= 3600 ? 'H:i:s' : 'i:s';
 
         $this->output->write('Duration: ');
-        if ($hours !== '00') {
-            $this->output->write($hours);
-            $this->output->write(':');
-        }
-        $this->output->write($minutes);
-        $this->output->write(':');
-        $this->output->write($seconds);
+        $this->output->write(date($format, $duration));
         $this->output->writeLn('');
     }
 

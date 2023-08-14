@@ -4,23 +4,15 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness\Test;
 
+use Oru\EcmaScript\Harness\Contracts\Frontmatter;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 
 final readonly class GenericTestConfig implements TestConfig
 {
-    /**
-     * @param string[] $flags
-     * @param string[] $includes
-     * @param string[] $features
-     * @param array{'phase':'parse'|'resolution'|'runtime','type':string} $negative
-     */
     public function __construct(
         private string $path,
         private string $content,
-        private array $flags,
-        private array $includes,
-        private array $features,
-        private array $negative
+        private Frontmatter $frontmatter
     ) {
     }
 
@@ -34,35 +26,8 @@ final readonly class GenericTestConfig implements TestConfig
         return $this->content;
     }
 
-    /**
-     * @return string[]
-     */
-    public function flags(): array
+    public function frontmatter(): Frontmatter
     {
-        return $this->flags;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function includes(): array
-    {
-        return $this->includes;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function features(): array
-    {
-        return $this->features;
-    }
-
-    /**
-     * @return array{'phase':'parse'|'resolution'|'runtime','type':string}
-     */
-    public function negative(): array
-    {
-        return $this->negative;
+        return $this->frontmatter;
     }
 }
