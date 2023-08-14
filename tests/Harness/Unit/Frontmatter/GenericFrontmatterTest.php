@@ -15,18 +15,15 @@ use Oru\EcmaScript\Harness\Frontmatter\Exception\UnrecognizedFlagException;
 use Oru\EcmaScript\Harness\Frontmatter\Exception\UnrecognizedIncludeException;
 use Oru\EcmaScript\Harness\Frontmatter\Exception\UnrecognizedKeyException;
 use Oru\EcmaScript\Harness\Frontmatter\GenericFrontmatter;
-use Oru\EcmaScript\Harness\Frontmatter\GenericFrontmatterNegative;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(GenericFrontmatter::class)]
-#[UsesClass(GenericFrontmatterNegative::class)]
 final class GenericFrontmatterTest extends TestCase
 {
-    #[Test]
+    /**
+     * @test
+     */
     public function failsIfDescriptionFieldIsMissing(): void
     {
         $this->expectExceptionObject(new MissingRequiredKeyException("Required frontmatter fields where not provided: description"));
@@ -34,7 +31,9 @@ final class GenericFrontmatterTest extends TestCase
         new GenericFrontmatter('author: anonymous');
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function failsIfUnrecognizedFieldIsSupplied(): void
     {
         $field = 'unrecognized';
@@ -43,7 +42,9 @@ final class GenericFrontmatterTest extends TestCase
         new GenericFrontmatter("description: test\n{$field}: data");
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function canBeConstructed(): void
     {
         $frontmatter = new GenericFrontmatter(
@@ -70,7 +71,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertInstanceOf(Frontmatter::class, $frontmatter);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsDescription(): void
     {
         $expected = 'random text containing unicode but no line terminators 😊';
@@ -81,7 +84,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsEsIdStringWhenProvided(): void
     {
         $expected = 'sec-some-spec';
@@ -92,7 +97,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenEsIdIsNotProvided(): void
     {
         $frontmatter = new GenericFrontmatter("description: required");
@@ -102,7 +109,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertNull($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenEsIdIsEmpty(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nesid: ");
@@ -112,7 +121,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertNull($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsInfoStringWhenProvided(): void
     {
         $expected1 = 'Some multi-line';
@@ -125,7 +136,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenInfoIsNotProvided(): void
     {
         $frontmatter = new GenericFrontmatter("description: required");
@@ -135,7 +148,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertNull($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenInfoIsEmpty(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\ninfo: ");
@@ -145,7 +160,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertNull($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsFrontmatterNegativeWhenProvided(): void
     {
         $expected = new class implements FrontmatterNegative
@@ -169,7 +186,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertSame($expected->type(), $actual->type());
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenNegativeIsNotProvided(): void
     {
         $frontmatter = new GenericFrontmatter("description: required");
@@ -179,7 +198,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertNull($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenNegativeIsEmpty(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nnegative: ");
@@ -189,7 +210,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertNull($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsIncludesListWhenProvided(): void
     {
         $expected = [FrontmatterInclude::assert, FrontmatterInclude::sta];
@@ -200,7 +223,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function failsWhenUnrecognizedIncludeIsProvided(): void
     {
         $this->expectExceptionObject(new UnrecognizedIncludeException('Unrecognized frontmatter include was provided: `unrecognized.js`'));
@@ -208,7 +233,9 @@ final class GenericFrontmatterTest extends TestCase
         new GenericFrontmatter("description: required\nincludes: [unrecognized.js]");
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsEmptyListWhenIncludesAreNotProvided(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nflags: [raw]");
@@ -218,7 +245,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertEmpty($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsEmptyListWhenIncludesAreEmpty(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nflags: [raw]\nincludes: ");
@@ -228,8 +257,10 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertEmpty($actual);
     }
 
-    #[Test]
-    #[DataProvider('provideFlag')]
+    /**
+     * @test
+     * @dataProvider provideFlag
+     */
     public function whenRawFlagIsNotSetIncludesContainAssertAndSta(string $flag): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nflags: [{$flag}]");
@@ -254,7 +285,9 @@ final class GenericFrontmatterTest extends TestCase
         }
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function whenRawFlagIsSetIncludesAreEmpty(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nflags: [raw]");
@@ -264,7 +297,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertEmpty($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function handlesAllPossibleIncludes(): void
     {
         $includes = implode(', ', array_map(static fn (FrontmatterInclude $i): string => basename($i->value), FrontmatterInclude::cases()));
@@ -276,7 +311,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertCount($expected, $actual->includes());
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function includesDonePrintHandleFileWhenAsyncTagIsPresent(): void
     {
         $actual = new GenericFrontmatter("description: required\nflags: [async]");
@@ -284,7 +321,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertContains(FrontmatterInclude::doneprintHandle, $actual->includes());
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsAuthorStringWhenProvided(): void
     {
         $expected = 'anonymous';
@@ -295,7 +334,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenAuthorIsNotProvided(): void
     {
         $frontmatter = new GenericFrontmatter("description: required");
@@ -305,7 +346,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertNull($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenAuthorIsEmpty(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nauthor: ");
@@ -315,7 +358,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertNull($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsFlagsListWhenProvided(): void
     {
         $expected = [FrontmatterFlag::noStrict, FrontmatterFlag::async];
@@ -326,7 +371,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function failsWhenUnrecognizedFlagIsProvided(): void
     {
         $this->expectExceptionObject(new UnrecognizedFlagException('Unrecognized frontmatter flag was provided: `unrecognized`'));
@@ -334,7 +381,9 @@ final class GenericFrontmatterTest extends TestCase
         new GenericFrontmatter("description: required\nflags: [unrecognized]");
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsEmptyListWhenFlagsAreNotProvided(): void
     {
         $frontmatter = new GenericFrontmatter("description: required");
@@ -344,7 +393,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertEmpty($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsEmptyListWhenFlagsAreEmpty(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nflags: ");
@@ -354,7 +405,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertEmpty($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsFeaturesListWhenProvided(): void
     {
         $expected = ['featureA', 'featureB'];
@@ -365,7 +418,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsEmptyListWhenFeaturesAreNotProvided(): void
     {
         $frontmatter = new GenericFrontmatter("description: required");
@@ -375,7 +430,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertEmpty($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsEmptyListWhenFeaturesAreEmpty(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nfeatures: ");
@@ -385,7 +442,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertEmpty($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsLocaleListWhenProvided(): void
     {
         $expected = ['de-DE', 'en-US'];
@@ -396,7 +455,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsEmptyListWhenLocalesAreNotProvided(): void
     {
         $frontmatter = new GenericFrontmatter("description: required");
@@ -406,7 +467,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertEmpty($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsEmptyListWhenLocalesAreEmpty(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nlocale: ");
@@ -415,7 +478,9 @@ final class GenericFrontmatterTest extends TestCase
 
         $this->assertEmpty($actual);
     }
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsEs5IdStringWhenProvided(): void
     {
         $expected = 'sec-some-spec';
@@ -426,7 +491,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenEs5IdIsNotProvided(): void
     {
         $frontmatter = new GenericFrontmatter("description: required");
@@ -436,7 +503,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertNull($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenEs5IdIsEmpty(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nes5id: ");
@@ -445,7 +514,9 @@ final class GenericFrontmatterTest extends TestCase
 
         $this->assertNull($actual);
     }
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsEs6IdStringWhenProvided(): void
     {
         $expected = 'sec-some-spec';
@@ -456,7 +527,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenEs6IdIsNotProvided(): void
     {
         $frontmatter = new GenericFrontmatter("description: required");
@@ -466,7 +539,9 @@ final class GenericFrontmatterTest extends TestCase
         $this->assertNull($actual);
     }
 
-    #[Test]
+    /**
+     * @test
+     */
     public function returnsNullWhenEs6IdIsEmpty(): void
     {
         $frontmatter = new GenericFrontmatter("description: required\nes6id: ");

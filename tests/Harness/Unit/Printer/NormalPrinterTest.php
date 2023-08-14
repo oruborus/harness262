@@ -48,11 +48,15 @@ final class NormalPrinterTest extends TestCase
     public function printsSomethingOnStart(): void
     {
         $output = $this->createOutput();
+        $exptectedOutput = $this->createOutput();
+        $exptectedOutput->writeLn('');
+        $exptectedOutput->writeLn('EcmaScript Test Harness');
+        $exptectedOutput->writeLn('');
         $printer = new NormalPrinter($output);
 
         $printer->start();
 
-        $this->assertNotSame('', (string) $output);
+        $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 
     /**
@@ -126,6 +130,7 @@ final class NormalPrinterTest extends TestCase
     {
         $output = $this->createOutput();
         $exptectedOutput = $this->createOutput();
+        $exptectedOutput->writeLn('');
         $exptectedOutput->write('Duration: ');
         $exptectedOutput->writeLn($expected);
 
@@ -153,13 +158,36 @@ final class NormalPrinterTest extends TestCase
         $output = $this->createOutput();
         $exptectedOutput = $this->createOutput();
         $exptectedOutput->writeLn('.                                                               1 / 1 (100%)');
+        $exptectedOutput->writeLn('');
+        $exptectedOutput->writeLn('Duration: 00:00');
 
         $printer = new NormalPrinter($output);
         $printer->setStepCount(1);
         $printer->step(TestResultState::Success);
         $printer->end([], 0);
 
-        $this->assertStringStartsWith((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $exptectedOutput, (string) $output);
+    }
+
+    /**
+     * @test
+     */
+    public function doesNotPrintLastStepOnEndIfLineWasFull(): void
+    {
+        $output = $this->createOutput();
+        $exptectedOutput = $this->createOutput();
+        $exptectedOutput->writeLn('............................................................... 63 / 63 (100%)');
+        $exptectedOutput->writeLn('');
+        $exptectedOutput->writeLn('Duration: 00:00');
+        $printer = new NormalPrinter($output);
+        $printer->setStepCount(63);
+
+        for ($i = 0; $i < NormalPrinter::STEPS_PER_LINE; $i++) {
+            $printer->step(TestResultState::Success);
+        }
+        $printer->end([], 0);
+
+        $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 
     /**
@@ -171,6 +199,10 @@ final class NormalPrinterTest extends TestCase
         $exception1 = new RuntimeException();
         $exception2 = new RuntimeException();
         $exptectedOutput = $this->createOutput();
+
+        $exptectedOutput->writeLn('');
+        $exptectedOutput->writeLn('Duration: 00:00');
+        $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('There where failure(s)!');
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('FAILURES:');
@@ -184,6 +216,8 @@ final class NormalPrinterTest extends TestCase
         $exptectedOutput->writeLn((string) $exception2);
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn($exception2->getTraceAsString());
+        $exptectedOutput->writeLn('');
+        $exptectedOutput->writeLn('');
 
         $printer = new NormalPrinter($output);
         $printer->end([
@@ -191,7 +225,7 @@ final class NormalPrinterTest extends TestCase
             new GenericTestResult(TestResultState::Fail, [], 0, $exception2)
         ], 0);
 
-        $this->assertStringContainsString((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 
     /**
@@ -203,6 +237,10 @@ final class NormalPrinterTest extends TestCase
         $error1 = new RuntimeException();
         $error2 = new RuntimeException();
         $exptectedOutput = $this->createOutput();
+
+        $exptectedOutput->writeLn('');
+        $exptectedOutput->writeLn('Duration: 00:00');
+        $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('There where error(s)!');
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('ERRORS:');
@@ -216,6 +254,8 @@ final class NormalPrinterTest extends TestCase
         $exptectedOutput->writeLn((string) $error2);
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn($error2->getTraceAsString());
+        $exptectedOutput->writeLn('');
+        $exptectedOutput->writeLn('');
 
         $printer = new NormalPrinter($output);
         $printer->end([
@@ -223,7 +263,7 @@ final class NormalPrinterTest extends TestCase
             new GenericTestResult(TestResultState::Error, [], 0, $error2)
         ], 0);
 
-        $this->assertStringContainsString((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 
     /**
@@ -236,7 +276,11 @@ final class NormalPrinterTest extends TestCase
         $exception2 = new RuntimeException();
         $error1 = new RuntimeException();
         $error2 = new RuntimeException();
+
         $exptectedOutput = $this->createOutput();
+        $exptectedOutput->writeLn('');
+        $exptectedOutput->writeLn('Duration: 00:00');
+        $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('There where error(s) and failure(s)!');
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('FAILURES:');
@@ -264,6 +308,7 @@ final class NormalPrinterTest extends TestCase
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn($error2->getTraceAsString());
         $exptectedOutput->writeLn('');
+        $exptectedOutput->writeLn('');
 
         $printer = new NormalPrinter($output);
         $printer->end([
@@ -273,6 +318,6 @@ final class NormalPrinterTest extends TestCase
             new GenericTestResult(TestResultState::Error, [], 0, $error2)
         ], 0);
 
-        $this->assertStringContainsString((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 }

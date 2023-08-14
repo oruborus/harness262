@@ -16,8 +16,8 @@ final readonly class GenericFrontmatterNegative implements FrontmatterNegative
 
     /** 
      * @param array {
-     *     phase: string,
-     *     type: string
+     *     phase: FrontmatterNegativePhase,
+     *     type: string,
      * } $rawFrontmatterNegative
      */
     public function __construct(array $rawFrontmatterNegative)

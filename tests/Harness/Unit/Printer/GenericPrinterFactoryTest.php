@@ -42,6 +42,29 @@ final class GenericPrinterFactoryTest extends TestCase
         yield 'normal verbosity' => [static::createPrinterConfig(PrinterVerbosity::Normal), NormalPrinter::class];
     }
 
+    /**
+     * @test
+     * @dataProvider provideUnimplementedPrinterConfiguration
+     */
+    public function failsOnUnimplementedPrinterConfiguration(PrinterConfig $config): void
+    {
+        $this->expectExceptionMessage('NOT IMPLEMENTED');
+
+        $factory = new GenericPrinterFactory();
+        $output = $this->createMock(Output::class);
+
+        $factory->make($config, $output, 0);
+    }
+
+    /**
+     * @return Generator<string, array{0:PrinterConfig, 1:class-string<Printer>}>
+     */
+    public static function provideUnimplementedPrinterConfiguration(): Generator
+    {
+        yield 'silent verbosity' => [static::createPrinterConfig(PrinterVerbosity::Silent)];
+        yield 'verbose verbosity' => [static::createPrinterConfig(PrinterVerbosity::Verbose)];
+    }
+
     private static function createPrinterConfig(PrinterVerbosity $printerVerbosity): PrinterConfig
     {
         return new class($printerVerbosity) implements PrinterConfig

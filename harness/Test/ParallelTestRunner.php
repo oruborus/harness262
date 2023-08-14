@@ -168,7 +168,7 @@ final class ParallelTestRunner
 
     public static function executeTest(TestConfig $config): TestResult
     {
-        $differences = array_diff($config->features(), EngineImplementation::getSupportedFeatures());
+        $differences = array_diff($config->frontmatter()->features(), EngineImplementation::getSupportedFeatures());
 
         if (count($differences) > 0) {
             return new GenericTestResult(TestResultState::Skip, [], 0);
@@ -181,8 +181,8 @@ final class ParallelTestRunner
             ]
         );
 
-        if (count($config->includes()) > 0) {
-            $engine->addFiles(...$config->includes());
+        foreach ($config->frontmatter()->includes() as $include) {
+            $engine->addFiles($include->value);
         }
 
         $engine->addCode($config->content());
@@ -193,9 +193,12 @@ final class ParallelTestRunner
             return new GenericTestResult(TestResultState::Error, [], 0, $throwable);
         }
 
-        if (isset($config->negative()['type'])) {
-            $type = $config->negative()['type'];
-            return static::assertThrowCompletionWithErrorConstructorName($engine->getAgent(), $actual, $type);
+        if ($config->frontmatter()->negative()) {
+            return static::assertThrowCompletionWithErrorConstructorName(
+                $engine->getAgent(),
+                $actual,
+                $config->frontmatter()->negative()->type()
+            );
         }
 
         if ($result = static::throwIfThrowCompletion($engine->getAgent(), $actual)) {

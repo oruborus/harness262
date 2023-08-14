@@ -4,28 +4,20 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness;
 
-use Iterator;
-use Oru\EcmaScript\Harness\Assertion\GenericAssertionFactory;
 use Oru\EcmaScript\Harness\Cache\GenericCacheRepository;
 use Oru\EcmaScript\Harness\Cache\NoCacheRepository;
-use Oru\EcmaScript\Harness\Command\ClonedPhpCommand;
-use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
-use Oru\EcmaScript\Harness\Contracts\TestRunnerMode;
-use Oru\EcmaScript\Harness\Loop\TaskLoop;
+use Oru\EcmaScript\Harness\Frontmatter\GenericFrontmatter;
 use Oru\EcmaScript\Harness\Output\GenericOutputFactory;
 use Oru\EcmaScript\Harness\Printer\GenericPrinterFactory;
 use Oru\EcmaScript\Harness\Storage\FileStorage;
 use Oru\EcmaScript\Harness\Storage\SerializingFileStorage;
-use Oru\EcmaScript\Harness\Test\AsyncTestRunner;
 use Oru\EcmaScript\Harness\Test\GenericTestConfigFactory;
 use Oru\EcmaScript\Harness\Test\GenericTestResult;
-use Oru\EcmaScript\Harness\Test\LinearTestRunner;
 use Oru\EcmaScript\Harness\Test\ParallelTestRunner;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
-use Stringable;
 
 use function array_shift;
 use function count;
@@ -33,46 +25,32 @@ use function file_exists;
 use function is_dir;
 use function is_file;
 use function is_null;
-use function realpath;
 use function time;
 
 final readonly class Harness
 {
     /**
      * @param string[] $arguments
-     *
-     * @throws RuntimeException
      */
     public function run(array $arguments): int
     {
         array_shift($arguments);
-
-        $engine = getEngine();
-
 
         $testStorage       = new FileStorage('.');
         $configFactory     = new HarnessConfigFactory();
         $testConfigFactory = new GenericTestConfigFactory($testStorage);
         $printerFactory    = new GenericPrinterFactory();
         $outputFactory     = new GenericOutputFactory();
-        $assertionFactory  = new GenericAssertionFactory();
-        $command           = new ClonedPhpCommand(realpath('./harness/Template/ExecuteTest.php'));
 
         $config  = $configFactory->make($arguments);
         $output  = $outputFactory->make($config);
         $printer = $printerFactory->make($config, $output, 0);
 
-        // FIXME: Move to `CacheRepositoryFactory`
-        $cacheRepository = $config->cache() ?
+        $cacheRepository   = $config->cache() ?
             new GenericCacheRepository(new SerializingFileStorage('./.harness/cache')) :
             new NoCacheRepository();
 
-        // FIXME: Move to `TestRunnerFactory`
-        $testRunner = match ($config->testRunnerMode()) {
-            TestRunnerMode::Linear => new LinearTestRunner($engine, $assertionFactory, $printer),
-            TestRunnerMode::Parallel => new ParallelTestRunner($engine, $assertionFactory, $printer, $command),
-            TestRunnerMode::Async => new AsyncTestRunner(new ParallelTestRunner($engine, $assertionFactory, $printer, $command), new TaskLoop())
-        };
+        $testRunner = new ParallelTestRunner($printer);
 
 
         // 1. Let testSuiteStartTime be the current system time in seconds.
@@ -108,9 +86,6 @@ final readonly class Harness
             // c. Else, if **providedPath** points to a directory, then
             elseif (is_dir($providedPath)) {
                 // i. For each recursively contained file **filePath** in **providedPath**, do
-                /**
-                 * @var Iterator<Stringable> $it
-                 */
                 $it = new RecursiveIteratorIterator(
                     new RecursiveDirectoryIterator($providedPath, RecursiveDirectoryIterator::SKIP_DOTS)
                 );
@@ -173,35 +148,29 @@ final readonly class Harness
                 continue;
             }
 
-            // d. Perform runTest(**testConfig**).
-            $testRunner->run($testConfig);
+            // d. Let **testResult** be runTest(**testConfig**).
+            $testResult = $testRunner->run($testConfig);
 
             // e. Let **testEndTime** be the current system time in seconds.
             $testEndTime = time();
 
             // f. Set **testResult**.duration to `testEndTime - testStartTime`.
-            // $testResult->duration($testEndTime - $testStartTime);
+            $testResult->duration($testEndTime - $testStartTime);
 
             // g. If **testResult**.state is `success`, then
-            // if ($testResult->state() === TestResultState::Success) {
-            //     // ii. Perform **cacheRepository**.set(**testConfig**, **testResult**).
-            //     $cacheRepository->set($testConfig, $testResult);
-            // }
+            if ($testResult->state() === TestResultState::Success) {
+                // ii. Perform **cacheRepository**.set(**testConfig**, **testResult**).
+                $cacheRepository->set($testConfig, $testResult);
+            }
 
             // h. Append **testResult** to **resultList**.
-            // $resultList[] = $testResult;
-
-            // i. Perform **printer**.step(**testResult**.state).
-            // $printer->step($testResult->state());
+            $resultList[] = $testResult;
         }
 
-        // 8. Append the returned list of **testRunner.finalize()** to **resultList**.
-        $resultList = [...$resultList, ...$testRunner->finalize()];
-
-        // 9. Let **testSuiteEndTime** be the current system time in seconds.
+        // 8. Let **testSuiteEndTime** be the current system time in seconds.
         $testSuiteEndTime = time();
 
-        // 10. Perform **printer**.end(**resultList**, **testSuiteEndTime** - **testSuiteStartTime**).
+        // 9. Perform **printer**.end(**resultList**, **testSuiteEndTime** - **testSuiteStartTime**).
         $printer->end($resultList, $testSuiteEndTime - $testSuiteStartTime);
 
         return 0;

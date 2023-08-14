@@ -21,7 +21,7 @@ final readonly class FileStorage implements Storage
         private string $basePath
     ) {
         if (!file_exists($this->basePath)) {
-            mkdir($this->basePath, 0777, true);
+            mkdir($this->basePath, recursive: true);
         }
     }
 

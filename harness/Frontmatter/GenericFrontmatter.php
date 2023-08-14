@@ -13,7 +13,6 @@ use Oru\EcmaScript\Harness\Frontmatter\Exception\UnrecognizedFlagException;
 use Oru\EcmaScript\Harness\Frontmatter\Exception\UnrecognizedIncludeException;
 use Oru\EcmaScript\Harness\Frontmatter\Exception\UnrecognizedKeyException;
 use Oru\EcmaScript\Harness\Frontmatter\Exception\UnrecognizedNegativePhaseException;
-use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 use function array_diff;
@@ -39,12 +38,12 @@ final readonly class GenericFrontmatter implements Frontmatter
      *     es5id: ?string,
      *     es6id: ?string,
      *     info: ?string, 
-     *     negative: ?FrontmatterNegative,
+     *     negative: ?FrontmatterNegative
      *     includes: FrontmatterInclude[],
      *     author: ?string,
      *     flags: FrontmatterFlag[],
-     *     features: ?string[],
-     *     locale: ?string[]
+     *     features: string[],
+     *     locale: string[]
      * } $data
      */
     private array $data;
@@ -53,28 +52,9 @@ final readonly class GenericFrontmatter implements Frontmatter
      * @throws MissingRequiredKeyException
      * @throws UnrecognizedKeyException
      * @throws UnrecognizedNegativePhaseException
-     * @throws ParseException
      */
     public function __construct(string $rawFrontmatter)
     {
-        /**
-         * @var array {
-         *     description: string,
-         *     esid: ?string,
-         *     es5id: ?string,
-         *     es6id: ?string,
-         *     info: ?string, 
-         *     includes: ?string[],
-         *     negative: array {
-         *         phase: string,
-         *         type: string
-         *     },
-         *     author: ?string,
-         *     flags: ?string[],
-         *     features: ?string[],
-         *     locale: ?string[],
-         * } $data 
-         */
         $data = Yaml::parse($rawFrontmatter);
         $keys = array_keys($data);
         $data['flags'] ??= [];
@@ -92,19 +72,15 @@ final readonly class GenericFrontmatter implements Frontmatter
             $data['negative'] = new GenericFrontmatterNegative($data['negative']);
         }
 
-        $newIncludes = [];
         foreach ($data['includes'] as $key => $rawInclude) {
-            $newIncludes[$key] = FrontmatterInclude::tryFrom(FrontmatterInclude::basePath . $rawInclude)
+            $data['includes'][$key] = FrontmatterInclude::tryFrom(FrontmatterInclude::basePath . $rawInclude)
                 ?? throw new UnrecognizedIncludeException("Unrecognized frontmatter include was provided: `{$rawInclude}`");
         }
-        $data['includes'] = $newIncludes;
 
-        $newFlags = [];
         foreach ($data['flags'] as $key => $rawFlag) {
-            $newFlags[$key] = FrontmatterFlag::tryFrom($rawFlag)
+            $data['flags'][$key] = FrontmatterFlag::tryFrom($rawFlag)
                 ?? throw new UnrecognizedFlagException("Unrecognized frontmatter flag was provided: `{$rawFlag}`");
         }
-        $data['flags'] = $newFlags;
 
         /**
          * @see https://github.com/tc39/test262/blob/main/INTERPRETING.md#test262-defined-bindings
