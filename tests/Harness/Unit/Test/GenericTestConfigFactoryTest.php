@@ -4,178 +4,149 @@ declare(strict_types=1);
 
 namespace Tests\Harness\Unit\Test;
 
+use Generator;
+use Oru\EcmaScript\Harness\Contracts\FrontmatterFlag;
 use Oru\EcmaScript\Harness\Contracts\Storage;
 use Oru\EcmaScript\Harness\Frontmatter\GenericFrontmatter;
 use Oru\EcmaScript\Harness\Test\Exception\MissingFrontmatterException;
 use Oru\EcmaScript\Harness\Test\GenericTestConfig;
 use Oru\EcmaScript\Harness\Test\GenericTestConfigFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
+use function in_array;
+use function array_shift;
+
 #[CoversClass(GenericTestConfigFactory::class)]
+#[UsesClass(GenericFrontmatter::class)]
+#[UsesClass(GenericTestConfig::class)]
 final class GenericTestConfigFactoryTest extends TestCase
 {
-    private function getStorage(array $predefined = []): Storage
-    {
-        return new class($predefined) implements Storage
-        {
-            public function __construct(
-                private array $storage
-            ) {
-            }
-
-            public function put(string $key, mixed $content): void
-            {
-                $this->storage[$key] = $content;
-            }
-
-            public function get(string $key): mixed
-            {
-                return $this->storage[$key] ?? null;
-            }
-        };
-    }
-
-    /**
-     * @test
-     */
+    #[Test]
     public function failsWhenProvidedFileCannotBeRead(): void
     {
         $path = 'xxx';
         $this->expectExceptionMessage("Could not open `{$path}`");
 
-        $factory = new GenericTestConfigFactory($this->getStorage());
+        $factory = new GenericTestConfigFactory($this->createMock(Storage::class));
 
         $factory->make($path);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function failsOnMissingFrontmatter(): void
     {
         $this->expectExceptionObject(new MissingFrontmatterException('Provided test file does not contain a frontmatter section'));
 
-        $factory = new GenericTestConfigFactory($this->getStorage(['content' => '']));
+        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => '']));
+
         $factory->make('content');
     }
 
-    /**
-     * @test
-     */
-    public function returnsRawTestConfigsWhenRawTagIsPresent(): void
+    #[Test]
+    #[dataProvider('provideNonStrictFlags')]
+    public function createsNonStrictTestConfiguration(FrontmatterFlag $flag): void
     {
-        $frontmatter = "description: required\nflags: [raw]";
-        $content = "/*---\n{$frontmatter}\n---*/";
-        $expected = [
-            new GenericTestConfig('content', $content, new GenericFrontmatter($frontmatter))
-        ];
-        $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
+        $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
+        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => $expected]));
 
         $actual = $factory->make('content');
 
-        $this->assertEqualsCanonicalizing($expected, $actual);
+        $this->assertCount(1, $actual);
+        $this->assertSame($expected, array_shift($actual)->content());
     }
 
     /**
-     * @test
+     * @return Generator<string, array{0: FrontmatterFlag}>
      */
-    public function returnsModuleTestConfigsWhenModuleTagIsPresent(): void
+    public static function provideNonStrictFlags(): Generator
     {
-        $frontmatter = "description: required\nflags: [module]";
-        $content = "/*---\n{$frontmatter}\n---*/";
-        $expected = [
-            new GenericTestConfig('content', $content, new GenericFrontmatter($frontmatter))
-        ];
-        $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
+        yield 'raw' => [FrontmatterFlag::raw];
+        yield 'module' => [FrontmatterFlag::module];
+        yield 'noStrict' => [FrontmatterFlag::noStrict];
+    }
+
+    #[Test]
+    #[dataProvider('provideStrictFlags')]
+    public function createsStrictTestConfiguration(FrontmatterFlag $flag): void
+    {
+        $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
+        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => $expected]));
 
         $actual = $factory->make('content');
 
-        $this->assertEqualsCanonicalizing($expected, $actual);
+        $this->assertCount(1, $actual);
+        $this->assertSame("\"use strict\";\n" . $expected, array_shift($actual)->content());
     }
 
     /**
-     * @test
+     * @return Generator<string, array{0: FrontmatterFlag}>
      */
-    public function returnsNonStrictTestConfigsWhenNoStrictTagIsPresent(): void
+    public static function provideStrictFlags(): Generator
     {
-        $frontmatter = "description: required\nflags: [noStrict]";
-        $content = "/*---\n{$frontmatter}\n---*/";
-        $expected = [
-            new GenericTestConfig('content', $content, new GenericFrontmatter($frontmatter))
-        ];
-        $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
+        yield 'onlyStrict' => [FrontmatterFlag::onlyStrict];
+    }
+
+    #[Test]
+    #[dataProvider('provideOtherFlags')]
+    public function createsStrictAndNonStrictTestConfigurations(FrontmatterFlag $flag): void
+    {
+        $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
+        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => $expected]));
 
         $actual = $factory->make('content');
 
-        $this->assertEqualsCanonicalizing($expected, $actual);
+        $this->assertCount(2, $actual);
+        $this->assertSame($expected, array_shift($actual)->content());
+        $this->assertSame("\"use strict\";\n" . $expected, array_shift($actual)->content());
     }
 
     /**
-     * @test
+     * @return Generator<string, array{0: FrontmatterFlag}>
      */
+    public static function provideOtherFlags(): Generator
+    {
+        $strictnessChangingFlags = [];
+
+        foreach (static::provideNonStrictFlags() as $wrappedFlag) {
+            $strictnessChangingFlags = [...$strictnessChangingFlags, ...$wrappedFlag];
+        }
+        foreach (static::provideStrictFlags() as $wrappedFlag) {
+            $strictnessChangingFlags = [...$strictnessChangingFlags, ...$wrappedFlag];
+        }
+
+        foreach (FrontmatterFlag::cases() as $flag) {
+            if (!in_array($flag, $strictnessChangingFlags, true)) {
+                yield $flag->value => [$flag];
+            }
+        }
+    }
+
+    #[Test]
     public function emptyLinesAreIgnored(): void
     {
         $frontmatter = "description: required\nflags: [noStrict]\n\n\nincludes: [doneprintHandle.js]";
-        $content = "/*---\n{$frontmatter}\n---*/";
-        $expected = [
-            new GenericTestConfig('content', $content, new GenericFrontmatter($frontmatter))
-        ];
-        $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
+        $expected = "/*---\n{$frontmatter}\n---*/";
+        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => $expected]));
 
         $actual = $factory->make('content');
 
-        $this->assertEqualsCanonicalizing($expected, $actual);
+        $this->assertCount(1, $actual);
+        $this->assertSame($expected, array_shift($actual)->content());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function indentationIsHandled(): void
     {
-        $content = "/*---\n   description: required\n   flags: [noStrict]\n   includes: [doneprintHandle.js]\n---*/";
-        $expected = [
-            new GenericTestConfig('content', $content, new GenericFrontmatter("description: required\nflags: [noStrict]\nincludes: [doneprintHandle.js]"))
-        ];
-        $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
+        $expected = "/*---\n   description: required\n   flags: [noStrict]\n   includes: [doneprintHandle.js]\n---*/";
+        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => $expected]));
 
         $actual = $factory->make('content');
 
-        $this->assertEqualsCanonicalizing($expected, $actual);
-    }
-
-    /**
-     * @test
-     */
-    public function returnsStrictTestConfigsWhenOnlyStrictTagIsPresent(): void
-    {
-        $frontmatter = "description: required\nflags: [onlyStrict]";
-        $content = "/*---\n{$frontmatter}\n---*/";
-        $expected = [
-            new GenericTestConfig('content', "\"use strict\";\n{$content}", new GenericFrontmatter($frontmatter))
-        ];
-        $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
-
-        $actual = $factory->make('content');
-
-        $this->assertEqualsCanonicalizing($expected, $actual);
-    }
-
-    /**
-     * @test
-     */
-    public function returnsStrictAndNonStrictTestConfigsWhenNoRelatedFlagIsPresent(): void
-    {
-        $frontmatter = "description: required";
-        $content = "/*---\n{$frontmatter}\n---*/";
-        $expected = [
-            new GenericTestConfig('content', "\"use strict\";\n{$content}", new GenericFrontmatter($frontmatter)),
-            new GenericTestConfig('content', $content, new GenericFrontmatter($frontmatter))
-        ];
-        $factory = new GenericTestConfigFactory($this->getStorage(['content' => $content]));
-
-        $actual = $factory->make('content');
-
-        $this->assertEqualsCanonicalizing($expected, $actual);
+        $this->assertCount(1, $actual);
+        $this->assertSame($expected, array_shift($actual)->content());
     }
 }

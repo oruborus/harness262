@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Harness\Unit\Storage;
 
 use Oru\EcmaScript\Harness\Storage\SerializingFileStorage;
+use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\Test262\TestCase;
 
 use function file_exists;
@@ -17,9 +19,7 @@ use function unlink;
 #[CoversClass(SerializingFileStorage::class)]
 final class SerializingFileStorageTest extends TestCase
 {
-    /**
-     * @after
-     */
+    #[After]
     public function cleanLocalFileSystem(): void
     {
         if (file_exists(__DIR__ . '/test')) {
@@ -31,9 +31,7 @@ final class SerializingFileStorageTest extends TestCase
         }
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function createsBaseDirectoryWhenItNotExists(): void
     {
         new SerializingFileStorage(__DIR__ . '/test');
@@ -41,9 +39,7 @@ final class SerializingFileStorageTest extends TestCase
         $this->assertDirectoryExists(__DIR__ . '/test');
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function canStoreObjectsInFile(): void
     {
         $storage = new SerializingFileStorage(__DIR__);
@@ -56,9 +52,7 @@ final class SerializingFileStorageTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function canStoreNameSpacedObjectsInFile(): void
     {
         $storage = new SerializingFileStorage(__DIR__);
@@ -72,9 +66,7 @@ final class SerializingFileStorageTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function returnsNullIfFileDoesNotExist(): void
     {
         $storage = new SerializingFileStorage(__DIR__);
@@ -85,9 +77,7 @@ final class SerializingFileStorageTest extends TestCase
         $this->assertNull($actual);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function returnsNullIfFileCannotBeRead(): void
     {
         mkdir(__DIR__ . '/test');
