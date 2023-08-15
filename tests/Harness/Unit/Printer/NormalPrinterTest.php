@@ -6,10 +6,12 @@ namespace Tests\Harness\Unit\Printer;
 
 use Generator;
 use Oru\EcmaScript\Harness\Contracts\Output;
+use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use Oru\EcmaScript\Harness\Printer\NormalPrinter;
-use Oru\EcmaScript\Harness\Test\GenericTestResult;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Stringable;
@@ -42,9 +44,7 @@ final class NormalPrinterTest extends TestCase
         };
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function printsSomethingOnStart(): void
     {
         $output = $this->createOutput();
@@ -59,10 +59,8 @@ final class NormalPrinterTest extends TestCase
         $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 
-    /**
-     * @test
-     * @dataProvider provideStepMarker
-     */
+    #[Test]
+    #[DataProvider('provideStepMarker')]
     public function printsCorrectStepMarker(TestResultState $state, string $expected): void
     {
         $output = $this->createOutput();
@@ -85,9 +83,7 @@ final class NormalPrinterTest extends TestCase
         yield 'skip'    => [TestResultState::Skip, 'S'];
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function printsNewLineAfterStepWithoutCount(): void
     {
         $output = $this->createOutput();
@@ -103,9 +99,7 @@ final class NormalPrinterTest extends TestCase
         $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function printsNewLineAfterStepWithCount(): void
     {
         $output = $this->createOutput();
@@ -122,10 +116,8 @@ final class NormalPrinterTest extends TestCase
         $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 
-    /**
-     * @test
-     * @dataProvider provideDuration
-     */
+    #[Test]
+    #[DataProvider('provideDuration')]
     public function printsDurationOnEnd(int $duration, string $expected): void
     {
         $output = $this->createOutput();
@@ -150,9 +142,7 @@ final class NormalPrinterTest extends TestCase
         yield '01:00:00' => [3600, '01:00:00'];
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function printsLastStepOnEnd(): void
     {
         $output = $this->createOutput();
@@ -169,9 +159,7 @@ final class NormalPrinterTest extends TestCase
         $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function doesNotPrintLastStepOnEndIfLineWasFull(): void
     {
         $output = $this->createOutput();
@@ -190,9 +178,7 @@ final class NormalPrinterTest extends TestCase
         $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function printsFailureListOnEnd(): void
     {
         $output = $this->createOutput();
@@ -221,16 +207,24 @@ final class NormalPrinterTest extends TestCase
 
         $printer = new NormalPrinter($output);
         $printer->end([
-            new GenericTestResult(TestResultState::Fail, [], 0, $exception1),
-            new GenericTestResult(TestResultState::Fail, [], 0, $exception2)
+            $this->createConfiguredMock(TestResult::class, [
+                'state' => TestResultState::Fail,
+                'usedFiles' => [],
+                'duration' => 0,
+                'throwable' => $exception1
+            ]),
+            $this->createConfiguredMock(TestResult::class, [
+                'state' => TestResultState::Fail,
+                'usedFiles' => [],
+                'duration' => 0,
+                'throwable' => $exception2
+            ])
         ], 0);
 
         $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function printsErrorListOnEnd(): void
     {
         $output = $this->createOutput();
@@ -259,16 +253,24 @@ final class NormalPrinterTest extends TestCase
 
         $printer = new NormalPrinter($output);
         $printer->end([
-            new GenericTestResult(TestResultState::Error, [], 0, $error1),
-            new GenericTestResult(TestResultState::Error, [], 0, $error2)
+            $this->createConfiguredMock(TestResult::class, [
+                'state' => TestResultState::Error,
+                'usedFiles' => [],
+                'duration' => 0,
+                'throwable' => $error1
+            ]),
+            $this->createConfiguredMock(TestResult::class, [
+                'state' => TestResultState::Error,
+                'usedFiles' => [],
+                'duration' => 0,
+                'throwable' => $error2
+            ])
         ], 0);
 
         $this->assertSame((string) $exptectedOutput, (string) $output);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function printsFailureAndErrorListOnEnd(): void
     {
         $output = $this->createOutput();
@@ -312,10 +314,30 @@ final class NormalPrinterTest extends TestCase
 
         $printer = new NormalPrinter($output);
         $printer->end([
-            new GenericTestResult(TestResultState::Fail, [], 0, $exception1),
-            new GenericTestResult(TestResultState::Error, [], 0, $error1),
-            new GenericTestResult(TestResultState::Fail, [], 0, $exception2),
-            new GenericTestResult(TestResultState::Error, [], 0, $error2)
+            $this->createConfiguredMock(TestResult::class, [
+                'state' => TestResultState::Fail,
+                'usedFiles' => [],
+                'duration' => 0,
+                'throwable' => $exception1
+            ]),
+            $this->createConfiguredMock(TestResult::class, [
+                'state' => TestResultState::Error,
+                'usedFiles' => [],
+                'duration' => 0,
+                'throwable' => $error1
+            ]),
+            $this->createConfiguredMock(TestResult::class, [
+                'state' => TestResultState::Fail,
+                'usedFiles' => [],
+                'duration' => 0,
+                'throwable' => $exception2
+            ]),
+            $this->createConfiguredMock(TestResult::class, [
+                'state' => TestResultState::Error,
+                'usedFiles' => [],
+                'duration' => 0,
+                'throwable' => $error2
+            ])
         ], 0);
 
         $this->assertSame((string) $exptectedOutput, (string) $output);

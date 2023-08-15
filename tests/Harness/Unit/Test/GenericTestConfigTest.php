@@ -7,14 +7,13 @@ namespace Tests\Harness\Unit\Test;
 use Oru\EcmaScript\Harness\Contracts\Frontmatter;
 use Oru\EcmaScript\Harness\Test\GenericTestConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(GenericTestConfig::class)]
 final class GenericTestConfigTest extends TestCase
 {
-    /**
-     * @test
-     */
+    #[Test]
     public function actsAsValueObject(): void
     {
         $expectedPath        = 'path/to/file';

@@ -12,17 +12,20 @@ use Oru\EcmaScript\Harness\Contracts\PrinterVerbosity;
 use Oru\EcmaScript\Harness\Printer\GenericPrinterFactory;
 use Oru\EcmaScript\Harness\Printer\NormalPrinter;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(GenericPrinterFactory::class)]
+#[UsesClass(NormalPrinter::class)]
 final class GenericPrinterFactoryTest extends TestCase
 {
     /**
-     * @test
-     * @dataProvider providePrinterConfiguration
-     *
      * @param class-string<Printer> $printerClassname
      */
+    #[Test]
+    #[DataProvider('providePrinterConfiguration')]
     public function returnsTheCorrectPrinterClassBasedOnConfiguration(PrinterConfig $config, string $printerClassname): void
     {
         $factory = new GenericPrinterFactory();
@@ -42,10 +45,8 @@ final class GenericPrinterFactoryTest extends TestCase
         yield 'normal verbosity' => [static::createPrinterConfig(PrinterVerbosity::Normal), NormalPrinter::class];
     }
 
-    /**
-     * @test
-     * @dataProvider provideUnimplementedPrinterConfiguration
-     */
+    #[Test]
+    #[DataProvider('provideUnimplementedPrinterConfiguration')]
     public function failsOnUnimplementedPrinterConfiguration(PrinterConfig $config): void
     {
         $this->expectExceptionMessage('NOT IMPLEMENTED');
