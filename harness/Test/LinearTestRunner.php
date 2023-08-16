@@ -24,7 +24,7 @@ use function count;
 use function Oru\EcmaScript\Operations\Abstract\get;
 use function Oru\EcmaScript\Operations\Abstract\hasProperty;
 
-final readonly class TestRunner
+final readonly class LinearTestRunner
 {
     public function __construct(
         private Printer $printer
