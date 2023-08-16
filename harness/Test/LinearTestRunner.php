@@ -4,79 +4,173 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness\Test;
 
-use Oru\EcmaScript\Core\Contracts\Engine;
-use Oru\EcmaScript\Harness\Contracts\AssertionFactory;
+use Oru\EcmaScript\Core\Contracts\Agent;
+use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
+use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
+use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
+use Oru\EcmaScript\Core\Contracts\Values\UndefinedValue;
+use Oru\EcmaScript\EngineImplementation;
+use Oru\EcmaScript\Harness\Contracts\Printer;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
-use Oru\EcmaScript\Harness\Contracts\TestRunner;
-use Oru\EcmaScript\Harness\Assertion\Exception\AssertionFailedException;
-use Oru\EcmaScript\Harness\Contracts\Printer;
+use RuntimeException;
+use Tests\Test262\Utilities\PrintIntrinsic;
+use Tests\Test262\Utilities\S262Intrinsic;
 use Throwable;
 
 use function array_diff;
 use function count;
+use function Oru\EcmaScript\Operations\Abstract\get;
+use function Oru\EcmaScript\Operations\Abstract\hasProperty;
 
-final class LinearTestRunner implements TestRunner
+final readonly class LinearTestRunner
 {
-    /**
-     * @var TestResult[] $results
-     */
-    private array $results = [];
-
     public function __construct(
-        private readonly Engine $engine,
-        private readonly AssertionFactory $assertionFactory,
-        private readonly Printer $printer
+        private Printer $printer
     ) {
     }
 
-    public function run(TestConfig $config): void
+    public function run(TestConfig $config): TestResult
     {
-        $differences = array_diff($config->frontmatter()->features(), $this->engine->getSupportedFeatures());
+        $differences = array_diff($config->features(), EngineImplementation::getSupportedFeatures());
 
         if (count($differences) > 0) {
-            $this->addResult(new GenericTestResult(TestResultState::Skip, [], 0));
-            return;
+            return new GenericTestResult(TestResultState::Skip, [], 0);
         }
 
-        foreach ($config->frontmatter()->includes() as $include) {
-            $this->engine->addFiles($include->value);
+        $engine = new EngineImplementation(
+            hostDefinedProperties: [
+                '$262' => S262Intrinsic::class,
+                'print' => PrintIntrinsic::class
+            ]
+        );
+
+        if (count($config->includes()) > 0) {
+            $engine->addFiles(...$config->includes());
         }
 
-        $this->engine->addCode($config->content());
+        $engine->addCode($config->content());
 
         try {
-            $actual = $this->engine->run();
+            $actual = $engine->run();
         } catch (Throwable $throwable) {
-            $this->addResult(new GenericTestResult(TestResultState::Error, [], 0, $throwable));
-            return;
+            $this->printer->step(TestResultState::Error);
+            return new GenericTestResult(TestResultState::Error, [], 0, $throwable);
         }
 
-        $assertion = $this->assertionFactory->make($this->engine->getAgent(), $config);
-
-        try {
-            $assertion->assert($actual);
-        } catch (AssertionFailedException $assertionFailedException) {
-            $this->addResult(new GenericTestResult(TestResultState::Fail, [], 0, $assertionFailedException));
-            return;
+        if (isset($config->negative()['type'])) {
+            $type = $config->negative()['type'];
+            $result = $this->assertThrowCompletionWithErrorConstructorName($engine->getAgent(), $actual, $type);
+            $this->printer->step($result->state());
+            return $result;
         }
 
-        $this->addResult(new GenericTestResult(TestResultState::Success, [], 0));
-        return;
+        if ($result = $this->throwIfThrowCompletion($engine->getAgent(), $actual)) {
+            $this->printer->step(TestResultState::Fail);
+            return new GenericTestResult(TestResultState::Fail, [], 0, $result);
+        }
+        if ($actual instanceof AbruptCompletion) {
+            $this->printer->step(TestResultState::Fail);
+            return new GenericTestResult(TestResultState::Fail, [], 0, new RuntimeException('Expected `NormalCompletion`'));
+        }
+
+        $this->printer->step(TestResultState::Success);
+        return new GenericTestResult(TestResultState::Success, [], 0);
     }
 
-    private function addResult(TestResult $result): void
+    protected function assertThrowCompletionWithErrorConstructorName(Agent $agent, mixed $completion, string $constructorName): TestResult
     {
-        $this->results[] = $result;
-        $this->printer->step($result->state());
+        $factory = $agent->getInterpreter()->getValueFactory();
+
+        if (!$completion instanceof ThrowCompletion) {
+            return new GenericTestResult(TestResultState::Fail, [], 0, 'Expected `ThrowCompletion`');
+        }
+
+        /**
+         * @var LanguageValue $object
+         */
+        $object = $completion->getValue();
+
+        if (!$object instanceof ObjectValue) {
+            if ($result = $this->throwIfThrowCompletion($agent, $object)) {
+                return new GenericTestResult(TestResultState::Fail, [], 0, $result);
+            }
+        }
+
+        $hasName = hasProperty($agent, $object, $factory->createString('name'));
+        if ($hasName instanceof AbruptCompletion) {
+            if ($result = $this->throwIfThrowCompletion($agent, $hasName)) {
+                return new GenericTestResult(TestResultState::Fail, [], 0, $result);
+            }
+        }
+
+        if (!$hasName->getValue()) {
+            $object = get($agent, $object, $factory->createString('constructor'));
+            if ($object instanceof AbruptCompletion) {
+                if ($result = $this->throwIfThrowCompletion($agent, $object)) {
+                    return new GenericTestResult(TestResultState::Fail, [], 0, $result);
+                }
+            }
+
+            if (!$object instanceof ObjectValue) {
+                if ($result = $this->throwIfThrowCompletion($agent, $completion)) {
+                    return new GenericTestResult(TestResultState::Fail, [], 0, $result);
+                }
+            }
+
+            $hasName = hasProperty($agent, $object, $factory->createString('name'));
+            if ($hasName instanceof AbruptCompletion) {
+                if ($result = $this->throwIfThrowCompletion($agent, $hasName)) {
+                    return new GenericTestResult(TestResultState::Fail, [], 0, $result);
+                }
+            }
+
+            if (!$hasName->getValue()) {
+                if ($result = $this->throwIfThrowCompletion($agent, $completion)) {
+                    return new GenericTestResult(TestResultState::Fail, [], 0, $result);
+                }
+            }
+        }
+
+        $name = get($agent, $object, $factory->createString('name'));
+        if ($name instanceof AbruptCompletion) {
+            if ($result = $this->throwIfThrowCompletion($agent, $name)) {
+                return new GenericTestResult(TestResultState::Fail, [], 0, $result);
+            }
+        }
+
+        $name = (string) $name;
+
+        if ($constructorName !== $name) {
+            return new GenericTestResult(TestResultState::Fail, [], 0, new RuntimeException("Expected `{$constructorName}` but got `{$name}`"));
+        }
+
+        return new GenericTestResult(TestResultState::Success, [], 0);
     }
 
-    /**
-     * @return TestResult[]
-     */
-    public function finalize(): array
+    protected function throwIfThrowCompletion(Agent $agent, mixed $completion): ?Throwable
     {
-        return $this->results;
+        $factory = $agent->getInterpreter()->getValueFactory();
+
+        if (!$completion instanceof ThrowCompletion) {
+            return null;
+        }
+
+        $value = $completion->getValue();
+        if (!$value instanceof ObjectValue) {
+            return new RuntimeException((string) $value->getValue());
+        }
+
+        $message = $value->getOwnProperty($agent, $factory->createString('message'));
+        if ($result = $this->throwIfThrowCompletion($agent, $message)) {
+            return $result;
+        }
+
+        if ($message instanceof UndefinedValue) {
+            return new RuntimeException("EngineError without message :(");
+        }
+
+        return new RuntimeException($message->getValue($agent)->getValue());
     }
 }
