@@ -12,4 +12,6 @@ interface TestSuiteConfig extends Config
     public function paths(): array;
 
     public function cache(): bool;
+
+    public function testRunnerMode(): TestRunnerMode;
 }

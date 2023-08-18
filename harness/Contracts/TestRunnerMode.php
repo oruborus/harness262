@@ -8,5 +8,4 @@ enum TestRunnerMode
 {
     case Linear;
     case Parallel;
-    case Async;
 }

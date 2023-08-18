@@ -7,13 +7,14 @@ namespace Oru\EcmaScript\Harness;
 use Oru\EcmaScript\Harness\Cache\GenericCacheRepository;
 use Oru\EcmaScript\Harness\Cache\NoCacheRepository;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
-use Oru\EcmaScript\Harness\Frontmatter\GenericFrontmatter;
+use Oru\EcmaScript\Harness\Contracts\TestRunnerMode;
 use Oru\EcmaScript\Harness\Output\GenericOutputFactory;
 use Oru\EcmaScript\Harness\Printer\GenericPrinterFactory;
 use Oru\EcmaScript\Harness\Storage\FileStorage;
 use Oru\EcmaScript\Harness\Storage\SerializingFileStorage;
 use Oru\EcmaScript\Harness\Test\GenericTestConfigFactory;
 use Oru\EcmaScript\Harness\Test\GenericTestResult;
+use Oru\EcmaScript\Harness\Test\LinearTestRunner;
 use Oru\EcmaScript\Harness\Test\ParallelTestRunner;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -36,6 +37,8 @@ final readonly class Harness
     {
         array_shift($arguments);
 
+        $engine = getEngine();
+
         $testStorage       = new FileStorage('.');
         $configFactory     = new HarnessConfigFactory();
         $testConfigFactory = new GenericTestConfigFactory($testStorage);
@@ -46,11 +49,16 @@ final readonly class Harness
         $output  = $outputFactory->make($config);
         $printer = $printerFactory->make($config, $output, 0);
 
-        $cacheRepository   = $config->cache() ?
+        // FIXME: Move to `CacheRepositoryFactory`
+        $cacheRepository = $config->cache() ?
             new GenericCacheRepository(new SerializingFileStorage('./.harness/cache')) :
             new NoCacheRepository();
 
-        $testRunner = new ParallelTestRunner($printer);
+        // FIXME: Move to `TestRunnerFactory`
+        $testRunner = match ($config->testRunnerMode()) {
+            TestRunnerMode::Linear => new LinearTestRunner($engine, $printer),
+            TestRunnerMode::Parallel => new ParallelTestRunner($engine, $printer)
+        };
 
 
         // 1. Let testSuiteStartTime be the current system time in seconds.

@@ -4,173 +4,65 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness\Test;
 
-use Oru\EcmaScript\Core\Contracts\Agent;
-use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
-use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
-use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
-use Oru\EcmaScript\Core\Contracts\Values\UndefinedValue;
-use Oru\EcmaScript\EngineImplementation;
+use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Harness\Contracts\Printer;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
+use Oru\EcmaScript\Harness\Test\Exception\AssertionFailedException;
 use RuntimeException;
-use Tests\Test262\Utilities\PrintIntrinsic;
-use Tests\Test262\Utilities\S262Intrinsic;
 use Throwable;
 
 use function array_diff;
 use function count;
-use function Oru\EcmaScript\Operations\Abstract\get;
-use function Oru\EcmaScript\Operations\Abstract\hasProperty;
 
-final readonly class LinearTestRunner
+final readonly class LinearTestRunner extends BaseTestRunner
 {
     public function __construct(
+        private Engine $engine,
         private Printer $printer
     ) {
     }
 
     public function run(TestConfig $config): TestResult
     {
-        $differences = array_diff($config->features(), EngineImplementation::getSupportedFeatures());
+        $differences = array_diff($config->frontmatter()->features(), $this->engine->getSupportedFeatures());
 
         if (count($differences) > 0) {
             return new GenericTestResult(TestResultState::Skip, [], 0);
         }
 
-        $engine = new EngineImplementation(
-            hostDefinedProperties: [
-                '$262' => S262Intrinsic::class,
-                'print' => PrintIntrinsic::class
-            ]
-        );
-
-        if (count($config->includes()) > 0) {
-            $engine->addFiles(...$config->includes());
+        foreach ($config->frontmatter()->includes() as $include) {
+            $this->engine->addFiles($include->value);
         }
 
-        $engine->addCode($config->content());
+        $this->engine->addCode($config->content());
 
         try {
-            $actual = $engine->run();
+            $actual = $this->engine->run();
         } catch (Throwable $throwable) {
             $this->printer->step(TestResultState::Error);
             return new GenericTestResult(TestResultState::Error, [], 0, $throwable);
         }
 
-        if (isset($config->negative()['type'])) {
-            $type = $config->negative()['type'];
-            $result = $this->assertThrowCompletionWithErrorConstructorName($engine->getAgent(), $actual, $type);
-            $this->printer->step($result->state());
-            return $result;
+        $result = new GenericTestResult(TestResultState::Success, [], 0);
+
+        try {
+            if ($config->frontmatter()->negative()) {
+                static::assertFailure($this->engine->getAgent(), $actual, $config->frontmatter()->negative());
+            } else {
+                static::assertSuccess($this->engine->getAgent(), $actual);
+            }
+        } catch (AssertionFailedException $assertionFailedException) {
+            $result = new GenericTestResult(TestResultState::Fail, [], 0, $assertionFailedException);
         }
 
-        if ($result = $this->throwIfThrowCompletion($engine->getAgent(), $actual)) {
-            $this->printer->step(TestResultState::Fail);
-            return new GenericTestResult(TestResultState::Fail, [], 0, $result);
-        }
-        if ($actual instanceof AbruptCompletion) {
-            $this->printer->step(TestResultState::Fail);
-            return new GenericTestResult(TestResultState::Fail, [], 0, new RuntimeException('Expected `NormalCompletion`'));
-        }
-
-        $this->printer->step(TestResultState::Success);
-        return new GenericTestResult(TestResultState::Success, [], 0);
+        $this->printer->step($result->state());
+        return $result;
     }
 
-    protected function assertThrowCompletionWithErrorConstructorName(Agent $agent, mixed $completion, string $constructorName): TestResult
+    public static function executeTest(Engine $engine, TestConfig $config): TestResult
     {
-        $factory = $agent->getInterpreter()->getValueFactory();
-
-        if (!$completion instanceof ThrowCompletion) {
-            return new GenericTestResult(TestResultState::Fail, [], 0, 'Expected `ThrowCompletion`');
-        }
-
-        /**
-         * @var LanguageValue $object
-         */
-        $object = $completion->getValue();
-
-        if (!$object instanceof ObjectValue) {
-            if ($result = $this->throwIfThrowCompletion($agent, $object)) {
-                return new GenericTestResult(TestResultState::Fail, [], 0, $result);
-            }
-        }
-
-        $hasName = hasProperty($agent, $object, $factory->createString('name'));
-        if ($hasName instanceof AbruptCompletion) {
-            if ($result = $this->throwIfThrowCompletion($agent, $hasName)) {
-                return new GenericTestResult(TestResultState::Fail, [], 0, $result);
-            }
-        }
-
-        if (!$hasName->getValue()) {
-            $object = get($agent, $object, $factory->createString('constructor'));
-            if ($object instanceof AbruptCompletion) {
-                if ($result = $this->throwIfThrowCompletion($agent, $object)) {
-                    return new GenericTestResult(TestResultState::Fail, [], 0, $result);
-                }
-            }
-
-            if (!$object instanceof ObjectValue) {
-                if ($result = $this->throwIfThrowCompletion($agent, $completion)) {
-                    return new GenericTestResult(TestResultState::Fail, [], 0, $result);
-                }
-            }
-
-            $hasName = hasProperty($agent, $object, $factory->createString('name'));
-            if ($hasName instanceof AbruptCompletion) {
-                if ($result = $this->throwIfThrowCompletion($agent, $hasName)) {
-                    return new GenericTestResult(TestResultState::Fail, [], 0, $result);
-                }
-            }
-
-            if (!$hasName->getValue()) {
-                if ($result = $this->throwIfThrowCompletion($agent, $completion)) {
-                    return new GenericTestResult(TestResultState::Fail, [], 0, $result);
-                }
-            }
-        }
-
-        $name = get($agent, $object, $factory->createString('name'));
-        if ($name instanceof AbruptCompletion) {
-            if ($result = $this->throwIfThrowCompletion($agent, $name)) {
-                return new GenericTestResult(TestResultState::Fail, [], 0, $result);
-            }
-        }
-
-        $name = (string) $name;
-
-        if ($constructorName !== $name) {
-            return new GenericTestResult(TestResultState::Fail, [], 0, new RuntimeException("Expected `{$constructorName}` but got `{$name}`"));
-        }
-
-        return new GenericTestResult(TestResultState::Success, [], 0);
-    }
-
-    protected function throwIfThrowCompletion(Agent $agent, mixed $completion): ?Throwable
-    {
-        $factory = $agent->getInterpreter()->getValueFactory();
-
-        if (!$completion instanceof ThrowCompletion) {
-            return null;
-        }
-
-        $value = $completion->getValue();
-        if (!$value instanceof ObjectValue) {
-            return new RuntimeException((string) $value->getValue());
-        }
-
-        $message = $value->getOwnProperty($agent, $factory->createString('message'));
-        if ($result = $this->throwIfThrowCompletion($agent, $message)) {
-            return $result;
-        }
-
-        if ($message instanceof UndefinedValue) {
-            return new RuntimeException("EngineError without message :(");
-        }
-
-        return new RuntimeException($message->getValue($agent)->getValue());
+        throw new RuntimeException('UNREACHABLE');
     }
 }
