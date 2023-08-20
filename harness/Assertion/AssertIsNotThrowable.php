@@ -14,8 +14,6 @@ use Oru\EcmaScript\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\EcmaScript\Harness\Assertion\Exception\EngineException;
 use Throwable;
 
-use function Oru\EcmaScript\Operations\TypeConversions\toString;
-
 final readonly class AssertIsNotThrowable implements Assertion
 {
     public function __construct(
@@ -47,8 +45,7 @@ final readonly class AssertIsNotThrowable implements Assertion
 
         try {
             $message = $value->getOwnProperty($this->agent, $factory->createString('message'));
-        } catch (AbruptCompletion $throwable) {
-            /** @var Throwable $throwable */
+        } catch (Throwable $throwable) {
             throw new EngineException('Could not use `Object.[[GetOwnProperty]]()` to retrieve `message`', previous: $throwable);
         }
 
@@ -56,13 +53,6 @@ final readonly class AssertIsNotThrowable implements Assertion
             throw new AssertionFailedException("EngineError without message :(");
         }
 
-        try {
-            $message = toString($this->agent, $message->getValue($this->agent));
-        } catch (AbruptCompletion $throwable) {
-            /** @var Throwable $throwable */
-            throw new EngineException('Could not convert `message` to string', previous: $throwable);
-        }
-
-        throw new AssertionFailedException((string) $message);
+        throw new AssertionFailedException($message->getValue($this->agent)->getValue());
     }
 }

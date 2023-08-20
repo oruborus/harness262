@@ -5,24 +5,26 @@ declare(strict_types=1);
 namespace Oru\EcmaScript\Harness\Test;
 
 use Oru\EcmaScript\Core\Contracts\Engine;
-use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
+use Oru\EcmaScript\Harness\Contracts\AssertionFactory;
 use Oru\EcmaScript\Harness\Contracts\Printer;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
-use Oru\EcmaScript\Harness\Test\Exception\AssertionFailedException;
+use Oru\EcmaScript\Harness\Contracts\TestRunner;
+use Oru\EcmaScript\Harness\Assertion\Exception\AssertionFailedException;
 use RuntimeException;
 use Throwable;
 
 use function ini_get_all;
 
-final readonly class ParallelTestRunner extends BaseTestRunner
+final readonly class ParallelTestRunner implements TestRunner
 {
     private string $command;
 
     public function __construct(
         private Engine $engine,
-        private Printer $printer
+        private Printer $printer,
+        private AssertionFactory $assertionFactory
     ) {
         $this->command = $this->initializeCommand();
     }
@@ -76,6 +78,7 @@ final readonly class ParallelTestRunner extends BaseTestRunner
             use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
             use Oru\EcmaScript\Core\Contracts\Values\UndefinedValue;
             use Oru\EcmaScript\EngineImplementation;
+            use Oru\EcmaScript\Harness\Assertion\GenericAssertionFactory;
             use Oru\EcmaScript\Harness\Contracts\TestConfig;
             use Oru\EcmaScript\Harness\Contracts\TestResult;
             use Oru\EcmaScript\Harness\Contracts\TestResultState;
@@ -89,7 +92,13 @@ final readonly class ParallelTestRunner extends BaseTestRunner
 
             require './vendor/autoload.php';
 
-            echo serialize({$staticClass}::executeTest(getEngine(), unserialize('{$serializedConfig}')));
+            echo serialize(
+                {$staticClass}::executeTest(
+                    getEngine(),
+                    unserialize('{$serializedConfig}'),
+                    new GenericAssertionFactory()
+                )
+            );
             EOF;
 
         $output = $this->runCodeInSeperateProcess($this->command, $code);
@@ -142,7 +151,7 @@ final readonly class ParallelTestRunner extends BaseTestRunner
         return $output;
     }
 
-    public static function executeTest(Engine $engine, TestConfig $config): TestResult
+    public static function executeTest(Engine $engine, TestConfig $config, AssertionFactory $assertionFactory): TestResult
     {
         $differences = array_diff($config->frontmatter()->features(), $engine->getSupportedFeatures());
 
@@ -164,12 +173,10 @@ final readonly class ParallelTestRunner extends BaseTestRunner
 
         $result = new GenericTestResult(TestResultState::Success, \get_included_files(), 0);
 
+        $assertion = $assertionFactory->make($engine->getAgent(), $config);
+
         try {
-            if ($config->frontmatter()->negative()) {
-                static::assertFailure($engine->getAgent(), $actual, $config->frontmatter()->negative());
-            } else {
-                static::assertSuccess($engine->getAgent(), $actual);
-            }
+            $assertion->assert($actual);
         } catch (AssertionFailedException $assertionFailedException) {
             $result = new GenericTestResult(TestResultState::Fail, [], 0, $assertionFailedException);
         }

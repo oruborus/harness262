@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness;
 
+use Oru\EcmaScript\Harness\Assertion\GenericAssertionFactory;
 use Oru\EcmaScript\Harness\Cache\GenericCacheRepository;
 use Oru\EcmaScript\Harness\Cache\NoCacheRepository;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
@@ -44,6 +45,7 @@ final readonly class Harness
         $testConfigFactory = new GenericTestConfigFactory($testStorage);
         $printerFactory    = new GenericPrinterFactory();
         $outputFactory     = new GenericOutputFactory();
+        $assertionFactory  = new GenericAssertionFactory();
 
         $config  = $configFactory->make($arguments);
         $output  = $outputFactory->make($config);
@@ -56,8 +58,8 @@ final readonly class Harness
 
         // FIXME: Move to `TestRunnerFactory`
         $testRunner = match ($config->testRunnerMode()) {
-            TestRunnerMode::Linear => new LinearTestRunner($engine, $printer),
-            TestRunnerMode::Parallel => new ParallelTestRunner($engine, $printer)
+            TestRunnerMode::Linear => new LinearTestRunner($engine, $printer, $assertionFactory),
+            TestRunnerMode::Parallel => new ParallelTestRunner($engine, $printer, $assertionFactory)
         };
 
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Harness\Unit\Assertion;
 
 use Oru\EcmaScript\Core\Contracts\Agent;
-use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\BooleanValue;
 use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
 use Oru\EcmaScript\Core\Contracts\Values\StringValue;
@@ -19,7 +18,7 @@ use Oru\EcmaScript\Harness\Contracts\FrontmatterNegativePhase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Throwable;
+use RuntimeException;
 
 #[CoversClass(AssertIsThrowableWithConstructor::class)]
 final class AssertIsThrowableWithConstructorTest extends TestCase
@@ -66,9 +65,7 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
         $this->expectExceptionObject(new EngineException('Could not use `get()` to retrieve `constructor`'));
 
         $exceptionObject = $this->createMock(ObjectValue::class);
-        $exceptionObject->method('get')->willThrowException(
-            $this->createMockForIntersectionOfInterfaces([AbruptCompletion::class, Throwable::class])
-        );
+        $exceptionObject->method('get')->willThrowException(new RuntimeException());
         $assertion = new AssertIsThrowableWithConstructor(
             $this->createMock(Agent::class),
             $this->createConfiguredMock(FrontmatterNegative::class, [
@@ -112,9 +109,7 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
         $this->expectExceptionObject(new EngineException('Could not use `hasName()` to to check existence of `name`'));
 
         $constructorObject = $this->createMock(ObjectValue::class);
-        $constructorObject->method('hasProperty')->willThrowException(
-            $this->createMockForIntersectionOfInterfaces([AbruptCompletion::class, Throwable::class])
-        );
+        $constructorObject->method('hasProperty')->willThrowException(new RuntimeException());
         $assertion = new AssertIsThrowableWithConstructor(
             $this->createMock(Agent::class),
             $this->createConfiguredMock(FrontmatterNegative::class, [
@@ -169,9 +164,7 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
                 'getValue' => true
             ])
         );
-        $constructorObject->method('get')->willThrowException(
-            $this->createMockForIntersectionOfInterfaces([AbruptCompletion::class, Throwable::class])
-        );
+        $constructorObject->method('get')->willThrowException(new RuntimeException());
         $assertion = new AssertIsThrowableWithConstructor(
             $this->createMock(Agent::class),
             $this->createConfiguredMock(FrontmatterNegative::class, [
@@ -213,41 +206,6 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
                             'getValue' => 'WRONG',
                             '__toString' => 'WRONG',
                         ]),
-
-                    ])
-                ])
-            ])
-        );
-    }
-
-    #[Test]
-    public function throwsWhenConstructorNameStringConversionFails(): void
-    {
-        $this->expectExceptionObject(new EngineException('Could not convert `name` to string'));
-
-        $assertion = new AssertIsThrowableWithConstructor(
-            $this->createMock(Agent::class),
-            $this->createConfiguredMock(FrontmatterNegative::class, [
-                'phase' => FrontmatterNegativePhase::parse,
-                'type' => 'SyntaxError'
-            ])
-        );
-        $stringMock = $this->createMock(StringValue::class);
-        $stringMock->method('getValue')->willThrowException(
-            $this->createMockForIntersectionOfInterfaces([AbruptCompletion::class, Throwable::class])
-        );
-        $stringMock->method('__toString')->willThrowException(
-            $this->createMockForIntersectionOfInterfaces([AbruptCompletion::class, Throwable::class])
-        );
-
-        $assertion->assert(
-            $this->createConfiguredMock(ThrowCompletion::class, [
-                'getValue' => $this->createConfiguredMock(ObjectValue::class, [
-                    'get' => $this->createConfiguredMock(ObjectValue::class, [
-                        'hasProperty' => $this->createConfiguredMock(BooleanValue::class, [
-                            'getValue' => true
-                        ]),
-                        'get' => $stringMock,
 
                     ])
                 ])

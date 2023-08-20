@@ -13,8 +13,8 @@ final readonly class GenericAssertionFactory implements AssertionFactory
 {
     public function make(Agent $agent, TestConfig $config): Assertion
     {
-        if ($negative = $config->frontmatter()->negative()) {
-            return new AssertIsThrowableWithConstructor($agent, $negative);
+        if ($config->frontmatter()->negative()) {
+            return new AssertIsThrowableWithConstructor($agent, $config->frontmatter()->negative());
         }
 
         return new AssertIsNotThrowable($agent);

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Oru\EcmaScript\Harness\Assertion;
 
 use Oru\EcmaScript\Core\Contracts\Agent;
-use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
 use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
 use Oru\EcmaScript\Harness\Contracts\Assertion;
@@ -16,7 +15,6 @@ use Throwable;
 
 use function Oru\EcmaScript\Operations\Abstract\get;
 use function Oru\EcmaScript\Operations\Abstract\hasProperty;
-use function Oru\EcmaScript\Operations\TypeConversions\toString;
 
 final readonly class AssertIsThrowableWithConstructor implements Assertion
 {
@@ -46,8 +44,7 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
 
         try {
             $constructor = get($this->agent, $exception, $factory->createString('constructor'));
-        } catch (AbruptCompletion $throwable) {
-            /** @var Throwable $throwable */
+        } catch (Throwable $throwable) {
             throw new EngineException('Could not use `get()` to retrieve `constructor`', previous: $throwable);
         }
 
@@ -57,8 +54,7 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
 
         try {
             $hasName = hasProperty($this->agent, $constructor, $factory->createString('name'));
-        } catch (AbruptCompletion $throwable) {
-            /** @var Throwable $throwable */
+        } catch (Throwable $throwable) {
             throw new EngineException('Could not use `hasName()` to to check existence of `name`', previous: $throwable);
         }
 
@@ -67,17 +63,9 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         }
 
         try {
-            $nameProperty = get($this->agent, $constructor, $factory->createString('name'));
-        } catch (AbruptCompletion $throwable) {
-            /** @var Throwable $throwable */
+            $name = (string) get($this->agent, $constructor, $factory->createString('name'));
+        } catch (Throwable $throwable) {
             throw new EngineException('Could not use `get()` to retrieve `constructor.name`', previous: $throwable);
-        }
-
-        try {
-            $name = (string) toString($this->agent, $nameProperty);
-        } catch (AbruptCompletion $throwable) {
-            /** @var Throwable $throwable */
-            throw new EngineException('Could not convert `name` to string', previous: $throwable);
         }
 
         if ($this->negative->type() !== $name) {

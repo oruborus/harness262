@@ -18,7 +18,7 @@ use Oru\EcmaScript\Harness\Assertion\Exception\EngineException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Throwable;
+use RuntimeException;
 
 #[CoversClass(AssertIsNotThrowable::class)]
 final class AssertIsNotThrowableTest extends TestCase
@@ -51,9 +51,7 @@ final class AssertIsNotThrowableTest extends TestCase
         $this->expectExceptionObject(new EngineException('Could not use `Object.[[GetOwnProperty]]()` to retrieve `message`'));
 
         $exceptionObject = $this->createMock(ObjectValue::class);
-        $exceptionObject->method('getOwnProperty')->willThrowException(
-            $this->createMockForIntersectionOfInterfaces([AbruptCompletion::class, Throwable::class])
-        );
+        $exceptionObject->method('getOwnProperty')->willThrowException(new RuntimeException());
 
         $assertion = new AssertIsNotThrowable($this->createMock(Agent::class));
         $assertion->assert(
@@ -80,26 +78,6 @@ final class AssertIsNotThrowableTest extends TestCase
     }
 
     #[Test]
-    public function throwsWhenExceptionMessageStringConversionFails(): void
-    {
-        $this->expectExceptionObject(new EngineException('Could not convert `message` to string'));
-
-        $propertyDescriptorMock = $this->createMock(PropertyDescriptor::class);
-        $propertyDescriptorMock->method('getValue')->willThrowException(
-            $this->createMockForIntersectionOfInterfaces([AbruptCompletion::class, Throwable::class])
-        );
-        $assertion = new AssertIsNotThrowable($this->createMock(Agent::class));
-        $assertion->assert(
-            $this->createConfiguredMock(ThrowCompletion::class, [
-                'getValue' =>
-                $this->createConfiguredMock(ObjectValue::class, [
-                    'getOwnProperty' => $propertyDescriptorMock
-                ])
-            ])
-        );
-    }
-
-    #[Test]
     public function throwsExceptionWithMessage(): void
     {
         $this->expectExceptionObject(new AssertionFailedException('The correct exception message'));
@@ -111,8 +89,7 @@ final class AssertIsNotThrowableTest extends TestCase
                 $this->createConfiguredMock(ObjectValue::class, [
                     'getOwnProperty' => $this->createConfiguredMock(PropertyDescriptor::class, [
                         'getValue' => $this->createConfiguredMock(StringValue::class, [
-                            'getValue' => 'The correct exception message',
-                            '__toString' => 'The correct exception message'
+                            'getValue' => 'The correct exception message'
                         ])
                     ])
                 ])
