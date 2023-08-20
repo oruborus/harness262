@@ -23,7 +23,6 @@ final readonly class ParallelTestRunner implements TestRunner
 
     public function __construct(
         private Engine $engine,
-        private Printer $printer,
         private AssertionFactory $assertionFactory
     ) {
         $this->command = $this->initializeCommand();
@@ -107,8 +106,6 @@ final readonly class ParallelTestRunner implements TestRunner
          * @var TestResult $result
          */
         $result = \unserialize($output);
-
-        $this->printer->step($result->state());
 
         return $result;
     }

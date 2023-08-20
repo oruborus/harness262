@@ -22,7 +22,6 @@ final readonly class LinearTestRunner implements TestRunner
 {
     public function __construct(
         private Engine $engine,
-        private Printer $printer,
         private AssertionFactory $assertionFactory
     ) {
     }
@@ -44,21 +43,18 @@ final readonly class LinearTestRunner implements TestRunner
         try {
             $actual = $this->engine->run();
         } catch (Throwable $throwable) {
-            $this->printer->step(TestResultState::Error);
             return new GenericTestResult(TestResultState::Error, [], 0, $throwable);
         }
 
-        $result = new GenericTestResult(TestResultState::Success, [], 0);
         $assertion = $this->assertionFactory->make($this->engine->getAgent(), $config);
 
         try {
             $assertion->assert($actual);
         } catch (AssertionFailedException $assertionFailedException) {
-            $result = new GenericTestResult(TestResultState::Fail, [], 0, $assertionFailedException);
+            return new GenericTestResult(TestResultState::Fail, [], 0, $assertionFailedException);
         }
 
-        $this->printer->step($result->state());
-        return $result;
+        return new GenericTestResult(TestResultState::Success, [], 0);
     }
 
     public static function executeTest(Engine $engine, TestConfig $config, AssertionFactory $assertionFactory): TestResult

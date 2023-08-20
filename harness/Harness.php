@@ -58,8 +58,8 @@ final readonly class Harness
 
         // FIXME: Move to `TestRunnerFactory`
         $testRunner = match ($config->testRunnerMode()) {
-            TestRunnerMode::Linear => new LinearTestRunner($engine, $printer, $assertionFactory),
-            TestRunnerMode::Parallel => new ParallelTestRunner($engine, $printer, $assertionFactory)
+            TestRunnerMode::Linear => new LinearTestRunner($engine, $assertionFactory),
+            TestRunnerMode::Parallel => new ParallelTestRunner($engine, $assertionFactory)
         };
 
 
@@ -175,6 +175,9 @@ final readonly class Harness
 
             // h. Append **testResult** to **resultList**.
             $resultList[] = $testResult;
+
+            // i. Perform **printer**.step(**testResult**.state).
+            $printer->step($testResult->state());
         }
 
         // 8. Let **testSuiteEndTime** be the current system time in seconds.
