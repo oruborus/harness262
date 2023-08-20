@@ -10,5 +10,5 @@ interface TestRunner
 {
     public function run(TestConfig $config): TestResult;
 
-    public static function executeTest(Engine $engine, TestConfig $config): TestResult;
+    public static function executeTest(Engine $engine, TestConfig $config, AssertionFactory $assertionFactory): TestResult;
 }
