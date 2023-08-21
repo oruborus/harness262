@@ -13,9 +13,12 @@ use Oru\EcmaScript\Harness\Output\GenericOutputFactory;
 use Oru\EcmaScript\Harness\Printer\GenericPrinterFactory;
 use Oru\EcmaScript\Harness\Storage\FileStorage;
 use Oru\EcmaScript\Harness\Storage\SerializingFileStorage;
+use Oru\EcmaScript\Harness\Test\AsyncTestRunner;
+use Oru\EcmaScript\Harness\Test\Exception\UninitializedLoopException;
 use Oru\EcmaScript\Harness\Test\GenericTestConfigFactory;
 use Oru\EcmaScript\Harness\Test\GenericTestResult;
 use Oru\EcmaScript\Harness\Test\LinearTestRunner;
+use Oru\EcmaScript\Harness\Test\Loop;
 use Oru\EcmaScript\Harness\Test\ParallelTestRunner;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -40,6 +43,7 @@ final readonly class Harness
 
         $engine = getEngine();
 
+
         $testStorage       = new FileStorage('.');
         $configFactory     = new HarnessConfigFactory();
         $testConfigFactory = new GenericTestConfigFactory($testStorage);
@@ -51,6 +55,8 @@ final readonly class Harness
         $output  = $outputFactory->make($config);
         $printer = $printerFactory->make($config, $output, 0);
 
+        Loop::initialize($printer);
+
         // FIXME: Move to `CacheRepositoryFactory`
         $cacheRepository = $config->cache() ?
             new GenericCacheRepository(new SerializingFileStorage('./.harness/cache')) :
@@ -59,7 +65,8 @@ final readonly class Harness
         // FIXME: Move to `TestRunnerFactory`
         $testRunner = match ($config->testRunnerMode()) {
             TestRunnerMode::Linear => new LinearTestRunner($engine, $assertionFactory),
-            TestRunnerMode::Parallel => new ParallelTestRunner($engine, $assertionFactory)
+            TestRunnerMode::Parallel => new ParallelTestRunner($engine, $assertionFactory),
+            TestRunnerMode::Async => new AsyncTestRunner($engine, $assertionFactory)
         };
 
 
@@ -178,6 +185,11 @@ final readonly class Harness
 
             // i. Perform **printer**.step(**testResult**.state).
             $printer->step($testResult->state());
+        }
+
+        try {
+            Loop::get()->run();
+        } catch (UninitializedLoopException) {
         }
 
         // 8. Let **testSuiteEndTime** be the current system time in seconds.
