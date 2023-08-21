@@ -45,6 +45,10 @@ final class NormalPrinter implements Printer
 
     public function step(TestResultState $state): void
     {
+        if ($state === TestResultState::Pending) {
+            return;
+        }
+
         $this->stepsPerformed++;
 
         $short = match ($state) {

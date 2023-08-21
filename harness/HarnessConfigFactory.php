@@ -39,7 +39,7 @@ final readonly class HarnessConfigFactory implements ConfigFactory
                     implode(
                         array_filter(
                             $input,
-                            static fn (string $option): bool => str_starts_with($option, '-')
+                            static fn (string $option): bool => str_starts_with($option, '-') && !str_starts_with($option, '--')
                         )
                     )
                 ),
@@ -88,6 +88,11 @@ final readonly class HarnessConfigFactory implements ConfigFactory
         }
 
         $testRunnerMode = TestRunnerMode::Parallel;
+
+        if (array_key_exists('async', $longOptions)) {
+            $testRunnerMode = TestRunnerMode::Async;
+        }
+
         if (array_key_exists('debug', $longOptions)) {
             $testRunnerMode = TestRunnerMode::Linear;
         }
