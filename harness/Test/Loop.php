@@ -12,11 +12,16 @@ use Oru\EcmaScript\Harness\Test\Exception\UninitializedLoopException;
 
 final class Loop
 {
-    /** @var Fiber[] $fibers */
-    private array $fibers = [];
+    /** @var Fiber[] $activeFibers */
+    private array $activeFibers = [];
+
+    /** @var Fiber[] $pendingFibers */
+    private array $pendingFibers = [];
 
     /** @var TestResult[] $testResults */
     private array $testResults = [];
+
+    private int $concurrency = 8;
 
     private function __construct(
         private readonly Printer $printer,
@@ -40,22 +45,44 @@ final class Loop
             ?? new UninitializedLoopException();
     }
 
-    public function add(Fiber $fiber): void
+    /**
+     * @param callable():void $task
+     */
+    public function add(callable $task): void
     {
-        $fiber->start();
-        if ($fiber->isSuspended()) {
-            $this->fibers[] = $fiber;
-        }
+        $fiber = new Fiber($task);
+        $this->pendingFibers[] = $fiber;
     }
 
     public function run(): void
     {
-        while ($this->fibers !== []) {
-            foreach ($this->fibers as $key => $fiber) {
+        while (
+            $this->activeFibers !== []
+            || $this->pendingFibers !== []
+        ) {
+            $this->fillActiveList();
+
+            foreach ($this->activeFibers as $key => $fiber) {
                 $fiber->resume();
                 if ($fiber->isTerminated()) {
-                    unset($this->fibers[$key]);
+                    unset($this->activeFibers[$key]);
+                    $this->fillActiveList();
                 }
+            }
+        }
+    }
+
+    private function fillActiveList(): void
+    {
+        while (count($this->activeFibers) < $this->concurrency) {
+            if ($this->pendingFibers === []) {
+                break;
+            }
+
+            $fiber = array_shift($this->pendingFibers);
+            $fiber->start();
+            if ($fiber->isSuspended()) {
+                $this->activeFibers[] = $fiber;
             }
         }
     }
