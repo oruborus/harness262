@@ -35,13 +35,16 @@ final readonly class AsyncTestRunner implements TestRunner
 
         $iniSettingsJson = \str_replace('\\\\', '\\\\\\\\', \json_encode($iniSettings));
         $code = <<<"EOF"
-        <?php
+            <?php
+
+            declare(strict_types=1);
+
             \$ini   = ini_get_all(details: false);
             \$given = json_decode('{$iniSettingsJson}', true, flags: JSON_OBJECT_AS_ARRAY|JSON_THROW_ON_ERROR);
             \$diff  = array_diff_assoc(\$given, \$ini);
 
             echo str_replace('\\\\', '\\\\\\\\', json_encode(\$diff));
-        EOF;
+            EOF;
 
         $output = $this->runCodeInSeperateProcess('php', $code);
         $output = json_decode($output, true, flags: JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR);
@@ -62,12 +65,17 @@ final readonly class AsyncTestRunner implements TestRunner
     public function run(TestConfig $config): TestResult
     {
         $staticClass = static::class;
+        $command = $this->command;
 
-        $serializedConfig = \serialize($config);
-        $serializedConfig = \str_replace('\\', '\\\\', $serializedConfig);
-        $serializedConfig = \str_replace('\'', '\\\'', $serializedConfig);
+        $loop = Loop::get();
 
-        $code = <<<"EOF"
+        $task = static function () use ($command, $loop, $config, $staticClass): void {
+
+            $serializedConfig = \serialize($config);
+            $serializedConfig = \str_replace('\\', '\\\\', $serializedConfig);
+            $serializedConfig = \str_replace('\'', '\\\'', $serializedConfig);
+
+            $code = <<<"EOF"
             <?php
 
             declare(strict_types=1);
@@ -83,6 +91,7 @@ final readonly class AsyncTestRunner implements TestRunner
             use Oru\EcmaScript\Harness\Contracts\TestResult;
             use Oru\EcmaScript\Harness\Contracts\TestResultState;
             use {$staticClass};
+            use Oru\EcmaScript\Harness\Test\GenericTestResult;
             use Tests\Test262\Utilities\PrintIntrinsic;
             use Tests\Test262\Utilities\S262Intrinsic;
             
@@ -92,68 +101,77 @@ final readonly class AsyncTestRunner implements TestRunner
 
             require './vendor/autoload.php';
 
-            echo serialize(
-                {$staticClass}::executeTest(
-                    getEngine(),
-                    unserialize('{$serializedConfig}'),
-                    new GenericAssertionFactory()
-                )
-            );
+            \$engine = getEngine();
+            \$config = unserialize('{$serializedConfig}');
+            \$assertionFactory = new GenericAssertionFactory();
+
+            \$differences = array_diff(\$config->frontmatter()->features(), \$engine->getSupportedFeatures());
+
+            if (count(\$differences) > 0) {
+                echo serialize(new GenericTestResult(TestResultState::Skip, [], 0));
+            }
+    
+            foreach (\$config->frontmatter()->includes() as \$include) {
+                \$engine->addFiles(\$include->value);
+            }
+    
+            \$engine->addCode(\$config->content());
+    
+            try {
+                \$actual = \$engine->run();
+            } catch (Throwable \$throwable) {
+                echo serialize(new GenericTestResult(TestResultState::Error, [], 0, \$throwable));
+            }
+    
+            \$result = new GenericTestResult(TestResultState::Success, \get_included_files(), 0);
+    
+            \$assertion = \$assertionFactory->make(\$engine->getAgent(), \$config);
+    
+            try {
+                \$assertion->assert(\$actual);
+            } catch (AssertionFailedException \$assertionFailedException) {
+                \$result = new GenericTestResult(TestResultState::Fail, [], 0, \$assertionFailedException);
+            }
+    
+            echo serialize(\$result);
             EOF;
 
-        $stdout = \tmpfile();
-        $stderr = \tmpfile();
+            $stdout = fopen('php://temporary', 'w+');
+            $stderr = fopen('php://temporary', 'w+');
 
-        $descriptorspec = [
-            0 => ["pipe", "r"],  // stdin is a pipe that the child will read from
-            // 1 => ["pipe", "w"],  // stdout is a pipe that the child will write to
-            // 2 => ["pipe", "w"]   // stderr is a pipe that the child will write to
-            1 => $stdout,
-            2 => $stderr
-        ];
+            $descriptorspec = [
+                0 => ["pipe", "r"],
+                1 => $stdout,
+                2 => $stderr
+            ];
 
-        $cwd = '.';
-        $env = [];
+            $cwd = '.';
+            $env = [];
 
-        $options = ['bypass_shell' => true, 'blocking_pipes' => false, 'binary_pipes' => true];
+            $options = ['bypass_shell' => true];
 
-        $process = \proc_open($this->command, $descriptorspec, $pipes, $cwd, $env, $options);
-        \stream_set_blocking($pipes[0], false);
-        // \stream_set_blocking($pipes[1], false);
-        // \stream_set_blocking($pipes[2], false);
+            $process = \proc_open($command, $descriptorspec, $pipes, $cwd, $env, $options);
 
-        if (!\is_resource($process)) {
-            throw new RuntimeException('Coud not open process');
-        }
+            if (!\is_resource($process)) {
+                throw new RuntimeException('Coud not open process');
+            }
 
-        // $pipes now looks like this:
-        // 0 => writeable handle connected to child stdin
-        // 1 => readable handle connected to child stdout
-        // 2 => readable handle connected to child stderr
-
-        $loop = Loop::get();
-        $test = $config->path();
-
-        $fiber = new Fiber(static function () use (&$process, &$pipes, $code, $loop, $test, &$stdout, &$stderr): void {
-
-            // echo "Starting: {$test}\n";
             \fwrite($pipes[0], $code);
-            // echo "Closing stdin: {$test}\n";
             \fclose($pipes[0]);
 
             while (\proc_get_status($process)['running']) {
                 Fiber::suspend();
             }
+
             \rewind($stdout);
             \rewind($stderr);
+
             $output = \stream_get_contents($stdout);
             $errors = \stream_get_contents($stderr);
 
             \fclose($stdout);
             \fclose($stderr);
 
-            // It is important that you close any pipes before calling
-            // proc_close in order to avoid a deadlock
             $return_value = \proc_close($process);
 
             /**
@@ -161,12 +179,10 @@ final readonly class AsyncTestRunner implements TestRunner
              */
             $result = \unserialize($output);
 
-            // echo "Finalizing: {$test}\n";
             $loop->addResult($result);
-        });
+        };
 
-        // echo "Adding: {$test}\n";
-        $loop->add($fiber);
+        $loop->add($task);
 
         return new GenericTestResult(TestResultState::Pending, [], 0);
     }
@@ -174,9 +190,9 @@ final readonly class AsyncTestRunner implements TestRunner
     private function runCodeInSeperateProcess(string $command, string $code): string
     {
         $descriptorspec = [
-            0 => ["pipe", "r"],  // stdin is a pipe that the child will read from
-            1 => ["pipe", "w"],  // stdout is a pipe that the child will write to
-            2 => ["pipe", "w"]   // stderr is a pipe that the child will write to
+            0 => ["pipe", "r"],
+            1 => ["pipe", "w"],
+            2 => ["pipe", "w"]
         ];
 
         $cwd = '.';
@@ -190,20 +206,15 @@ final readonly class AsyncTestRunner implements TestRunner
             throw new RuntimeException('Coud not open process');
         }
 
-        // $pipes now looks like this:
-        // 0 => writeable handle connected to child stdin
-        // 1 => readable handle connected to child stdout
-        // 2 => readable handle connected to child stderr
-
         \fwrite($pipes[0], $code);
         \fclose($pipes[0]);
 
         $output = \stream_get_contents($pipes[1]);
-        $errors = \stream_get_contents($pipes[2]);
         \fclose($pipes[1]);
 
-        // It is important that you close any pipes before calling
-        // proc_close in order to avoid a deadlock
+        $errors = \stream_get_contents($pipes[2]);
+        \fclose($pipes[2]);
+
         $return_value = \proc_close($process);
 
         return $output;
@@ -211,34 +222,6 @@ final readonly class AsyncTestRunner implements TestRunner
 
     public static function executeTest(Engine $engine, TestConfig $config, AssertionFactory $assertionFactory): TestResult
     {
-        $differences = array_diff($config->frontmatter()->features(), $engine->getSupportedFeatures());
-
-        if (count($differences) > 0) {
-            return new GenericTestResult(TestResultState::Skip, [], 0);
-        }
-
-        foreach ($config->frontmatter()->includes() as $include) {
-            $engine->addFiles($include->value);
-        }
-
-        $engine->addCode($config->content());
-
-        try {
-            $actual = $engine->run();
-        } catch (Throwable $throwable) {
-            return new GenericTestResult(TestResultState::Error, [], 0, $throwable);
-        }
-
-        $result = new GenericTestResult(TestResultState::Success, \get_included_files(), 0);
-
-        $assertion = $assertionFactory->make($engine->getAgent(), $config);
-
-        try {
-            $assertion->assert($actual);
-        } catch (AssertionFailedException $assertionFailedException) {
-            $result = new GenericTestResult(TestResultState::Fail, [], 0, $assertionFailedException);
-        }
-
-        return $result;
+        throw new RuntimeException('UNREACHABLE');
     }
 }
