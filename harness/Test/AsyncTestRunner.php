@@ -7,16 +7,29 @@ namespace Oru\EcmaScript\Harness\Test;
 use Fiber;
 use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Harness\Contracts\AssertionFactory;
-use Oru\EcmaScript\Harness\Contracts\Printer;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use Oru\EcmaScript\Harness\Contracts\TestRunner;
-use Oru\EcmaScript\Harness\Assertion\Exception\AssertionFailedException;
 use RuntimeException;
-use Throwable;
 
+use function fclose;
+use function fopen;
+use function fwrite;
 use function ini_get_all;
+use function json_decode;
+use function json_encode;
+use function proc_close;
+use function proc_get_status;
+use function proc_open;
+use function rewind;
+use function serialize;
+use function str_replace;
+use function stream_get_contents;
+use function unserialize;
+
+use const JSON_OBJECT_AS_ARRAY;
+use const JSON_THROW_ON_ERROR;
 
 final readonly class AsyncTestRunner implements TestRunner
 {
@@ -33,7 +46,7 @@ final readonly class AsyncTestRunner implements TestRunner
     {
         $iniSettings = ini_get_all(details: false);
 
-        $iniSettingsJson = \str_replace('\\\\', '\\\\\\\\', \json_encode($iniSettings));
+        $iniSettingsJson = str_replace('\\\\', '\\\\\\\\', json_encode($iniSettings));
         $code = <<<"EOF"
             <?php
 
@@ -71,33 +84,22 @@ final readonly class AsyncTestRunner implements TestRunner
 
         $task = static function () use ($command, $loop, $config, $staticClass): void {
 
-            $serializedConfig = \serialize($config);
-            $serializedConfig = \str_replace('\\', '\\\\', $serializedConfig);
-            $serializedConfig = \str_replace('\'', '\\\'', $serializedConfig);
+            $serializedConfig = serialize($config);
+            $serializedConfig = str_replace('\\', '\\\\', $serializedConfig);
+            $serializedConfig = str_replace('\'', '\\\'', $serializedConfig);
 
             $code = <<<"EOF"
             <?php
 
             declare(strict_types=1);
 
-            use Oru\EcmaScript\Core\Contracts\Agent;
-            use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
-            use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
-            use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
-            use Oru\EcmaScript\Core\Contracts\Values\UndefinedValue;
-            use Oru\EcmaScript\EngineImplementation;
-            use Oru\EcmaScript\Harness\Assertion\GenericAssertionFactory;
-            use Oru\EcmaScript\Harness\Contracts\TestConfig;
-            use Oru\EcmaScript\Harness\Contracts\TestResult;
-            use Oru\EcmaScript\Harness\Contracts\TestResultState;
             use {$staticClass};
+            use Oru\EcmaScript\Harness\Assertion\Exception\AssertionFailedException;
+            use Oru\EcmaScript\Harness\Assertion\GenericAssertionFactory;
+            use Oru\EcmaScript\Harness\Contracts\TestResultState;
             use Oru\EcmaScript\Harness\Test\GenericTestResult;
-            use Tests\Test262\Utilities\PrintIntrinsic;
-            use Tests\Test262\Utilities\S262Intrinsic;
             
             use function Oru\EcmaScript\Harness\getEngine;
-            use function Oru\EcmaScript\Operations\Abstract\get;
-            use function Oru\EcmaScript\Operations\Abstract\hasProperty;
 
             require './vendor/autoload.php';
 
@@ -150,34 +152,31 @@ final readonly class AsyncTestRunner implements TestRunner
 
             $options = ['bypass_shell' => true];
 
-            $process = \proc_open($command, $descriptorspec, $pipes, $cwd, $env, $options);
+            $process = proc_open($command, $descriptorspec, $pipes, $cwd, $env, $options)
+                ?: throw new RuntimeException('Coud not open process');
 
-            if (!\is_resource($process)) {
-                throw new RuntimeException('Coud not open process');
-            }
 
-            \fwrite($pipes[0], $code);
-            \fclose($pipes[0]);
+            fwrite($pipes[0], $code);
+            fclose($pipes[0]);
 
-            while (\proc_get_status($process)['running']) {
+            while (proc_get_status($process)['running']) {
                 Fiber::suspend();
             }
 
-            \rewind($stdout);
-            \rewind($stderr);
+            rewind($stdout);
+            $output = stream_get_contents($stdout);
+            fclose($stdout);
 
-            $output = \stream_get_contents($stdout);
-            $errors = \stream_get_contents($stderr);
+            rewind($stderr);
+            $errors = stream_get_contents($stderr);
+            fclose($stderr);
 
-            \fclose($stdout);
-            \fclose($stderr);
-
-            $return_value = \proc_close($process);
+            $return_value = proc_close($process);
 
             /**
              * @var TestResult $result
              */
-            $result = \unserialize($output);
+            $result = unserialize($output);
 
             $loop->addResult($result);
         };
@@ -200,28 +199,20 @@ final readonly class AsyncTestRunner implements TestRunner
 
         $options = ['bypass_shell' => true];
 
-        $process = \proc_open($command, $descriptorspec, $pipes, $cwd, $env, $options);
+        $process = proc_open($command, $descriptorspec, $pipes, $cwd, $env, $options)
+            ?: throw new RuntimeException('Coud not open process');
 
-        if (!\is_resource($process)) {
-            throw new RuntimeException('Coud not open process');
-        }
+        fwrite($pipes[0], $code);
+        fclose($pipes[0]);
 
-        \fwrite($pipes[0], $code);
-        \fclose($pipes[0]);
+        $output = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
 
-        $output = \stream_get_contents($pipes[1]);
-        \fclose($pipes[1]);
+        $errors = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
 
-        $errors = \stream_get_contents($pipes[2]);
-        \fclose($pipes[2]);
-
-        $return_value = \proc_close($process);
+        $return_value = proc_close($process);
 
         return $output;
-    }
-
-    public static function executeTest(Engine $engine, TestConfig $config, AssertionFactory $assertionFactory): TestResult
-    {
-        throw new RuntimeException('UNREACHABLE');
     }
 }
