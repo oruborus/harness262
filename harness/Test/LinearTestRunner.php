@@ -56,9 +56,4 @@ final readonly class LinearTestRunner implements TestRunner
 
         return new GenericTestResult(TestResultState::Success, [], 0);
     }
-
-    public static function executeTest(Engine $engine, TestConfig $config, AssertionFactory $assertionFactory): TestResult
-    {
-        throw new RuntimeException('UNREACHABLE');
-    }
 }

@@ -165,16 +165,4 @@ final class LinearTestRunnerTest extends TestCase
         $this->assertSame(TestResultState::Success, $actual->state());
         $this->assertSame(0, $actual->duration());
     }
-
-    #[Test]
-    public function throwsWhenExecutTestIsCalled(): void
-    {
-        $this->expectExceptionMessage('UNREACHABLE');
-
-        LinearTestRunner::executeTest(
-            $this->createMock(Engine::class),
-            $this->createMock(TestConfig::class),
-            $this->createMock(AssertionFactory::class)
-        );
-    }
 }
