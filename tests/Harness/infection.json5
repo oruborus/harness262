@@ -9,6 +9,9 @@
         "@default": true
     },
     "logs": {
-        "html": "../../.infection/harness/index.html"
+        "html": "../../.infection/harness/index.html",
+    },
+    "phpUnit": {
+        configDir: "."
     }
 }
