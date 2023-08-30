@@ -12,6 +12,7 @@ use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use Oru\EcmaScript\Harness\Contracts\TestRunner;
 use RuntimeException;
+use Throwable;
 
 use function fclose;
 use function fopen;
@@ -22,6 +23,7 @@ use function json_encode;
 use function proc_close;
 use function proc_get_status;
 use function proc_open;
+use function realpath;
 use function rewind;
 use function serialize;
 use function str_replace;
@@ -77,66 +79,12 @@ final readonly class AsyncTestRunner implements TestRunner
 
     public function run(TestConfig $config): TestResult
     {
-        $staticClass = static::class;
         $command = $this->command;
 
         $loop = Loop::get();
 
-        $task = static function () use ($command, $loop, $config, $staticClass): void {
-
+        $task = static function () use ($command, $loop, $config): void {
             $serializedConfig = serialize($config);
-            $serializedConfig = str_replace('\\', '\\\\', $serializedConfig);
-            $serializedConfig = str_replace('\'', '\\\'', $serializedConfig);
-
-            $code = <<<"EOF"
-            <?php
-
-            declare(strict_types=1);
-
-            use {$staticClass};
-            use Oru\EcmaScript\Harness\Assertion\Exception\AssertionFailedException;
-            use Oru\EcmaScript\Harness\Assertion\GenericAssertionFactory;
-            use Oru\EcmaScript\Harness\Contracts\TestResultState;
-            use Oru\EcmaScript\Harness\Test\GenericTestResult;
-            
-            use function Oru\EcmaScript\Harness\getEngine;
-
-            require './vendor/autoload.php';
-
-            \$engine = getEngine();
-            \$config = unserialize('{$serializedConfig}');
-            \$assertionFactory = new GenericAssertionFactory();
-
-            \$differences = array_diff(\$config->frontmatter()->features(), \$engine->getSupportedFeatures());
-
-            if (count(\$differences) > 0) {
-                echo serialize(new GenericTestResult(TestResultState::Skip, [], 0));
-            }
-    
-            foreach (\$config->frontmatter()->includes() as \$include) {
-                \$engine->addFiles(\$include->value);
-            }
-    
-            \$engine->addCode(\$config->content());
-    
-            try {
-                \$actual = \$engine->run();
-            } catch (Throwable \$throwable) {
-                echo serialize(new GenericTestResult(TestResultState::Error, [], 0, \$throwable));
-            }
-    
-            \$result = new GenericTestResult(TestResultState::Success, \get_included_files(), 0);
-    
-            \$assertion = \$assertionFactory->make(\$engine->getAgent(), \$config);
-    
-            try {
-                \$assertion->assert(\$actual);
-            } catch (AssertionFailedException \$assertionFailedException) {
-                \$result = new GenericTestResult(TestResultState::Fail, [], 0, \$assertionFailedException);
-            }
-    
-            echo serialize(\$result);
-            EOF;
 
             $stdout = fopen('php://temporary', 'w+');
             $stderr = fopen('php://temporary', 'w+');
@@ -152,11 +100,10 @@ final readonly class AsyncTestRunner implements TestRunner
 
             $options = ['bypass_shell' => true];
 
-            $process = proc_open($command, $descriptorspec, $pipes, $cwd, $env, $options)
+            $process = proc_open($command . realpath('./harness/Template/ExecuteTest.php'), $descriptorspec, $pipes, $cwd, $env, $options)
                 ?: throw new RuntimeException('Coud not open process');
 
-
-            fwrite($pipes[0], $code);
+            fwrite($pipes[0], $serializedConfig);
             fclose($pipes[0]);
 
             while (proc_get_status($process)['running']) {
@@ -177,6 +124,10 @@ final readonly class AsyncTestRunner implements TestRunner
              * @var TestResult $result
              */
             $result = unserialize($output);
+
+            if ($result instanceof Throwable) {
+                throw $result;
+            }
 
             $loop->addResult($result);
         };
