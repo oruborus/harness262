@@ -15,6 +15,7 @@ final readonly class GenericPrinterFactory implements PrinterFactory
     public function make(PrinterConfig $config, Output $output, int $plannedTests): Printer
     {
         return match ($config->verbosity()) {
+            PrinterVerbosity::Silent => new SilentPrinter(),
             PrinterVerbosity::Normal => new NormalPrinter($output),
             default => throw new \RuntimeException('NOT IMPLEMENTED')
         };

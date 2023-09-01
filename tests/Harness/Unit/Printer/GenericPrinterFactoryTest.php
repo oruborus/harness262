@@ -11,6 +11,7 @@ use Oru\EcmaScript\Harness\Contracts\PrinterConfig;
 use Oru\EcmaScript\Harness\Contracts\PrinterVerbosity;
 use Oru\EcmaScript\Harness\Printer\GenericPrinterFactory;
 use Oru\EcmaScript\Harness\Printer\NormalPrinter;
+use Oru\EcmaScript\Harness\Printer\SilentPrinter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -42,6 +43,7 @@ final class GenericPrinterFactoryTest extends TestCase
      */
     public static function providePrinterConfiguration(): Generator
     {
+        yield 'silent verbosity' => [static::createPrinterConfig(PrinterVerbosity::Silent), SilentPrinter::class];
         yield 'normal verbosity' => [static::createPrinterConfig(PrinterVerbosity::Normal), NormalPrinter::class];
     }
 
@@ -62,7 +64,6 @@ final class GenericPrinterFactoryTest extends TestCase
      */
     public static function provideUnimplementedPrinterConfiguration(): Generator
     {
-        yield 'silent verbosity' => [static::createPrinterConfig(PrinterVerbosity::Silent)];
         yield 'verbose verbosity' => [static::createPrinterConfig(PrinterVerbosity::Verbose)];
     }
 
