@@ -9,7 +9,6 @@ use Oru\EcmaScript\Harness\Contracts\Command;
 use function assert;
 use function fclose;
 use function fwrite;
-use function implode;
 use function ini_get_all;
 use function json_decode;
 use function json_encode;
@@ -22,9 +21,8 @@ final readonly class ClonedPhpCommand implements Command
 {
     private string $command;
 
-    public function __construct(
-        private string $suffix
-    ) {
+    public function __construct()
+    {
         $iniSettings = ini_get_all(details: false);
 
         $iniSettingsJson = str_replace('\\\\', '\\\\\\\\', json_encode($iniSettings));
@@ -57,16 +55,14 @@ final readonly class ClonedPhpCommand implements Command
         fclose($pipes[2]);
         $exitCode = proc_close($process);
         assert($exitCode === 0);
-        /** @var string[] $decodedOutput */
-        $decodedOutput = json_decode($output);
+        $output = json_decode($output);
 
-        $commandParts = ['php'];
-        foreach ($decodedOutput as $entry => $setting) {
-            $commandParts[] = "-d \"{$entry}={$setting}\"";
+        $command = 'php ';
+        foreach ($output as $entry => $setting) {
+            $command .= "-d \"{$entry}={$setting}\" ";
         }
-        $commandParts[] = $suffix;
 
-        $this->command = implode(' ', $commandParts);
+        $this->command = $command;
     }
 
     public function __toString(): string
