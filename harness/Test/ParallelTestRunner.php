@@ -163,4 +163,8 @@ final readonly class ParallelTestRunner implements TestRunner
 
         return $output;
     }
+
+    public function finalize(): void
+    {
+    }
 }

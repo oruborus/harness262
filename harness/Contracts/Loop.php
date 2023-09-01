@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness\Contracts;
 
-/**
- * @template TResult
- */
 interface Loop
 {
     /**
@@ -17,9 +14,4 @@ interface Loop
     public function run(): void;
 
     public function addResult(TestResult $result): void;
-
-    /**
-     * @return TResult
-     */
-    public function result(): mixed;
 }

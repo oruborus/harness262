@@ -9,16 +9,15 @@ use Oru\EcmaScript\Harness\Cache\GenericCacheRepository;
 use Oru\EcmaScript\Harness\Cache\NoCacheRepository;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use Oru\EcmaScript\Harness\Contracts\TestRunnerMode;
+use Oru\EcmaScript\Harness\Loop\TaskLoop;
 use Oru\EcmaScript\Harness\Output\GenericOutputFactory;
 use Oru\EcmaScript\Harness\Printer\GenericPrinterFactory;
 use Oru\EcmaScript\Harness\Storage\FileStorage;
 use Oru\EcmaScript\Harness\Storage\SerializingFileStorage;
 use Oru\EcmaScript\Harness\Test\AsyncTestRunner;
-use Oru\EcmaScript\Harness\Test\Exception\UninitializedLoopException;
 use Oru\EcmaScript\Harness\Test\GenericTestConfigFactory;
 use Oru\EcmaScript\Harness\Test\GenericTestResult;
 use Oru\EcmaScript\Harness\Test\LinearTestRunner;
-use Oru\EcmaScript\Harness\Test\Loop;
 use Oru\EcmaScript\Harness\Test\ParallelTestRunner;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -55,8 +54,6 @@ final readonly class Harness
         $output  = $outputFactory->make($config);
         $printer = $printerFactory->make($config, $output, 0);
 
-        Loop::initialize($printer);
-
         // FIXME: Move to `CacheRepositoryFactory`
         $cacheRepository = $config->cache() ?
             new GenericCacheRepository(new SerializingFileStorage('./.harness/cache')) :
@@ -66,7 +63,7 @@ final readonly class Harness
         $testRunner = match ($config->testRunnerMode()) {
             TestRunnerMode::Linear => new LinearTestRunner($engine, $assertionFactory),
             TestRunnerMode::Parallel => new ParallelTestRunner($engine, $assertionFactory),
-            TestRunnerMode::Async => new AsyncTestRunner($engine, $assertionFactory)
+            TestRunnerMode::Async => new AsyncTestRunner($engine, $assertionFactory, new TaskLoop($printer))
         };
 
 
@@ -187,15 +184,13 @@ final readonly class Harness
             $printer->step($testResult->state());
         }
 
-        try {
-            Loop::get()->run();
-        } catch (UninitializedLoopException) {
-        }
+        // 8. Perform **testRunner.finalize()**.
+        $testRunner->finalize();
 
-        // 8. Let **testSuiteEndTime** be the current system time in seconds.
+        // 9. Let **testSuiteEndTime** be the current system time in seconds.
         $testSuiteEndTime = time();
 
-        // 9. Perform **printer**.end(**resultList**, **testSuiteEndTime** - **testSuiteStartTime**).
+        // 10. Perform **printer**.end(**resultList**, **testSuiteEndTime** - **testSuiteStartTime**).
         $printer->end($resultList, $testSuiteEndTime - $testSuiteStartTime);
 
         return 0;

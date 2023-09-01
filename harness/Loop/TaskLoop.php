@@ -6,14 +6,12 @@ namespace Oru\EcmaScript\Harness\Loop;
 
 use Fiber;
 use Oru\EcmaScript\Harness\Contracts\Loop;
+use Oru\EcmaScript\Harness\Contracts\Printer;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 
 use function array_shift;
 use function count;
 
-/**
- * @implements Loop<TestResult[]>
- */
 final class TaskLoop implements Loop
 {
     /** @var Fiber[] $activeFibers */
@@ -26,6 +24,11 @@ final class TaskLoop implements Loop
     private array $testResults = [];
 
     private int $concurrency = 8;
+
+    public function __construct(
+        private readonly Printer $printer,
+    ) {
+    }
 
     /**
      * @param callable():void $task
@@ -72,13 +75,6 @@ final class TaskLoop implements Loop
     public function addResult(TestResult $result): void
     {
         $this->testResults[] = $result;
-    }
-
-    /**
-     * @return TestResult[]
-     */
-    public function result(): array
-    {
-        return $this->testResults;
+        $this->printer->step($result->state());
     }
 }

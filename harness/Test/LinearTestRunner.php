@@ -56,4 +56,8 @@ final readonly class LinearTestRunner implements TestRunner
 
         return new GenericTestResult(TestResultState::Success, [], 0);
     }
+
+    public function finalize(): void
+    {
+    }
 }

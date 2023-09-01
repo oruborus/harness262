@@ -7,6 +7,7 @@ namespace Oru\EcmaScript\Harness\Test;
 use Fiber;
 use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Harness\Contracts\AssertionFactory;
+use Oru\EcmaScript\Harness\Contracts\Loop;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
@@ -39,7 +40,8 @@ final readonly class AsyncTestRunner implements TestRunner
 
     public function __construct(
         private Engine $engine,
-        private AssertionFactory $assertionFactory
+        private AssertionFactory $assertionFactory,
+        private Loop $loop
     ) {
         $this->command = $this->initializeCommand();
     }
@@ -81,7 +83,7 @@ final readonly class AsyncTestRunner implements TestRunner
     {
         $command = $this->command;
 
-        $loop = Loop::get();
+        $loop = $this->loop;
 
         $task = static function () use ($command, $loop, $config): void {
             $serializedConfig = serialize($config);
@@ -132,7 +134,7 @@ final readonly class AsyncTestRunner implements TestRunner
             $loop->addResult($result);
         };
 
-        $loop->add($task);
+        $loop->addTask($task);
 
         return new GenericTestResult(TestResultState::Pending, [], 0);
     }
@@ -165,5 +167,10 @@ final readonly class AsyncTestRunner implements TestRunner
         $return_value = proc_close($process);
 
         return $output;
+    }
+
+    public function finalize(): void
+    {
+        $this->loop->run();
     }
 }
