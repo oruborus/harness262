@@ -2,15 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Oru\EcmaScript\Harness\Test;
+namespace Oru\EcmaScript\Harness\Loop;
 
 use Fiber;
+use Oru\EcmaScript\Harness\Contracts\Loop;
 use Oru\EcmaScript\Harness\Contracts\Printer;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
-use Oru\EcmaScript\Harness\Test\Exception\ReinitializedLoopException;
-use Oru\EcmaScript\Harness\Test\Exception\UninitializedLoopException;
 
-final class Loop
+use function array_shift;
+use function count;
+
+final class TaskLoop implements Loop
 {
     /** @var Fiber[] $activeFibers */
     private array $activeFibers = [];
@@ -23,32 +25,15 @@ final class Loop
 
     private int $concurrency = 8;
 
-    private function __construct(
+    public function __construct(
         private readonly Printer $printer,
     ) {
-    }
-
-    private static ?Loop $loop = null;
-
-    public static function initialize(Printer $printer): void
-    {
-        if (static::$loop) {
-            throw new ReinitializedLoopException();
-        }
-
-        static::$loop = new static($printer);
-    }
-
-    public static function get(): static
-    {
-        return static::$loop
-            ?? new UninitializedLoopException();
     }
 
     /**
      * @param callable():void $task
      */
-    public function add(callable $task): void
+    public function addTask(callable $task): void
     {
         $fiber = new Fiber($task);
         $this->pendingFibers[] = $fiber;
