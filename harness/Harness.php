@@ -7,6 +7,7 @@ namespace Oru\EcmaScript\Harness;
 use Oru\EcmaScript\Harness\Assertion\GenericAssertionFactory;
 use Oru\EcmaScript\Harness\Cache\GenericCacheRepository;
 use Oru\EcmaScript\Harness\Cache\NoCacheRepository;
+use Oru\EcmaScript\Harness\Command\ClonedPhpCommand;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use Oru\EcmaScript\Harness\Contracts\TestRunnerMode;
 use Oru\EcmaScript\Harness\Loop\TaskLoop;
@@ -29,6 +30,7 @@ use function file_exists;
 use function is_dir;
 use function is_file;
 use function is_null;
+use function realpath;
 use function time;
 
 final readonly class Harness
@@ -49,6 +51,7 @@ final readonly class Harness
         $printerFactory    = new GenericPrinterFactory();
         $outputFactory     = new GenericOutputFactory();
         $assertionFactory  = new GenericAssertionFactory();
+        $command           = new ClonedPhpCommand(realpath('./harness/Template/ExecuteTest.php'));
 
         $config  = $configFactory->make($arguments);
         $output  = $outputFactory->make($config);
@@ -61,9 +64,9 @@ final readonly class Harness
 
         // FIXME: Move to `TestRunnerFactory`
         $testRunner = match ($config->testRunnerMode()) {
-            TestRunnerMode::Linear => new LinearTestRunner($engine, $assertionFactory),
-            TestRunnerMode::Parallel => new ParallelTestRunner($engine, $assertionFactory),
-            TestRunnerMode::Async => new AsyncTestRunner($engine, $assertionFactory, new TaskLoop($printer))
+            TestRunnerMode::Linear => new LinearTestRunner($engine, $assertionFactory, $printer),
+            TestRunnerMode::Parallel => new ParallelTestRunner($engine, $assertionFactory, $printer, $command),
+            TestRunnerMode::Async => new AsyncTestRunner(new ParallelTestRunner($engine, $assertionFactory, $printer, $command), new TaskLoop())
         };
 
 
@@ -162,30 +165,30 @@ final readonly class Harness
                 continue;
             }
 
-            // d. Let **testResult** be runTest(**testConfig**).
-            $testResult = $testRunner->run($testConfig);
+            // d. Perform runTest(**testConfig**).
+            $testRunner->run($testConfig);
 
             // e. Let **testEndTime** be the current system time in seconds.
             $testEndTime = time();
 
             // f. Set **testResult**.duration to `testEndTime - testStartTime`.
-            $testResult->duration($testEndTime - $testStartTime);
+            // $testResult->duration($testEndTime - $testStartTime);
 
             // g. If **testResult**.state is `success`, then
-            if ($testResult->state() === TestResultState::Success) {
-                // ii. Perform **cacheRepository**.set(**testConfig**, **testResult**).
-                $cacheRepository->set($testConfig, $testResult);
-            }
+            // if ($testResult->state() === TestResultState::Success) {
+            //     // ii. Perform **cacheRepository**.set(**testConfig**, **testResult**).
+            //     $cacheRepository->set($testConfig, $testResult);
+            // }
 
             // h. Append **testResult** to **resultList**.
-            $resultList[] = $testResult;
+            // $resultList[] = $testResult;
 
             // i. Perform **printer**.step(**testResult**.state).
-            $printer->step($testResult->state());
+            // $printer->step($testResult->state());
         }
 
-        // 8. Perform **testRunner.finalize()**.
-        $testRunner->finalize();
+        // 8. Append the returned list of **testRunner.finalize()** to **resultList**.
+        $resultList = [...$resultList, ...$testRunner->finalize()];
 
         // 9. Let **testSuiteEndTime** be the current system time in seconds.
         $testSuiteEndTime = time();

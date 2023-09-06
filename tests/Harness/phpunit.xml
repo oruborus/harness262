@@ -16,6 +16,7 @@
     <testsuites>
         <testsuite name="default">
             <directory>.</directory>
+            <exclude>./Utility</exclude>
         </testsuite>
     </testsuites>
     <coverage

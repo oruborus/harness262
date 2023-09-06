@@ -22,11 +22,21 @@ final class ClonedPhpCommandTest extends TestCase
         $setting = (int) ini_get('max_execution_time') + 10;
         ini_set('max_execution_time', $setting);
 
-        $actual = (string) new ClonedPhpCommand();
+        $actual = (string) new ClonedPhpCommand('');
 
         ini_restore('max_execution_time');
 
         $this->assertStringStartsWith('php ', $actual);
         $this->assertStringContainsString("-d \"max_execution_time={$setting}\"", $actual);
+    }
+
+    #[Test]
+    public function endsWithProvidedSuffix(): void
+    {
+        $expected = 'COMMAND_SUFFIX';
+
+        $actual = (string) new ClonedPhpCommand($expected);
+
+        $this->assertStringEndsWith($expected, $actual);
     }
 }
