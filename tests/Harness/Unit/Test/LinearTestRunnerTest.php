@@ -11,6 +11,7 @@ use Oru\EcmaScript\Harness\Contracts\Assertion;
 use Oru\EcmaScript\Harness\Contracts\AssertionFactory;
 use Oru\EcmaScript\Harness\Contracts\Frontmatter;
 use Oru\EcmaScript\Harness\Contracts\FrontmatterInclude;
+use Oru\EcmaScript\Harness\Contracts\Printer;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use Oru\EcmaScript\Harness\Test\GenericTestResult;
@@ -28,11 +29,14 @@ final class LinearTestRunnerTest extends TestCase
     #[Test]
     public function skipsTestExecutionWhenRequiredFeatureIsNotImplemented(): void
     {
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('step');
         $testRunner = new LinearTestRunner(
             $this->createConfiguredMock(Engine::class, [
                 'getSupportedFeatures' => ['supportedFeature1', 'supportedFeature2']
             ]),
-            $this->createMock(AssertionFactory::class)
+            $this->createMock(AssertionFactory::class),
+            $printerMock
         );
         $config = $this->createConfiguredMock(TestConfig::class, [
             'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
@@ -40,7 +44,8 @@ final class LinearTestRunnerTest extends TestCase
             ])
         ]);
 
-        $actual = $testRunner->run($config);
+        $testRunner->run($config);
+        [$actual] = $testRunner->finalize();
 
         $this->assertSame(TestResultState::Skip, $actual->state());
         $this->assertSame(0, $actual->duration());
@@ -49,11 +54,14 @@ final class LinearTestRunnerTest extends TestCase
     #[Test]
     public function doesNotSkipTestExecutionWhenRequiredFeatureIsNotImplemented(): void
     {
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('step');
         $testRunner = new LinearTestRunner(
             $this->createConfiguredMock(Engine::class, [
                 'getSupportedFeatures' => ['supportedFeature1', 'supportedFeature2']
             ]),
-            $this->createMock(AssertionFactory::class)
+            $this->createMock(AssertionFactory::class),
+            $printerMock
         );
         $config = $this->createConfiguredMock(TestConfig::class, [
             'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
@@ -61,7 +69,8 @@ final class LinearTestRunnerTest extends TestCase
             ])
         ]);
 
-        $actual = $testRunner->run($config);
+        $testRunner->run($config);
+        [$actual] = $testRunner->finalize();
 
         $this->assertNotSame(TestResultState::Skip, $actual->state());
     }
@@ -74,10 +83,13 @@ final class LinearTestRunnerTest extends TestCase
             [FrontmatterInclude::assert->value],
             [FrontmatterInclude::sta->value]
         );
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('step');
         $engineMock->method('run')->willReturn($this->createMock(UndefinedValue::class));
         $testRunner = new LinearTestRunner(
             $engineMock,
-            $this->createMock(AssertionFactory::class)
+            $this->createMock(AssertionFactory::class),
+            $printerMock
         );
         $config = $this->createConfiguredMock(TestConfig::class, [
             'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
@@ -94,9 +106,12 @@ final class LinearTestRunnerTest extends TestCase
         $engineMock = $this->createMock(Engine::class);
         $engineMock->expects($this->once())->method('addCode')->with('CODE');
         $engineMock->method('run')->willReturn($this->createMock(UndefinedValue::class));
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('step');
         $testRunner = new LinearTestRunner(
             $engineMock,
-            $this->createMock(AssertionFactory::class)
+            $this->createMock(AssertionFactory::class),
+            $printerMock
         );
         $config = $this->createConfiguredMock(TestConfig::class, [
             'content' => 'CODE'
@@ -111,13 +126,17 @@ final class LinearTestRunnerTest extends TestCase
         $expected = new RuntimeException();
         $engineMock = $this->createMock(Engine::class);
         $engineMock->expects($this->once())->method('run')->willThrowException($expected);
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('step');
         $testRunner = new LinearTestRunner(
             $engineMock,
-            $this->createMock(AssertionFactory::class)
+            $this->createMock(AssertionFactory::class),
+            $printerMock
         );
         $config = $this->createMock(TestConfig::class);
 
-        $actual = $testRunner->run($config);
+        $testRunner->run($config);
+        [$actual] = $testRunner->finalize();
 
         $this->assertSame(TestResultState::Error, $actual->state());
         $this->assertSame($expected, $actual->throwable());
@@ -131,6 +150,8 @@ final class LinearTestRunnerTest extends TestCase
 
         $assertionMock = $this->createMock(Assertion::class);
         $assertionMock->method('assert')->willThrowException($expected);
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('step');
 
         $testRunner = new LinearTestRunner(
             $this->createConfiguredMock(Engine::class, [
@@ -138,11 +159,13 @@ final class LinearTestRunnerTest extends TestCase
             ]),
             $this->createConfiguredMock(AssertionFactory::class, [
                 'make' => $assertionMock
-            ])
+            ]),
+            $printerMock
         );
         $config = $this->createMock(TestConfig::class);
 
-        $actual = $testRunner->run($config);
+        $testRunner->run($config);
+        [$actual] = $testRunner->finalize();
 
         $this->assertSame(TestResultState::Fail, $actual->state());
         $this->assertSame($expected, $actual->throwable());
@@ -152,15 +175,19 @@ final class LinearTestRunnerTest extends TestCase
     #[Test]
     public function returnsAnSuccessResultWhenNothingFails(): void
     {
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('step');
         $testRunner = new LinearTestRunner(
             $this->createConfiguredMock(Engine::class, [
                 'run' => $this->createMock(UndefinedValue::class)
             ]),
-            $this->createMock(AssertionFactory::class)
+            $this->createMock(AssertionFactory::class),
+            $printerMock
         );
         $config = $this->createMock(TestConfig::class);
 
-        $actual = $testRunner->run($config);
+        $testRunner->run($config);
+        [$actual] = $testRunner->finalize();
 
         $this->assertSame(TestResultState::Success, $actual->state());
         $this->assertSame(0, $actual->duration());

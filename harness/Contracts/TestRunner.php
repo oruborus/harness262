@@ -6,7 +6,10 @@ namespace Oru\EcmaScript\Harness\Contracts;
 
 interface TestRunner
 {
-    public function run(TestConfig $config): TestResult;
+    public function run(TestConfig $config): void;
 
-    public function finalize(): void;
+    /**
+     * @return TestResult[]
+     */
+    public function finalize(): array;
 }
