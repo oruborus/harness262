@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Oru\EcmaScript\Harness\Cache;
 
 use Oru\EcmaScript\Harness\Contracts\CacheRepository;
+use Oru\EcmaScript\Harness\Contracts\CacheResultRecord;
 use Oru\EcmaScript\Harness\Contracts\Storage;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
@@ -44,79 +45,31 @@ final readonly class GenericCacheRepository implements CacheRepository
     {
         $key = $this->hashKey($config);
 
-        // FIXME: $this->storage should return a ResultRecord which encapsulates the validation logic
-        /** @psalm-suppress MixedAssignment */
         $content = $this->storage->get($key);
-
-        if (!$this->validateResultRecord($content, $key)) {
+        if (is_null($content)) {
             return null;
         }
-        /** @var object{result: TestResult, hash: string usedFiles: array<string, string>} $content */
 
-        return $content->result;
-    }
-
-    private function validateResultRecord(mixed $resultRecord, string $hash): bool
-    {
-        if (is_null($resultRecord)) {
-            return false;
-        }
-
-        if (!(is_object($resultRecord))) {
-            return false;
-        }
-
-        if (!isset($resultRecord->hash)) {
-            return false;
-        }
-
-        if (!isset($resultRecord->usedFiles)) {
-            return false;
-        }
-
-        if (!is_array($resultRecord->usedFiles)) {
-            return false;
-        }
-
-        if (
-            array_filter($resultRecord->usedFiles, is_string(...)) !== $resultRecord->usedFiles
-            || array_filter(array_keys($resultRecord->usedFiles), is_string(...)) !== array_keys($resultRecord->usedFiles)
-        ) {
-            return false;
-        }
-        /** @var array<string, string> $resultRecord->usedFiles */
-
-        if ($hash !== $resultRecord->hash) {
-            return false;
-        }
-
-        foreach ($resultRecord->usedFiles as $path => $hash) {
+        foreach ($content->usedFiles() as $path => $hash) {
             if ($this->hashFile($path) !== $hash) {
-                return false;
+                return null;
             }
         }
 
-        if (!isset($resultRecord->result)) {
-            return false;
-        }
 
-        if (!$resultRecord->result instanceof TestResult) {
-            return false;
-        }
-
-        return true;
+        return $content->result();
     }
 
     public function set(TestConfig $config, TestResult $result): void
     {
         $key = $this->hashKey($config);
 
-        $content = (object) ['hash' => $key, 'result' => $result, 'usedFiles' => []];
+        $usedFiles = [];
         foreach ($result->usedFiles() as $usedFile) {
-            $content->usedFiles[$usedFile] = $this->hashFile($usedFile);
+            $usedFiles[$usedFile] = $this->hashFile($usedFile);
         }
 
-        $this->storage->put($key, $content);
+        $this->storage->put($key, new GenericCacheResultRecord($key, $usedFiles, $result));
     }
 
     private function hashKey(mixed $input): string

@@ -19,6 +19,10 @@ use function unserialize;
 use const DIRECTORY_SEPARATOR;
 use const JSON_THROW_ON_ERROR;
 
+/**
+ * @template TContent
+ * @implements Storage<TContent>
+ */
 final readonly class SerializingFileStorage implements Storage
 {
     public function __construct(
@@ -29,6 +33,9 @@ final readonly class SerializingFileStorage implements Storage
         }
     }
 
+    /**
+     * @param TContent $content
+     */
     public function put(string $key, mixed $content): void
     {
         $prefixedKey = $this->basePath . DIRECTORY_SEPARATOR . $key;
@@ -40,6 +47,9 @@ final readonly class SerializingFileStorage implements Storage
         file_put_contents($prefixedKey, $stringContent);
     }
 
+    /**
+     * @return TContent
+     */
     public function get(string $key): mixed
     {
         $prefixedKey = $this->basePath . DIRECTORY_SEPARATOR . $key;
@@ -55,6 +65,9 @@ final readonly class SerializingFileStorage implements Storage
 
         $decodedContent = json_decode($stringContent, null, JSON_THROW_ON_ERROR);
         assert(is_string($decodedContent));
+        /**
+         * @var TContent
+         */
         return unserialize($decodedContent);
     }
 }

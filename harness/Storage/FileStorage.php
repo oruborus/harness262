@@ -15,6 +15,9 @@ use function mkdir;
 
 use const DIRECTORY_SEPARATOR;
 
+/**
+ * @implements Storage<string>
+ */
 final readonly class FileStorage implements Storage
 {
     public function __construct(
@@ -25,15 +28,8 @@ final readonly class FileStorage implements Storage
         }
     }
 
-    /**
-     * @throws RuntimeException 
-     */
     public function put(string $key, mixed $content): void
     {
-        if (!is_string($content)) {
-            throw new RuntimeException('Content must be of type string');
-        }
-
         $prefixedKey = $this->basePath . DIRECTORY_SEPARATOR . $key;
 
         file_put_contents($prefixedKey, $content);

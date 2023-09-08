@@ -53,15 +53,6 @@ final class FileStorageTest extends TestCase
     }
 
     #[Test]
-    public function failsIfProvidedContentIsNotString(): void
-    {
-        $this->expectExceptionMessage('Content must be of type string');
-        $storage = new FileStorage(__DIR__);
-
-        $storage->put('test', 123);
-    }
-
-    #[Test]
     public function returnsNullIfFileDoesNotExist(): void
     {
         $storage = new FileStorage(__DIR__);

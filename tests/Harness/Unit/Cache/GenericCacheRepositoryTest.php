@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Harness\Unit\Cache;
 
-use Generator;
 use Oru\EcmaScript\Harness\Cache\GenericCacheRepository;
+use Oru\EcmaScript\Harness\Cache\GenericCacheResultRecord;
 use Oru\EcmaScript\Harness\Contracts\Storage;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
@@ -13,14 +13,17 @@ use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\Before;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 use function file_put_contents;
+use function md5;
+use function serialize;
 use function unlink;
 
 #[CoversClass(GenericCacheRepository::class)]
+#[UsesClass(GenericCacheResultRecord::class)]
 final class GenericCacheRepositoryTest extends TestCase
 {
     #[Before]
@@ -107,33 +110,14 @@ final class GenericCacheRepositoryTest extends TestCase
     }
 
     #[Test]
-    #[DataProvider('provideMalformedCacheData')]
-    public function returnsNullWhenCachedDataIsMalformed(mixed $data): void
+    public function standardKeyHashDefinitionMatches(): void
     {
-        $repository = new GenericCacheRepository(
-            $this->createConfiguredMock(Storage::class, ['get' => $data]),
-            static fn (mixed $_): string => '1'
-        );
-        $config = $this->createMock(TestConfig::class);
+        $testConfigMock = $this->createMock(TestConfig::class);
+        $expected = md5(serialize($testConfigMock));
+        $storageMock = $this->createMock(Storage::class);
+        $storageMock->expects($this->once())->method('get')->with($expected);
+        $repository = new GenericCacheRepository($storageMock);
 
-        $actual = $repository->get($config);
-
-        $this->assertNull($actual);
-    }
-
-    /**
-     * @return Generator<string, mixed[]>
-     */
-    public static function provideMalformedCacheData(): Generator
-    {
-        yield 'non-object'                            => [123];
-        yield 'object without hash'                   => [(object)['usedFiles' => []]];
-        yield 'object without used files'             => [(object)['hash' => 'hash']];
-        yield 'object with incorrect hash'            => [(object)['hash' => 'hash', 'usedFiles' => []]];
-        yield 'object without result'                 => [(object)['hash' => '1', 'usedFiles' => []]];
-        yield 'object with non `TestResult` result'   => [(object)['hash' => '1', 'usedFiles' => [], 'result' => 123]];
-        yield 'object with non array used files'      => [(object)['hash' => '1', 'usedFiles' => 'not an array', 'result' => 123]];
-        yield 'object with malformed used files'      => [(object)['hash' => '1', 'usedFiles' => ['a' => 1, 'b' => 2], 'result' => 123]];
-        yield 'object with malformed used files keys' => [(object)['hash' => '1', 'usedFiles' => ['a', 'b'], 'result' => 123]];
+        $repository->get($testConfigMock);
     }
 }
