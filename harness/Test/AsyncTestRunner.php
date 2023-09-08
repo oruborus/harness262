@@ -11,6 +11,9 @@ use Oru\EcmaScript\Harness\Contracts\TestRunner;
 
 final readonly class AsyncTestRunner implements TestRunner
 {
+    /**
+     * @param Loop<TestResult[]> $loop 
+     */
     public function __construct(
         private TestRunner $runner,
         private Loop $loop,

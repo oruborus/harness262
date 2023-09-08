@@ -19,6 +19,9 @@ final readonly class TestConfigFromStdinBox implements Box
 {
     private TestConfig $testConfig;
 
+    /**
+     * @throws RuntimeException
+     */
     public function __construct()
     {
         $input = fopen('php://stdin', 'r')

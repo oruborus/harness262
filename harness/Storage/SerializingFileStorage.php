@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Oru\EcmaScript\Harness\Storage;
 
 use Oru\EcmaScript\Harness\Contracts\Storage;
-use Throwable;
 
+use function assert;
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
@@ -53,8 +53,8 @@ final readonly class SerializingFileStorage implements Storage
             return null;
         }
 
-        $content = unserialize(json_decode($stringContent, null, JSON_THROW_ON_ERROR));
-
-        return $content;
+        $decodedContent = json_decode($stringContent, null, JSON_THROW_ON_ERROR);
+        assert(is_string($decodedContent));
+        return unserialize($decodedContent);
     }
 }

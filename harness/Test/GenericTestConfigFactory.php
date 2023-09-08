@@ -8,9 +8,13 @@ use Oru\EcmaScript\Harness\Contracts\Storage;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestConfigFactory;
 use Oru\EcmaScript\Harness\Contracts\FrontmatterFlag;
+use Oru\EcmaScript\Harness\Frontmatter\Exception\MissingRequiredKeyException;
+use Oru\EcmaScript\Harness\Frontmatter\Exception\UnrecognizedKeyException;
+use Oru\EcmaScript\Harness\Frontmatter\Exception\UnrecognizedNegativePhaseException;
 use Oru\EcmaScript\Harness\Frontmatter\GenericFrontmatter;
 use Oru\EcmaScript\Harness\Test\Exception\MissingFrontmatterException;
 use RuntimeException;
+use Symfony\Component\Yaml\Exception\ParseException;
 
 use function array_map;
 use function implode;
@@ -33,9 +37,18 @@ final readonly class GenericTestConfigFactory implements TestConfigFactory
 
     /**
      * @return TestConfig[]
+     * 
+     * @throws MissingFrontmatterException
+     * @throws MissingRequiredKeyException 
+     * @throws UnrecognizedKeyException 
+     * @throws UnrecognizedNegativePhaseException
+     * @throws ParseException
      */
     public function make(string $path): array
     {
+        /**
+         * @var string $content
+         */
         $content = $this->storage->get($path)
             ?? throw new RuntimeException("Could not open `{$path}`");
 
@@ -48,7 +61,7 @@ final readonly class GenericTestConfigFactory implements TestConfigFactory
             pattern: '/[\x{000A}\x{000D}\x{2028}\x{2029}]/u',
             subject: $match[$index],
             flags: PREG_SPLIT_NO_EMPTY
-        );
+        ) ?: [];
 
         $rawFrontmatter = '';
         if ($line = reset($meta)) {
