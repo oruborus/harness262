@@ -126,11 +126,14 @@ final class GenericCacheRepositoryTest extends TestCase
      */
     public static function provideMalformedCacheData(): Generator
     {
-        yield 'non-object'                          => [123];
-        yield 'object without hash'                 => [(object)['usedFiles' => []]];
-        yield 'object without used files'           => [(object)['hash' => 'hash']];
-        yield 'object with incorrect hash'          => [(object)['hash' => 'hash', 'usedFiles' => []]];
-        yield 'object without result'               => [(object)['hash' => '1', 'usedFiles' => []]];
-        yield 'object with non `TestResult` result' => [(object)['hash' => '1', 'usedFiles' => [], 'result' => 123]];
+        yield 'non-object'                            => [123];
+        yield 'object without hash'                   => [(object)['usedFiles' => []]];
+        yield 'object without used files'             => [(object)['hash' => 'hash']];
+        yield 'object with incorrect hash'            => [(object)['hash' => 'hash', 'usedFiles' => []]];
+        yield 'object without result'                 => [(object)['hash' => '1', 'usedFiles' => []]];
+        yield 'object with non `TestResult` result'   => [(object)['hash' => '1', 'usedFiles' => [], 'result' => 123]];
+        yield 'object with non array used files'      => [(object)['hash' => '1', 'usedFiles' => 'not an array', 'result' => 123]];
+        yield 'object with malformed used files'      => [(object)['hash' => '1', 'usedFiles' => ['a' => 1, 'b' => 2], 'result' => 123]];
+        yield 'object with malformed used files keys' => [(object)['hash' => '1', 'usedFiles' => ['a', 'b'], 'result' => 123]];
     }
 }
