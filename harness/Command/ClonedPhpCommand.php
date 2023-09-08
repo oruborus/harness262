@@ -57,10 +57,11 @@ final readonly class ClonedPhpCommand implements Command
         fclose($pipes[2]);
         $exitCode = proc_close($process);
         assert($exitCode === 0);
-        $output = json_decode($output);
+        /** @var string[] $decodedOutput */
+        $decodedOutput = json_decode($output);
 
         $commandParts = ['php'];
-        foreach ($output as $entry => $setting) {
+        foreach ($decodedOutput as $entry => $setting) {
             $commandParts[] = "-d \"{$entry}={$setting}\"";
         }
         $commandParts[] = $suffix;

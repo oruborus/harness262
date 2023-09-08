@@ -24,6 +24,9 @@ final class SingleTestSubprocess implements Subprocess
     ) {
     }
 
+    /**
+     * @throws InvalidReturnValueException
+     */
     public function run(): TestResult
     {
         $this->testRunner->run($this->testConfig);

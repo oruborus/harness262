@@ -13,7 +13,7 @@ interface Printer
     public function step(TestResultState $state): void;
 
     /**
-     * @var TestResult[] $testResults
+     * @param TestResult[] $testResults
      */
     public function end(array $testResults, int $duration): void;
 }

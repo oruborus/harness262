@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness;
 
+use Iterator;
 use Oru\EcmaScript\Harness\Assertion\GenericAssertionFactory;
 use Oru\EcmaScript\Harness\Cache\GenericCacheRepository;
 use Oru\EcmaScript\Harness\Cache\NoCacheRepository;
 use Oru\EcmaScript\Harness\Command\ClonedPhpCommand;
+use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use Oru\EcmaScript\Harness\Contracts\TestRunnerMode;
 use Oru\EcmaScript\Harness\Loop\TaskLoop;
@@ -23,6 +25,7 @@ use Oru\EcmaScript\Harness\Test\ParallelTestRunner;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
+use Stringable;
 
 use function array_shift;
 use function count;
@@ -37,6 +40,8 @@ final readonly class Harness
 {
     /**
      * @param string[] $arguments
+     *
+     * @throws RuntimeException
      */
     public function run(array $arguments): int
     {
@@ -103,6 +108,9 @@ final readonly class Harness
             // c. Else, if **providedPath** points to a directory, then
             elseif (is_dir($providedPath)) {
                 // i. For each recursively contained file **filePath** in **providedPath**, do
+                /**
+                 * @var Iterator<Stringable> $it
+                 */
                 $it = new RecursiveIteratorIterator(
                     new RecursiveDirectoryIterator($providedPath, RecursiveDirectoryIterator::SKIP_DOTS)
                 );

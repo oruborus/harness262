@@ -9,10 +9,12 @@ use Oru\EcmaScript\Harness\Contracts\Printer;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 
+use function assert;
 use function array_filter;
 use function count;
 use function date;
 use function intdiv;
+use function is_null;
 use function str_pad;
 use function strlen;
 
@@ -71,6 +73,8 @@ final class NormalPrinter implements Printer
 
     private function getStatusLineEnd(): string
     {
+        assert(!is_null($this->stepsPlanned));
+
         $stepsPerformedString = str_pad((string) $this->stepsPerformed, strlen((string) $this->stepsPlanned), ' ', STR_PAD_LEFT);
         $percentageString     = str_pad((string) intdiv($this->stepsPerformed * 100, $this->stepsPlanned), 3, ' ', STR_PAD_LEFT);
 
@@ -147,11 +151,13 @@ final class NormalPrinter implements Printer
     {
         $count = 0;
         foreach ($testResults as $testResult) {
+            $throwable = $testResult->throwable();
+            assert(!is_null($throwable));
             $count++;
             $this->output->writeLn("{$count}:");
-            $this->output->writeLn($testResult->throwable()->__toString());
+            $this->output->writeLn($throwable->__toString());
             $this->output->writeLn('');
-            $this->output->writeLn($testResult->throwable()->getTraceAsString());
+            $this->output->writeLn($throwable->getTraceAsString());
             $this->output->writeLn('');
         }
     }

@@ -39,6 +39,10 @@ final class ParallelTestRunner implements TestRunner
     ) {
     }
 
+    /**
+     * @throws Throwable
+     * @throws RuntimeException
+     */
     public function run(TestConfig $config): void
     {
         $serializedConfig = serialize($config);

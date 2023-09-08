@@ -25,6 +25,9 @@ final readonly class FileStorage implements Storage
         }
     }
 
+    /**
+     * @throws RuntimeException 
+     */
     public function put(string $key, mixed $content): void
     {
         if (!is_string($content)) {
