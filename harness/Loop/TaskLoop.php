@@ -25,7 +25,10 @@ final class TaskLoop implements Loop
     /** @var TestResult[] $testResults */
     private array $testResults = [];
 
-    private int $concurrency = 8;
+    public function __construct(
+        private int $concurrency
+    ) {
+    }
 
     /**
      * @param callable():void $task
