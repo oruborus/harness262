@@ -30,11 +30,16 @@ final class SimpleLoop implements Loop
         $this->tasks[] = $task;
     }
 
-    public function run(): void
+    /**
+     * @return TestResult[]
+     */
+    public function run(): array
     {
         foreach ($this->tasks as $task) {
             $task();
         }
+
+        return $this->result;
     }
 
     /**
@@ -43,13 +48,5 @@ final class SimpleLoop implements Loop
     public function addResult(mixed $result): void
     {
         $this->result[] = $result;
-    }
-
-    /**
-     * @return TestResult[]
-     */
-    public function results(): array
-    {
-        return $this->result;
     }
 }

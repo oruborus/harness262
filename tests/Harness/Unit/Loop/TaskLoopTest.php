@@ -39,11 +39,10 @@ final class TaskLoopTest extends TestCase
         for ($i = 0; $i < count($counts); $i++) {
             $loop->addTask($callableFactory($i, $counts[$i], $loop));
         }
-        $loop->run();
         $actual = implode(
             array_map(
                 static fn (TestResult $testResult): string => (string) $testResult->duration(),
-                $loop->results()
+                $loop->run()
             )
         );
 

@@ -36,7 +36,10 @@ final class TaskLoop implements Loop
         $this->fibers[] = $fiber;
     }
 
-    public function run(): void
+    /**
+     * @return TestResult[]
+     */
+    public function run(): array
     {
         $count = 0;
         $stash = [];
@@ -58,6 +61,8 @@ final class TaskLoop implements Loop
                 $stash = [];
             }
         }
+
+        return $this->results;
     }
 
     /**
@@ -66,13 +71,5 @@ final class TaskLoop implements Loop
     public function addResult(mixed $result): void
     {
         $this->results[] = $result;
-    }
-
-    /**
-     * @return TestResult[]
-     */
-    public function results(): array
-    {
-        return $this->results;
     }
 }

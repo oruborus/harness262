@@ -34,7 +34,6 @@ final readonly class AsyncTestRunner implements TestRunner
      */
     public function finalize(): array
     {
-        $this->loop->run();
-        return $this->loop->results();
+        return $this->loop->run();
     }
 }

@@ -14,15 +14,13 @@ interface Loop
      */
     public function addTask(callable $task): void;
 
-    public function run(): void;
+    /**
+     * @return TResult[]
+     */
+    public function run(): mixed;
 
     /**
      * @param TResult $result
      */
     public function addResult(mixed $result): void;
-
-    /**
-     * @return TResult[]
-     */
-    public function results(): mixed;
 }
