@@ -6,13 +6,17 @@ namespace Tests\Harness\Unit\Loop;
 
 use Fiber;
 use Generator;
+use Oru\EcmaScript\Harness\Contracts\Loop;
+use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Loop\TaskLoop;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
+use function array_map;
 use function count;
+use function implode;
 
 #[CoversClass(TaskLoop::class)]
 final class TaskLoopTest extends TestCase
@@ -24,21 +28,24 @@ final class TaskLoopTest extends TestCase
     #[DataProvider('provideConcurency')]
     public function runsMultipleCallablesInAQueueOfDefinedSize(int $concurency, array $counts, string $expected)
     {
-        $callableFactory = static function (int $id, int $count, string &$actual): callable {
-            return static function () use ($id, $count, &$actual): void {
-                for ($i = 0; $i < $count; $i++) {
-                    $actual .= (string) $id;
-                    Fiber::suspend();
-                }
-            };
+        $callableFactory = fn (int $id, int $count, Loop $loop): callable => function () use ($id, $count, $loop): void {
+            for ($i = 0; $i < $count; $i++) {
+                $loop->addResult($this->createConfiguredMock(TestResult::class, ['duration' => $id]));
+                Fiber::suspend();
+            }
         };
-        $actual = '';
 
         $loop = new TaskLoop($concurency);
         for ($i = 0; $i < count($counts); $i++) {
-            $loop->addTask($callableFactory($i, $counts[$i], $actual));
+            $loop->addTask($callableFactory($i, $counts[$i], $loop));
         }
         $loop->run();
+        $actual = implode(
+            array_map(
+                static fn (TestResult $testResult): string => (string) $testResult->duration(),
+                $loop->results()
+            )
+        );
 
         $this->assertSame($expected, $actual);
     }
@@ -54,6 +61,6 @@ final class TaskLoopTest extends TestCase
         yield '4' => [4, [4, 4, 4, 4], '0123012301230123'];
         yield '5' => [5, [4, 4, 4, 4], '0123012301230123'];
         yield '2 different counts' => [2, [5, 1, 1, 1], '01020300'];
-        yield '3 different counts' => [3, [5, 2, 3, 2], '012012032030'];
+        yield '3 different counts' => [3, [5, 2, 3, 2], '012012023030'];
     }
 }

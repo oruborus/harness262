@@ -16,10 +16,13 @@ interface Loop
 
     public function run(): void;
 
-    public function addResult(TestResult $result): void;
+    /**
+     * @param TResult $result
+     */
+    public function addResult(mixed $result): void;
 
     /**
-     * @return TResult
+     * @return TResult[]
      */
-    public function result(): mixed;
+    public function results(): mixed;
 }

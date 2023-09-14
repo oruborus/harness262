@@ -12,7 +12,7 @@ use Oru\EcmaScript\Harness\Contracts\TestRunner;
 final readonly class AsyncTestRunner implements TestRunner
 {
     /**
-     * @param Loop<TestResult[]> $loop 
+     * @param Loop<TestResult> $loop 
      */
     public function __construct(
         private TestRunner $runner,
@@ -35,6 +35,6 @@ final readonly class AsyncTestRunner implements TestRunner
     public function finalize(): array
     {
         $this->loop->run();
-        return $this->loop->result();
+        return $this->loop->results();
     }
 }

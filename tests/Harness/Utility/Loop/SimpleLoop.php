@@ -8,7 +8,7 @@ use Oru\EcmaScript\Harness\Contracts\Loop;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 
 /**
- * @implements Loop<TestResult[]>
+ * @implements Loop<TestResult>
  */
 final class SimpleLoop implements Loop
 {
@@ -37,7 +37,10 @@ final class SimpleLoop implements Loop
         }
     }
 
-    public function addResult(TestResult $result): void
+    /**
+     * @param TestResult
+     */
+    public function addResult(mixed $result): void
     {
         $this->result[] = $result;
     }
@@ -45,7 +48,7 @@ final class SimpleLoop implements Loop
     /**
      * @return TestResult[]
      */
-    public function result(): array
+    public function results(): array
     {
         return $this->result;
     }
