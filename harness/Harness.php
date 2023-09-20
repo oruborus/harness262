@@ -9,6 +9,8 @@ use Oru\EcmaScript\Harness\Assertion\GenericAssertionFactory;
 use Oru\EcmaScript\Harness\Cache\GenericCacheRepository;
 use Oru\EcmaScript\Harness\Cache\NoCacheRepository;
 use Oru\EcmaScript\Harness\Command\ClonedPhpCommand;
+use Oru\EcmaScript\Harness\Contracts\CacheResultRecord;
+use Oru\EcmaScript\Harness\Contracts\Storage;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use Oru\EcmaScript\Harness\Contracts\TestRunnerMode;
@@ -63,8 +65,12 @@ final readonly class Harness
         $printer = $printerFactory->make($config, $output, 0);
 
         // FIXME: Move to `CacheRepositoryFactory`
+        /** 
+         * @var Storage<CacheResultRecord> $storage
+         */
+        $storage = new SerializingFileStorage('./.harness/cache');
         $cacheRepository = $config->cache() ?
-            new GenericCacheRepository(new SerializingFileStorage('./.harness/cache')) :
+            new GenericCacheRepository($storage) :
             new NoCacheRepository();
 
         // FIXME: Move to `TestRunnerFactory`

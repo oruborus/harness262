@@ -12,7 +12,6 @@ use Oru\EcmaScript\Harness\Contracts\TestResult;
 
 use function hash_file;
 use function is_null;
-use function is_object;
 use function md5;
 use function serialize;
 
@@ -29,6 +28,7 @@ final readonly class GenericCacheRepository implements CacheRepository
     private mixed $fileHashFunction;
 
     /**
+     * @param Storage<CacheResultRecord> $storage
      * @param callable(mixed): string $keyHashFunction
      * @param callable(string): string $fileHashFunction
      */
