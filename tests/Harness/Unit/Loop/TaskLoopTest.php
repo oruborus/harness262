@@ -8,10 +8,12 @@ use Fiber;
 use Generator;
 use Oru\EcmaScript\Harness\Contracts\Loop;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
+use Oru\EcmaScript\Harness\Loop\FiberTask;
 use Oru\EcmaScript\Harness\Loop\TaskLoop;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 use function array_map;
@@ -19,6 +21,7 @@ use function count;
 use function implode;
 
 #[CoversClass(TaskLoop::class)]
+#[UsesClass(FiberTask::class)]
 final class TaskLoopTest extends TestCase
 {
     /**
@@ -28,16 +31,16 @@ final class TaskLoopTest extends TestCase
     #[DataProvider('provideConcurency')]
     public function runsMultipleCallablesInAQueueOfDefinedSize(int $concurency, array $counts, string $expected)
     {
-        $callableFactory = fn (int $id, int $count, Loop $loop): callable => function () use ($id, $count, $loop): void {
+        $callableFactory = fn (int $id, int $count, Loop $loop): Fiber => new Fiber(function () use ($id, $count, $loop): void {
             for ($i = 0; $i < $count; $i++) {
                 $loop->addResult($this->createConfiguredMock(TestResult::class, ['duration' => $id]));
                 Fiber::suspend();
             }
-        };
+        });
 
         $loop = new TaskLoop($concurency);
         for ($i = 0; $i < count($counts); $i++) {
-            $loop->addTask($callableFactory($i, $counts[$i], $loop));
+            $loop->add(new FiberTask($callableFactory($i, $counts[$i], $loop)));
         }
         $actual = implode(
             array_map(

@@ -9,10 +9,7 @@ namespace Oru\EcmaScript\Harness\Contracts;
  */
 interface Loop
 {
-    /**
-     * @param callable():void $task
-     */
-    public function addTask(callable $task): void;
+    public function add(Task $task): void;
 
     /**
      * @return TResult[]

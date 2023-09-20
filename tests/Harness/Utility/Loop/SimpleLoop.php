@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Harness\Utility\Loop;
 
 use Oru\EcmaScript\Harness\Contracts\Loop;
+use Oru\EcmaScript\Harness\Contracts\Task;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 
 /**
@@ -13,7 +14,7 @@ use Oru\EcmaScript\Harness\Contracts\TestResult;
 final class SimpleLoop implements Loop
 {
     /**
-     * @var (callable():void)[] $tasks
+     * @var Task[] $tasks
      */
     private array $tasks = [];
 
@@ -22,10 +23,7 @@ final class SimpleLoop implements Loop
      */
     private array $result = [];
 
-    /**
-     * @param callable():void $task
-     */
-    public function addTask(callable $task): void
+    public function add(Task $task): void
     {
         $this->tasks[] = $task;
     }
@@ -36,7 +34,7 @@ final class SimpleLoop implements Loop
     public function run(): array
     {
         foreach ($this->tasks as $task) {
-            $task();
+            $task->continue();
         }
 
         return $this->result;

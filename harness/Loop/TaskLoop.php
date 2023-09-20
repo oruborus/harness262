@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness\Loop;
 
-use Fiber;
 use Oru\EcmaScript\Harness\Contracts\Loop;
+use Oru\EcmaScript\Harness\Contracts\Task;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 
 use function array_shift;
@@ -16,8 +16,8 @@ use function count;
  */
 final class TaskLoop implements Loop
 {
-    /** @var Fiber[] $fibers */
-    private array $fibers = [];
+    /** @var Task[] $tasks */
+    private array $tasks = [];
 
     /** @var TestResult[] $results */
     private array $results = [];
@@ -27,13 +27,9 @@ final class TaskLoop implements Loop
     ) {
     }
 
-    /**
-     * @param callable():void $task
-     */
-    public function addTask(callable $task): void
+    public function add(Task $task): void
     {
-        $fiber = new Fiber($task);
-        $this->fibers[] = $fiber;
+        $this->tasks[] = $task;
     }
 
     /**
@@ -43,20 +39,16 @@ final class TaskLoop implements Loop
     {
         $count = 0;
         $stash = [];
-        while ($current = array_shift($this->fibers)) {
-            if (!$current->isStarted()) {
-                $current->start();
-            } elseif ($current->isSuspended()) {
-                $current->resume();
-            }
+        while ($current = array_shift($this->tasks)) {
+            $current->continue();
 
-            if (!$current->isTerminated()) {
+            if (!$current->done()) {
                 $stash[] = $current;
                 $count++;
             }
 
-            if ($count === $this->concurrency || count($this->fibers) === 0) {
-                $this->fibers = [...$stash, ...$this->fibers];
+            if ($count === $this->concurrency || count($this->tasks) === 0) {
+                $this->tasks = [...$stash, ...$this->tasks];
                 $count = 0;
                 $stash = [];
             }

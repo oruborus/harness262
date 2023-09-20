@@ -8,13 +8,16 @@ use Oru\EcmaScript\Harness\Contracts\Loop;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestRunner;
+use Oru\EcmaScript\Harness\Loop\FiberTask;
 use Oru\EcmaScript\Harness\Test\AsyncTestRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Harness\Utility\Loop\SimpleLoop;
 
 #[CoversClass(AsyncTestRunner::class)]
+#[UsesClass(FiberTask::class)]
 final class AsyncTestRunnerTest extends TestCase
 {
     #[Test]
@@ -22,7 +25,7 @@ final class AsyncTestRunnerTest extends TestCase
     {
         $testRunnerMock = $this->createMock(TestRunner::class);
         $loopMock = $this->createMock(Loop::class);
-        $loopMock->expects($this->once())->method('addTask');
+        $loopMock->expects($this->once())->method('add');
         $testConfigMock = $this->createMock(TestConfig::class);
 
         $testRunner = new AsyncTestRunner($testRunnerMock, $loopMock);
