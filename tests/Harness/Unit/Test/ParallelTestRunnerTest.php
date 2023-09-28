@@ -52,7 +52,7 @@ final class ParallelTestRunnerTest extends TestCase
         $testRunner = new ParallelTestRunner(
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/FailingTest.php')])
+            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/FailingTestCase.php')])
         );
 
         $testRunner->run($this->createMock(TestConfig::class));
@@ -66,7 +66,7 @@ final class ParallelTestRunnerTest extends TestCase
         $testRunner = new ParallelTestRunner(
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/NonTestResultReturningTest.php')])
+            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/NonTestResultReturningTestCase.php')])
         );
 
         $testRunner->run($this->createMock(TestConfig::class));
@@ -78,7 +78,7 @@ final class ParallelTestRunnerTest extends TestCase
         $testRunner = new ParallelTestRunner(
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/SuccessfulTest.php')])
+            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/SuccessfulTestCase.php')])
         );
 
         $testRunner->run($this->createMock(TestConfig::class));
@@ -98,7 +98,7 @@ final class ParallelTestRunnerTest extends TestCase
         $testRunner = new ParallelTestRunner(
             $this->createMock(AssertionFactory::class),
             $printerMock,
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/SuccessfulTest.php')])
+            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/SuccessfulTestCase.php')])
         );
 
         $testRunner->run($this->createMock(TestConfig::class));
@@ -113,7 +113,7 @@ final class ParallelTestRunnerTest extends TestCase
         $testRunner = new ParallelTestRunner(
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/FailsOnMissingInputTest.php')])
+            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/FailsOnMissingInputTestCase.php')])
         );
 
         $testConfigMock = new GenericTestConfig('', '', new GenericFrontmatter('description: x'));
@@ -127,7 +127,7 @@ final class ParallelTestRunnerTest extends TestCase
         $testRunner = new ParallelTestRunner(
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/DelayedTest.php')])
+            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/DelayedTestCase.php')])
         );
 
         $fiber = new Fiber(fn () => $testRunner->run($this->createMock(TestConfig::class)));
