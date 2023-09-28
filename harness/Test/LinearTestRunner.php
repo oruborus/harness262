@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness\Test;
 
-use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Harness\Contracts\AssertionFactory;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
 use Oru\EcmaScript\Harness\Contracts\TestRunner;
 use Oru\EcmaScript\Harness\Assertion\Exception\AssertionFailedException;
+use Oru\EcmaScript\Harness\Contracts\Facade;
 use Oru\EcmaScript\Harness\Contracts\Printer;
 use Throwable;
 
@@ -25,7 +25,7 @@ final class LinearTestRunner implements TestRunner
     private array $results = [];
 
     public function __construct(
-        private readonly Engine $engine,
+        private readonly Facade $facade,
         private readonly AssertionFactory $assertionFactory,
         private readonly Printer $printer
     ) {
@@ -33,7 +33,7 @@ final class LinearTestRunner implements TestRunner
 
     public function run(TestConfig $config): void
     {
-        $differences = array_diff($config->frontmatter()->features(), $this->engine->getSupportedFeatures());
+        $differences = array_diff($config->frontmatter()->features(), $this->facade->engineSupportedFeatures());
 
         if (count($differences) > 0) {
             $this->addResult(new GenericTestResult(TestResultState::Skip, [], 0));
@@ -41,19 +41,22 @@ final class LinearTestRunner implements TestRunner
         }
 
         foreach ($config->frontmatter()->includes() as $include) {
-            $this->engine->addFiles($include->value);
+            $this->facade->engineAddFiles($include->value);
         }
 
-        $this->engine->addCode($config->content());
+        $this->facade->engineAddCode($config->content());
 
         try {
-            $actual = $this->engine->run();
+            /**
+             * @psalm-suppress MixedAssignment  The methods of `Facade` intentionally return `mixed`
+             */
+            $actual = $this->facade->engineRun();
         } catch (Throwable $throwable) {
             $this->addResult(new GenericTestResult(TestResultState::Error, [], 0, $throwable));
             return;
         }
 
-        $assertion = $this->assertionFactory->make($this->engine->getAgent(), $config);
+        $assertion = $this->assertionFactory->make($config);
 
         try {
             $assertion->assert($actual);

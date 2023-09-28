@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Oru\EcmaScript\Harness\Test;
 
 use Fiber;
-use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Harness\Contracts\AssertionFactory;
 use Oru\EcmaScript\Harness\Contracts\Command;
 use Oru\EcmaScript\Harness\Contracts\Printer;
@@ -32,7 +31,6 @@ final class ParallelTestRunner implements TestRunner
     private array $results = [];
 
     public function __construct(
-        private readonly Engine $engine,
         private readonly AssertionFactory $assertionFactory,
         private readonly Printer $printer,
         private readonly Command $command

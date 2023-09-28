@@ -4,24 +4,17 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness\Assertion;
 
-use Oru\EcmaScript\Core\Contracts\Agent;
-use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
-use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
-use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
 use Oru\EcmaScript\Harness\Contracts\Assertion;
 use Oru\EcmaScript\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\EcmaScript\Harness\Assertion\Exception\EngineException;
+use Oru\EcmaScript\Harness\Contracts\Facade;
 use Oru\EcmaScript\Harness\Contracts\FrontmatterNegative;
 use Throwable;
-
-use function Oru\EcmaScript\Operations\Abstract\get;
-use function Oru\EcmaScript\Operations\Abstract\hasProperty;
-use function Oru\EcmaScript\Operations\TypeConversions\toString;
 
 final readonly class AssertIsThrowableWithConstructor implements Assertion
 {
     public function __construct(
-        private Agent $agent,
+        private Facade $facade,
         private FrontmatterNegative $negative
     ) {
     }
@@ -29,54 +22,50 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
     /**
      * @throws AssertionFailedException
      * @throws EngineException
+     *
+     * @psalm-suppress MixedAssignment  The methods of `Facade` intentionally return `mixed`
      */
     public function assert(mixed $actual): void
     {
-        $factory = $this->agent->getInterpreter()->getValueFactory();
-
-        if (!$actual instanceof ThrowCompletion) {
+        if (!$this->facade->isThrowCompletion($actual)) {
             throw new AssertionFailedException('Expected `ThrowCompletion`');
         }
 
-        $exception = $actual->getValue();
+        $exception = $this->facade->completionGetValue($actual);
 
-        if (!$exception instanceof ObjectValue) {
+        if (!$this->facade->isObject($exception)) {
             throw new AssertionFailedException('`ThrowCompletion` does not contain an `ObjectValue`');
         }
 
         try {
-            $constructor = get($this->agent, $exception, $factory->createString('constructor'));
-        } catch (AbruptCompletion $throwable) {
-            /** @var Throwable $throwable */
+            $constructor = $this->facade->objectGet($exception, 'constructor');
+        } catch (Throwable $throwable) {
             throw new EngineException('Could not use `get()` to retrieve `constructor`', previous: $throwable);
         }
 
-        if (!$constructor instanceof ObjectValue) {
+        if (!$this->facade->isObject($constructor)) {
             throw new AssertionFailedException('Constructor value is not an `ObjectValue`');
         }
 
         try {
-            $hasName = hasProperty($this->agent, $constructor, $factory->createString('name'));
-        } catch (AbruptCompletion $throwable) {
-            /** @var Throwable $throwable */
-            throw new EngineException('Could not use `hasName()` to to check existence of `name`', previous: $throwable);
+            $hasName = $this->facade->objectHasProperty($constructor, 'name');
+        } catch (Throwable $throwable) {
+            throw new EngineException('Could not use `hasName()` to check existence of `name`', previous: $throwable);
         }
 
-        if (!$hasName->getValue()) {
+        if (!$hasName) {
             throw new AssertionFailedException('Constructor does not have a name');
         }
 
         try {
-            $nameProperty = get($this->agent, $constructor, $factory->createString('name'));
-        } catch (AbruptCompletion $throwable) {
-            /** @var Throwable $throwable */
+            $nameProperty = $this->facade->objectGet($constructor, 'name');
+        } catch (Throwable $throwable) {
             throw new EngineException('Could not use `get()` to retrieve `constructor.name`', previous: $throwable);
         }
 
         try {
-            $name = (string) toString($this->agent, $nameProperty);
-        } catch (AbruptCompletion $throwable) {
-            /** @var Throwable $throwable */
+            $name = $this->facade->toString($nameProperty);
+        } catch (Throwable $throwable) {
             throw new EngineException('Could not convert `name` to string', previous: $throwable);
         }
 

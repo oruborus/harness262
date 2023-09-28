@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Harness\Unit\Test;
 
-use Oru\EcmaScript\Core\Contracts\Engine;
-use Oru\EcmaScript\Core\Contracts\Values\UndefinedValue;
 use Oru\EcmaScript\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\EcmaScript\Harness\Contracts\Assertion;
 use Oru\EcmaScript\Harness\Contracts\AssertionFactory;
+use Oru\EcmaScript\Harness\Contracts\Facade;
 use Oru\EcmaScript\Harness\Contracts\Frontmatter;
 use Oru\EcmaScript\Harness\Contracts\FrontmatterInclude;
 use Oru\EcmaScript\Harness\Contracts\Printer;
@@ -32,8 +31,8 @@ final class LinearTestRunnerTest extends TestCase
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('step');
         $testRunner = new LinearTestRunner(
-            $this->createConfiguredMock(Engine::class, [
-                'getSupportedFeatures' => ['supportedFeature1', 'supportedFeature2']
+            $this->createConfiguredMock(Facade::class, [
+                'engineSupportedFeatures' => ['supportedFeature1', 'supportedFeature2']
             ]),
             $this->createMock(AssertionFactory::class),
             $printerMock
@@ -57,8 +56,8 @@ final class LinearTestRunnerTest extends TestCase
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('step');
         $testRunner = new LinearTestRunner(
-            $this->createConfiguredMock(Engine::class, [
-                'getSupportedFeatures' => ['supportedFeature1', 'supportedFeature2']
+            $this->createConfiguredMock(Facade::class, [
+                'engineSupportedFeatures' => ['supportedFeature1', 'supportedFeature2']
             ]),
             $this->createMock(AssertionFactory::class),
             $printerMock
@@ -78,16 +77,16 @@ final class LinearTestRunnerTest extends TestCase
     #[Test]
     public function addsIncludesFromConfigToEngine(): void
     {
-        $engineMock = $this->createMock(Engine::class);
-        $engineMock->expects($this->exactly(2))->method('addFiles')->willReturnMap(
+        $facadeMock = $this->createMock(Facade::class);
+        $facadeMock->expects($this->exactly(2))->method('engineAddFiles')->willReturnMap(
             [FrontmatterInclude::assert->value],
             [FrontmatterInclude::sta->value]
         );
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('step');
-        $engineMock->method('run')->willReturn($this->createMock(UndefinedValue::class));
+        $facadeMock->method('engineRun')->willReturn('UndefinedValue');
         $testRunner = new LinearTestRunner(
-            $engineMock,
+            $facadeMock,
             $this->createMock(AssertionFactory::class),
             $printerMock
         );
@@ -103,13 +102,13 @@ final class LinearTestRunnerTest extends TestCase
     #[Test]
     public function addsCodeFromConfigToEngine(): void
     {
-        $engineMock = $this->createMock(Engine::class);
-        $engineMock->expects($this->once())->method('addCode')->with('CODE');
-        $engineMock->method('run')->willReturn($this->createMock(UndefinedValue::class));
+        $facadeMock = $this->createMock(Facade::class);
+        $facadeMock->expects($this->once())->method('engineAddCode')->with('CODE');
+        $facadeMock->method('engineRun')->willReturn('UndefinedValue');
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('step');
         $testRunner = new LinearTestRunner(
-            $engineMock,
+            $facadeMock,
             $this->createMock(AssertionFactory::class),
             $printerMock
         );
@@ -124,12 +123,12 @@ final class LinearTestRunnerTest extends TestCase
     public function returnsAnErrorResultContainingTheThrowableWhenEngineThrows(): void
     {
         $expected = new RuntimeException();
-        $engineMock = $this->createMock(Engine::class);
-        $engineMock->expects($this->once())->method('run')->willThrowException($expected);
+        $facadeMock = $this->createMock(Facade::class);
+        $facadeMock->expects($this->once())->method('engineRun')->willThrowException($expected);
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('step');
         $testRunner = new LinearTestRunner(
-            $engineMock,
+            $facadeMock,
             $this->createMock(AssertionFactory::class),
             $printerMock
         );
@@ -154,8 +153,8 @@ final class LinearTestRunnerTest extends TestCase
         $printerMock->expects($this->once())->method('step');
 
         $testRunner = new LinearTestRunner(
-            $this->createConfiguredMock(Engine::class, [
-                'run' => $this->createMock(UndefinedValue::class)
+            $this->createConfiguredMock(Facade::class, [
+                'engineRun' => 'UndefinedValue'
             ]),
             $this->createConfiguredMock(AssertionFactory::class, [
                 'make' => $assertionMock
@@ -178,8 +177,8 @@ final class LinearTestRunnerTest extends TestCase
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('step');
         $testRunner = new LinearTestRunner(
-            $this->createConfiguredMock(Engine::class, [
-                'run' => $this->createMock(UndefinedValue::class)
+            $this->createConfiguredMock(Facade::class, [
+                'engineRun' => 'UndefinedValue'
             ]),
             $this->createMock(AssertionFactory::class),
             $printerMock

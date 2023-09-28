@@ -10,6 +10,7 @@ use Oru\EcmaScript\Harness\Cache\GenericCacheRepository;
 use Oru\EcmaScript\Harness\Cache\NoCacheRepository;
 use Oru\EcmaScript\Harness\Command\ClonedPhpCommand;
 use Oru\EcmaScript\Harness\Contracts\CacheResultRecord;
+use Oru\EcmaScript\Harness\Contracts\Facade;
 use Oru\EcmaScript\Harness\Contracts\Storage;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
 use Oru\EcmaScript\Harness\Contracts\TestResultState;
@@ -51,13 +52,15 @@ final readonly class Harness
 
         $engine = getEngine();
 
+        /** @var Facade $facade */
+        $facade = (require './harness.php')();
 
         $testStorage       = new FileStorage('.');
         $configFactory     = new HarnessConfigFactory();
         $testConfigFactory = new GenericTestConfigFactory($testStorage);
         $printerFactory    = new GenericPrinterFactory();
         $outputFactory     = new GenericOutputFactory();
-        $assertionFactory  = new GenericAssertionFactory();
+        $assertionFactory  = new GenericAssertionFactory($facade);
         $command           = new ClonedPhpCommand(realpath('./harness/Template/ExecuteTest.php'));
 
         $config  = $configFactory->make($arguments);
@@ -75,9 +78,9 @@ final readonly class Harness
 
         // FIXME: Move to `TestRunnerFactory`
         $testRunner = match ($config->testRunnerMode()) {
-            TestRunnerMode::Linear => new LinearTestRunner($engine, $assertionFactory, $printer),
-            TestRunnerMode::Parallel => new ParallelTestRunner($engine, $assertionFactory, $printer, $command),
-            TestRunnerMode::Async => new AsyncTestRunner(new ParallelTestRunner($engine, $assertionFactory, $printer, $command), new TaskLoop(8))
+            TestRunnerMode::Linear => new LinearTestRunner($facade, $assertionFactory, $printer),
+            TestRunnerMode::Parallel => new ParallelTestRunner($assertionFactory, $printer, $command),
+            TestRunnerMode::Async => new AsyncTestRunner(new ParallelTestRunner($assertionFactory, $printer, $command), new TaskLoop(8))
         };
 
 

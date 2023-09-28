@@ -6,7 +6,6 @@ namespace Tests\Harness\Unit\Test;
 
 use ErrorException;
 use Fiber;
-use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Harness\Contracts\AssertionFactory;
 use Oru\EcmaScript\Harness\Contracts\Command;
 use Oru\EcmaScript\Harness\Contracts\Printer;
@@ -37,7 +36,6 @@ final class ParallelTestRunnerTest extends TestCase
         $this->expectExceptionObject(new RuntimeException('Could not open process'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Engine::class),
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'Ê↕'])
@@ -52,7 +50,6 @@ final class ParallelTestRunnerTest extends TestCase
         $this->expectExceptionObject(new ErrorException('THROWN IN TEST'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Engine::class),
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/FailingTest.php')])
@@ -67,7 +64,6 @@ final class ParallelTestRunnerTest extends TestCase
         $this->expectExceptionObject(new RuntimeException('Subprocess did not return a `TestResult` - Returned: O:8:"stdClass":1:{s:3:"AAA";s:3:"BBB";}'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Engine::class),
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/NonTestResultReturningTest.php')])
@@ -80,7 +76,6 @@ final class ParallelTestRunnerTest extends TestCase
     public function aggregatesTestResults(): void
     {
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Engine::class),
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/SuccessfulTest.php')])
@@ -101,7 +96,6 @@ final class ParallelTestRunnerTest extends TestCase
         $printerMock->expects($this->exactly(2))->method('step')->with(TestResultState::Success);
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Engine::class),
             $this->createMock(AssertionFactory::class),
             $printerMock,
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/SuccessfulTest.php')])
@@ -117,7 +111,6 @@ final class ParallelTestRunnerTest extends TestCase
         $this->expectExceptionObject(new RuntimeException('SUCCESS'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Engine::class),
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/FailsOnMissingInputTest.php')])
@@ -132,7 +125,6 @@ final class ParallelTestRunnerTest extends TestCase
     public function willBeSupendedWhenRunningInAFiber(): void
     {
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Engine::class),
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Harness/Utility/Template/DelayedTest.php')])
