@@ -13,11 +13,13 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../bootstrap.php';
 
+$facade = new \Tests\Harness\Utility\Facade\SuccessfulFacade();
+
 $_SERVER['argv'][] = './tests/Harness/EndToEnd/Fixtures/empty.js';
 $_SERVER['argv'][] = '--no-cache';
 $_SERVER['argv'][] = '--debug';
 
-(new \Oru\EcmaScript\Harness\Harness())->run($_SERVER['argv']);
+(new \Oru\EcmaScript\Harness\Harness($facade))->run($_SERVER['argv']);
 --EXPECTF--
 
 EcmaScript Test Harness

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Oru\EcmaScript\Harness;
 
+use Oru\EcmaScript\Harness\Contracts\Facade;
+
 include './vendor/autoload.php';
 
-(new \Oru\EcmaScript\Harness\Harness())->run($argv);
+/** @var Facade $facade */
+$facade = (require './Harness.php')();
+
+(new \Oru\EcmaScript\Harness\Harness($facade))->run($argv);

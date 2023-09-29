@@ -41,6 +41,11 @@ use function time;
 
 final readonly class Harness
 {
+    public function __construct(
+        private Facade $facade
+    ) {
+    }
+
     /**
      * @param string[] $arguments
      *
@@ -50,17 +55,12 @@ final readonly class Harness
     {
         array_shift($arguments);
 
-        $engine = getEngine();
-
-        /** @var Facade $facade */
-        $facade = (require './harness.php')();
-
         $testStorage       = new FileStorage('.');
         $configFactory     = new HarnessConfigFactory();
         $testConfigFactory = new GenericTestConfigFactory($testStorage);
         $printerFactory    = new GenericPrinterFactory();
         $outputFactory     = new GenericOutputFactory();
-        $assertionFactory  = new GenericAssertionFactory($facade);
+        $assertionFactory  = new GenericAssertionFactory($this->facade);
         $command           = new ClonedPhpCommand(realpath('./harness/Template/ExecuteTest.php'));
 
         $config  = $configFactory->make($arguments);
@@ -78,7 +78,7 @@ final readonly class Harness
 
         // FIXME: Move to `TestRunnerFactory`
         $testRunner = match ($config->testRunnerMode()) {
-            TestRunnerMode::Linear => new LinearTestRunner($facade, $assertionFactory, $printer),
+            TestRunnerMode::Linear => new LinearTestRunner($this->facade, $assertionFactory, $printer),
             TestRunnerMode::Parallel => new ParallelTestRunner($assertionFactory, $printer, $command),
             TestRunnerMode::Async => new AsyncTestRunner(new ParallelTestRunner($assertionFactory, $printer, $command), new TaskLoop(8))
         };
