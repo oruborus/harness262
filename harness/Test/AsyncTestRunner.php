@@ -7,15 +7,11 @@ namespace Oru\EcmaScript\Harness\Test;
 use Fiber;
 use Oru\EcmaScript\Harness\Contracts\Loop;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
-use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestRunner;
 use Oru\EcmaScript\Harness\Loop\FiberTask;
 
 final readonly class AsyncTestRunner implements TestRunner
 {
-    /**
-     * @param Loop<TestResult> $loop 
-     */
     public function __construct(
         private TestRunner $runner,
         private Loop $loop,
@@ -35,11 +31,10 @@ final readonly class AsyncTestRunner implements TestRunner
         );
     }
 
-    /**
-     * @return TestResult[]
-     */
     public function finalize(): array
     {
-        return $this->loop->run();
+        $this->loop->run();
+
+        return $this->runner->finalize();
     }
 }

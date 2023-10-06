@@ -6,21 +6,14 @@ namespace Oru\EcmaScript\Harness\Loop;
 
 use Oru\EcmaScript\Harness\Contracts\Loop;
 use Oru\EcmaScript\Harness\Contracts\Task;
-use Oru\EcmaScript\Harness\Contracts\TestResult;
 
 use function array_shift;
 use function count;
 
-/**
- * @implements Loop<TestResult>
- */
 final class TaskLoop implements Loop
 {
     /** @var Task[] $tasks */
     private array $tasks = [];
-
-    /** @var TestResult[] $results */
-    private array $results = [];
 
     public function __construct(
         private int $concurrency
@@ -32,10 +25,7 @@ final class TaskLoop implements Loop
         $this->tasks[] = $task;
     }
 
-    /**
-     * @return TestResult[]
-     */
-    public function run(): array
+    public function run(): void
     {
         $count = 0;
         $stash = [];
@@ -53,15 +43,5 @@ final class TaskLoop implements Loop
                 $stash = [];
             }
         }
-
-        return $this->results;
-    }
-
-    /**
-     * @param TestResult $result
-     */
-    public function addResult(mixed $result): void
-    {
-        $this->results[] = $result;
     }
 }
