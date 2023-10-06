@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../bootstrap.php';
 
-$facade = new \Tests\Harness\Utility\Facade\SuccessfulFacade();
+$facade = new \Tests\Harness\Utility\Facade\TestFacade();
 
 $_SERVER['argv'][] = './tests/Harness/EndToEnd/Fixtures/empty.js';
 $_SERVER['argv'][] = '--no-cache';

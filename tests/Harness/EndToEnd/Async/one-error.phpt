@@ -17,16 +17,23 @@ $facade = new \Tests\Harness\Utility\Facade\TestFacade();
 
 $_SERVER['argv'][] = './tests/Harness/EndToEnd/Fixtures/empty.js';
 $_SERVER['argv'][] = './tests/Harness/EndToEnd/Fixtures/empty.js';
-$_SERVER['argv'][] = './tests/Harness/EndToEnd/Fixtures/empty.js';
+$_SERVER['argv'][] = './tests/Harness/EndToEnd/Fixtures/error.js';
 $_SERVER['argv'][] = './tests/Harness/EndToEnd/Fixtures/empty.js';
 $_SERVER['argv'][] = '--no-cache';
 $_SERVER['argv'][] = '--async';
 
 (new \Oru\EcmaScript\Harness\Harness($facade))->run($_SERVER['argv']);
---EXPECTF--
+--EXPECTREGEX--
 
 EcmaScript Test Harness
 
-....                                                            4 / 4 (100%)
+(E\.\.\.)|(\.E\.\.)|(\.\.E\.)|(\.\.\.E)                                                            4 \/ 4 \(100%\)
 
-Duration: %d:%d
+Duration: [0-9]{2}:[0-9]{2}
+
+There where error\(s\)!
+
+ERRORS:
+
+1:
+(?s:.*)

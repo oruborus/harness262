@@ -4,10 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\Harness\Utility\Facade;
 
+use Exception;
 use Oru\EcmaScript\Harness\Contracts\Facade;
 
-final class FailingFacade implements Facade
+use function array_filter;
+use function strpos;
+
+final class TestFacade implements Facade
 {
+    private bool $fails = false;
+
+    private bool $errors = false;
+
+    public static function path(): string
+    {
+        return __DIR__ . DIRECTORY_SEPARATOR . 'create-test-facade.php';
+    }
+
     public function completionGetValue(mixed $completion): mixed
     {
         return null;
@@ -15,12 +28,12 @@ final class FailingFacade implements Facade
 
     public function isNormalCompletion(mixed $value): bool
     {
-        return false;
+        return !$this->fails && !$this->errors;
     }
 
     public function isThrowCompletion(mixed $value): bool
     {
-        return true;
+        return $this->fails || $this->errors;
     }
 
     public function isObject(mixed $value): bool
@@ -55,14 +68,21 @@ final class FailingFacade implements Facade
 
     public function engineAddFiles(string ...$paths): void
     {
+        $this->fails = !array_filter($paths, static fn (string $path): bool => strpos($path, 'fail') !== false);
+        $this->errors = !array_filter($paths, static fn (string $path): bool => strpos($path, 'error') !== false);
     }
 
     public function engineAddCode(string $source, ?string $file = null, bool $isModuleCode = false): void
     {
+        $this->fails = strpos($source, 'fail') !== false;
+        $this->errors = strpos($source, 'error') !== false;
     }
 
     public function engineRun(): mixed
     {
+        if ($this->errors) {
+            throw new Exception('Planned error');
+        }
         return null;
     }
 }

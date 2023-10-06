@@ -41,9 +41,24 @@ use function time;
 
 final readonly class Harness
 {
+    private const TEMPLATE_PATH = './harness/Template/ExecuteTest';
+
     public function __construct(
         private Facade $facade
     ) {
+        file_put_contents(
+            static::TEMPLATE_PATH . '.php',
+            str_replace(
+                '{{FACADE_PATH}}',
+                $this->facade::path(),
+                file_get_contents(realpath(static::TEMPLATE_PATH))
+            )
+        );
+    }
+
+    public function __destruct()
+    {
+        unlink(static::TEMPLATE_PATH . '.php');
     }
 
     /**
@@ -61,7 +76,7 @@ final readonly class Harness
         $printerFactory    = new GenericPrinterFactory();
         $outputFactory     = new GenericOutputFactory();
         $assertionFactory  = new GenericAssertionFactory($this->facade);
-        $command           = new ClonedPhpCommand(realpath('./harness/Template/ExecuteTest.php'));
+        $command           = new ClonedPhpCommand(realpath(static::TEMPLATE_PATH . '.php'));
 
         $config  = $configFactory->make($arguments);
         $output  = $outputFactory->make($config);

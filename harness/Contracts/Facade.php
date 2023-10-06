@@ -6,6 +6,8 @@ namespace Oru\EcmaScript\Harness\Contracts;
 
 interface Facade
 {
+    public static function path(): string;
+
     public function completionGetValue(mixed $completion): mixed;
 
     public function isNormalCompletion(mixed $value): bool;

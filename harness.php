@@ -32,6 +32,11 @@ return static function (): Facade {
         ) {
         }
 
+        public static function path(): string
+        {
+            return __FILE__;
+        }
+
         public function completionGetValue(mixed $completion): mixed
         {
             assert($completion instanceof CompletionValue);

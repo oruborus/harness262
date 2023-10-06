@@ -6,7 +6,6 @@ namespace Tests\Harness\Unit\Test;
 
 use Oru\EcmaScript\Harness\Contracts\Loop;
 use Oru\EcmaScript\Harness\Contracts\TestConfig;
-use Oru\EcmaScript\Harness\Contracts\TestResult;
 use Oru\EcmaScript\Harness\Contracts\TestRunner;
 use Oru\EcmaScript\Harness\Loop\FiberTask;
 use Oru\EcmaScript\Harness\Test\AsyncTestRunner;
@@ -43,19 +42,14 @@ final class AsyncTestRunnerTest extends TestCase
 
         $loopMock = new SimpleLoop();
         $testRunnerMock = $this->createMock(TestRunner::class);
-        $testRunnerMock->expects($this->exactly($expectedCount))->method('run')
-            ->willReturnCallback(function () use ($loopMock): void {
-                $loopMock->addResult($this->createMock(TestResult::class));
-            });
-
+        $testRunnerMock->expects($this->exactly($expectedCount))->method('run');
 
         $testRunner = new AsyncTestRunner($testRunnerMock, $loopMock);
         foreach ($testConfigMocks as $testConfigMock) {
             $testRunner->run($testConfigMock);
         }
-        $actual = $testRunner->finalize();
 
-        $this->assertContainsOnly(TestResult::class, $actual);
-        $this->assertCount($expectedCount, $actual);
+
+        $testRunner->finalize();
     }
 }

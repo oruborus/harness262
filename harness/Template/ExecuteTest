@@ -9,10 +9,12 @@ use Oru\EcmaScript\Harness\Printer\SilentPrinter;
 use Oru\EcmaScript\Harness\Subprocess\SingleTestSubprocess;
 use Oru\EcmaScript\Harness\Test\LinearTestRunner;
 
+const FACADE_PATH = '{{FACADE_PATH}}';
+
 require './vendor/autoload.php';
 
 /** @var Facade $facade */
-$facade = (require './harness.php')();
+$facade = (require FACADE_PATH)();
 
 try {
     $result = (new SingleTestSubprocess(
