@@ -10,6 +10,8 @@ use function substr;
 
 final class TestStreamWrapper
 {
+    public mixed $context;
+
     private static string $content = '';
 
     private static int $position = 0;
