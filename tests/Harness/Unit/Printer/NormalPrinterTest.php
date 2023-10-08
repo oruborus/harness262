@@ -196,12 +196,8 @@ final class NormalPrinterTest extends TestCase
         $exptectedOutput->writeLn('1:');
         $exptectedOutput->writeLn((string) $exception1);
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn($exception1->getTraceAsString());
-        $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('2:');
         $exptectedOutput->writeLn((string) $exception2);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn($exception2->getTraceAsString());
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('');
 
@@ -242,12 +238,8 @@ final class NormalPrinterTest extends TestCase
         $exptectedOutput->writeLn('1:');
         $exptectedOutput->writeLn((string) $error1);
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn($error1->getTraceAsString());
-        $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('2:');
         $exptectedOutput->writeLn((string) $error2);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn($error2->getTraceAsString());
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('');
 
@@ -290,12 +282,8 @@ final class NormalPrinterTest extends TestCase
         $exptectedOutput->writeLn('1:');
         $exptectedOutput->writeLn((string) $exception1);
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn($exception1->getTraceAsString());
-        $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('2:');
         $exptectedOutput->writeLn((string) $exception2);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn($exception2->getTraceAsString());
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('ERRORS:');
@@ -303,12 +291,8 @@ final class NormalPrinterTest extends TestCase
         $exptectedOutput->writeLn('1:');
         $exptectedOutput->writeLn((string) $error1);
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn($error1->getTraceAsString());
-        $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('2:');
         $exptectedOutput->writeLn((string) $error2);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn($error2->getTraceAsString());
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('');
 

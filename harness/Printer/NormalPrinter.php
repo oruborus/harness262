@@ -157,8 +157,6 @@ final class NormalPrinter implements Printer
             $this->output->writeLn("{$count}:");
             $this->output->writeLn($throwable->__toString());
             $this->output->writeLn('');
-            $this->output->writeLn($throwable->getTraceAsString());
-            $this->output->writeLn('');
         }
     }
 }
