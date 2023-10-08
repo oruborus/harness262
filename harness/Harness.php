@@ -33,11 +33,14 @@ use Stringable;
 use function array_shift;
 use function count;
 use function file_exists;
+use function file_get_contents;
+use function file_put_contents;
 use function is_dir;
 use function is_file;
 use function is_null;
 use function realpath;
 use function time;
+use function unlink;
 
 final readonly class Harness
 {
@@ -202,21 +205,6 @@ final readonly class Harness
 
             // e. Let **testEndTime** be the current system time in seconds.
             $testEndTime = time();
-
-            // f. Set **testResult**.duration to `testEndTime - testStartTime`.
-            // $testResult->duration($testEndTime - $testStartTime);
-
-            // g. If **testResult**.state is `success`, then
-            // if ($testResult->state() === TestResultState::Success) {
-            //     // ii. Perform **cacheRepository**.set(**testConfig**, **testResult**).
-            //     $cacheRepository->set($testConfig, $testResult);
-            // }
-
-            // h. Append **testResult** to **resultList**.
-            // $resultList[] = $testResult;
-
-            // i. Perform **printer**.step(**testResult**.state).
-            // $printer->step($testResult->state());
         }
 
         // 8. Append the returned list of **testRunner.finalize()** to **resultList**.
