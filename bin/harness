@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness;
-
 use Oru\Harness\Contracts\Facade;
+use Oru\Harness\Harness;
 
 include './vendor/autoload.php';
 
 /** @var Facade $facade */
 $facade = (require './Harness.php')();
 
-(new \Oru\Harness($facade))->run($argv);
+(new Harness($facade))->run($argv);
