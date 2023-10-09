@@ -1,0 +1,14 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Oru\Harness;
+
+use Oru\Harness\Contracts\Facade;
+
+include './vendor/autoload.php';
+
+/** @var Facade $facade */
+$facade = (require './Harness.php')();
+
+(new \Oru\Harness($facade))->run($argv);
