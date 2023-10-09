@@ -1,6 +1,6 @@
 {
-    "name": "oru/harnes262",
-    "description": "PHP based ECMAScript engine",
+    "name": "oru/harness262",
+    "description": "PHP based ECMAScript test262 harness",
     "type": "library",
     "license": "MIT",
     "authors": [
