@@ -2,7 +2,8 @@
     "name": "oru/harness262",
     "description": "PHP based ECMAScript test262 harness",
     "type": "library",
-    "license": "MIT",
+    "license": "BSD-3-Clause",
+    "version": "0.1",
     "authors": [
         {
             "name": "Felix Jahn",
