@@ -44,7 +44,7 @@ use function unlink;
 
 final readonly class Harness
 {
-    private const TEMPLATE_PATH = './src/Template/ExecuteTest';
+    private const TEMPLATE_PATH = __DIR__ . '/Template/ExecuteTest';
 
     public function __construct(
         private Facade $facade
