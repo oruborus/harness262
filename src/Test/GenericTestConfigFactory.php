@@ -54,7 +54,7 @@ final readonly class GenericTestConfigFactory implements TestConfigFactory
 
         $index = preg_match('/\/\*---(.*)---\*\//s', $content, $match);
         if ($index !== 1) {
-            throw new MissingFrontmatterException('Provided test file does not contain a frontmatter section');
+            throw new MissingFrontmatterException("Provided test file does not contain a frontmatter section: {$path}");
         }
 
         $meta = preg_split(
