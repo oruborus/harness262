@@ -39,6 +39,7 @@ use function is_dir;
 use function is_file;
 use function is_null;
 use function realpath;
+use function str_ends_with;
 use function time;
 use function unlink;
 
@@ -143,6 +144,9 @@ final readonly class Harness
                 );
                 foreach ($it as $filePath) {
                     // FIXME: 1. If file is not a valid ECMAScript file, then continue.
+                    if (str_ends_with((string) $filePath, '_FIXTURE.js')) {
+                        continue;
+                    }
 
                     // 2. Let **testConfigs** the frontmatter configurations of the file stored at **filePath**.
                     $testConfigs = $testConfigFactory->make((string) $filePath);
