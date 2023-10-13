@@ -35,7 +35,7 @@ final readonly class AssertAsync implements Assertion
         }
 
         if (!str_starts_with($actual, static::FAILURE_SEQUENCE)) {
-            throw new EngineException("Expected string output to start with `" . static::FAILURE_SEQUENCE . "` in case of failure, got: {$actual}");
+            throw new EngineException("Expected string output to start with `" . static::FAILURE_SEQUENCE . "` in case of failure, got: \"{$actual}\"");
         }
 
         $message = substr($actual, static::FAILURE_SEQUENCE_LENGTH);

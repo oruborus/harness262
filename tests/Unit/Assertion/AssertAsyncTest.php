@@ -29,7 +29,7 @@ final class AssertAsyncTest extends TestCase
     #[Test]
     public function throwsWhenProvidedValueIsNotAStringWithCorrectStartSequence(): void
     {
-        $this->expectExceptionObject(new EngineException("Expected string output to start with `Test262:AsyncTestFailure:` in case of failure, got: WRONG"));
+        $this->expectExceptionObject(new EngineException('Expected string output to start with `Test262:AsyncTestFailure:` in case of failure, got: "WRONG"'));
 
         $facadeMock = $this->createMock(Facade::class);
         $assertion = new AssertAsync($facadeMock);
