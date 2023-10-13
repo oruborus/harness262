@@ -9,6 +9,7 @@ use Oru\Harness\Contracts\Assertion;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\Frontmatter;
+use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\FrontmatterInclude;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\TestConfig;
@@ -190,5 +191,33 @@ final class LinearTestRunnerTest extends TestCase
 
         $this->assertSame(TestResultState::Success, $actual->state());
         $this->assertSame(0, $actual->duration());
+    }
+
+    #[Test]
+    public function capturesAndPerformsAssertionOnEngineOutputForAsyncTest(): void
+    {
+        $expected = 'TEST OUTPUT';
+        $facadeMock = $this->createMock(Facade::class);
+        $facadeMock->method('engineRun')->willReturnCallback(static function () use ($expected): void {
+            echo $expected;
+        });
+        $assertionMock = $this->createMock(Assertion::class);
+        $assertionMock->expects($this->once())->method('assert')->with($expected);
+        $assertionFactoryMock = $this->createConfiguredMock(AssertionFactory::class, [
+            'make' => $assertionMock
+        ]);
+
+        $testRunner = new LinearTestRunner(
+            $facadeMock,
+            $assertionFactoryMock,
+            $this->createMock(Printer::class)
+        );
+        $config = $this->createConfiguredMock(TestConfig::class, [
+            'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
+                'flags' => [FrontmatterFlag::async]
+            ])
+        ]);
+
+        $testRunner->run($config);
     }
 }

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assertion;
 
+use Oru\Harness\Assertion\AssertAsync;
 use Oru\Harness\Assertion\AssertIsNormal;
 use Oru\Harness\Assertion\AssertIsThrowableWithConstructor;
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\Frontmatter;
+use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\FrontmatterNegative;
 use Oru\Harness\Contracts\TestConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -51,5 +53,21 @@ final class GenericAssertionFactoryTest extends TestCase
         );
 
         $this->assertInstanceOf(AssertIsThrowableWithConstructor::class, $actual);
+    }
+
+    #[Test]
+    public function returnsCorrectAssertionWithAsyncFrontmatterFlag(): void
+    {
+        $factory = new GenericAssertionFactory($this->createMock(Facade::class));
+
+        $actual = $factory->make(
+            $this->createConfiguredMock(TestConfig::class, [
+                'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
+                    'flags' => [FrontmatterFlag::async]
+                ])
+            ])
+        );
+
+        $this->assertInstanceOf(AssertAsync::class, $actual);
     }
 }

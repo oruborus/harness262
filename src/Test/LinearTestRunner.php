@@ -11,11 +11,15 @@ use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunner;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Contracts\Facade;
+use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\Printer;
 use Throwable;
 
 use function array_diff;
 use function count;
+use function in_array;
+use function ob_get_clean;
+use function ob_start;
 
 final class LinearTestRunner implements TestRunner
 {
@@ -48,9 +52,9 @@ final class LinearTestRunner implements TestRunner
 
         try {
             /**
-             * @psalm-suppress MixedAssignment  The methods of `Facade` intentionally return `mixed`
+             * @psalm-suppress MixedAssignment  Test outcommes intentionally return `mixed`
              */
-            $actual = $this->facade->engineRun();
+            $actual = $this->runTest($config);
         } catch (Throwable $throwable) {
             $this->addResult(new GenericTestResult(TestResultState::Error, $config->path(), [], 0, $throwable));
             return;
@@ -67,6 +71,17 @@ final class LinearTestRunner implements TestRunner
 
         $this->addResult(new GenericTestResult(TestResultState::Success, $config->path(), [], 0));
         return;
+    }
+
+    private function runTest(TestConfig $testConfig): mixed
+    {
+        if (!in_array(FrontmatterFlag::async, $testConfig->frontmatter()->flags())) {
+            return $this->facade->engineRun();
+        }
+
+        ob_start();
+        $this->facade->engineRun();
+        return ob_get_clean();
     }
 
     private function addResult(TestResult $result): void
