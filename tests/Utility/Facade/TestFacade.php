@@ -16,6 +16,10 @@ final class TestFacade implements Facade
 
     private bool $errors = false;
 
+    public function initialize(): void
+    {
+    }
+
     public static function path(): string
     {
         return __DIR__ . DIRECTORY_SEPARATOR . 'create-test-facade.php';

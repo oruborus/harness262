@@ -45,6 +45,8 @@ final class LinearTestRunner implements TestRunner
             return;
         }
 
+        $this->facade->initialize();
+
         foreach ($config->frontmatter()->includes() as $include) {
             $this->facade->engineAddFiles($include->value);
         }

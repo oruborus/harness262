@@ -77,6 +77,20 @@ final class LinearTestRunnerTest extends TestCase
     }
 
     #[Test]
+    public function initializesFacadeBeforeRunningTest(): void
+    {
+        $facadeMock = $this->createMock(Facade::class);
+        $facadeMock->expects($this->once())->method('initialize');
+        $testRunner = new LinearTestRunner(
+            $facadeMock,
+            $this->createMock(AssertionFactory::class),
+            $this->createMock(Printer::class)
+        );
+
+        $testRunner->run($this->createMock(TestConfig::class));
+    }
+
+    #[Test]
     public function addsIncludesFromConfigToEngine(): void
     {
         $facadeMock = $this->createMock(Facade::class);
