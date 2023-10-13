@@ -10,6 +10,7 @@ use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunner;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
+use Oru\Harness\Assertion\Exception\EngineException;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\Printer;
@@ -66,6 +67,9 @@ final class LinearTestRunner implements TestRunner
             $assertion->assert($actual);
         } catch (AssertionFailedException $assertionFailedException) {
             $this->addResult(new GenericTestResult(TestResultState::Fail, $config->path(), [], 0, $assertionFailedException));
+            return;
+        } catch (Throwable $throwable) {
+            $this->addResult(new GenericTestResult(TestResultState::Error, $config->path(), [], 0, $throwable));
             return;
         }
 

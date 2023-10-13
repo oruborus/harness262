@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Test;
 
+use Exception;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Contracts\Assertion;
 use Oru\Harness\Contracts\AssertionFactory;
@@ -144,7 +145,7 @@ final class LinearTestRunnerTest extends TestCase
     }
 
     #[Test]
-    public function returnsAnFailResultContainingTheAssertionFailedExceptionFromTheAssertion(): void
+    public function returnsAFailResultContainingTheAssertionFailedExceptionFromTheAssertion(): void
     {
         $expected = new AssertionFailedException();
 
@@ -168,6 +169,35 @@ final class LinearTestRunnerTest extends TestCase
         [$actual] = $testRunner->finalize();
 
         $this->assertSame(TestResultState::Fail, $actual->state());
+        $this->assertSame($expected, $actual->throwable());
+        $this->assertSame(0, $actual->duration());
+    }
+
+    #[Test]
+    public function returnsAnErrorResultContainingTheThrowableFromTheAssertion(): void
+    {
+        $expected = new Exception();
+
+        $assertionMock = $this->createMock(Assertion::class);
+        $assertionMock->method('assert')->willThrowException($expected);
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('step');
+
+        $testRunner = new LinearTestRunner(
+            $this->createConfiguredMock(Facade::class, [
+                'engineRun' => 'UndefinedValue'
+            ]),
+            $this->createConfiguredMock(AssertionFactory::class, [
+                'make' => $assertionMock
+            ]),
+            $printerMock
+        );
+        $config = $this->createMock(TestConfig::class);
+
+        $testRunner->run($config);
+        [$actual] = $testRunner->finalize();
+
+        $this->assertSame(TestResultState::Error, $actual->state());
         $this->assertSame($expected, $actual->throwable());
         $this->assertSame(0, $actual->duration());
     }
