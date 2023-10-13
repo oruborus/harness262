@@ -27,7 +27,7 @@
         disableCodeCoverageIgnore="true">
 
         <report>
-            <html outputDirectory="../../.phpunit/harness/coverage" lowUpperBound="50"
+            <html outputDirectory=".phpunit/coverage" lowUpperBound="50"
                 highLowerBound="90" />
         </report>
     </coverage>
