@@ -34,5 +34,5 @@ There where error(s)!
 
 ERRORS:
 
-1:
+1: ./tests/EndToEnd/Fixtures/error.js
 %A

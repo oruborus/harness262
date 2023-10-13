@@ -34,5 +34,5 @@ There where failure(s)!
 
 FAILURES:
 
-1:
+1: ./tests/EndToEnd/Fixtures/fail.js
 %A

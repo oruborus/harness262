@@ -154,7 +154,7 @@ final class NormalPrinter implements Printer
             $throwable = $testResult->throwable();
             assert(!is_null($throwable));
             $count++;
-            $this->output->writeLn("{$count}:");
+            $this->output->writeLn("{$count}: {$testResult->path()}");
             $this->output->writeLn($throwable->__toString());
             $this->output->writeLn('');
         }

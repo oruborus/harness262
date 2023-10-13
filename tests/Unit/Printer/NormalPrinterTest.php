@@ -193,10 +193,10 @@ final class NormalPrinterTest extends TestCase
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('FAILURES:');
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('1:');
+        $exptectedOutput->writeLn('1: path1');
         $exptectedOutput->writeLn((string) $exception1);
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('2:');
+        $exptectedOutput->writeLn('2: path2');
         $exptectedOutput->writeLn((string) $exception2);
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('');
@@ -205,12 +205,14 @@ final class NormalPrinterTest extends TestCase
         $printer->end([
             $this->createConfiguredMock(TestResult::class, [
                 'state' => TestResultState::Fail,
+                'path' => 'path1',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $exception1
             ]),
             $this->createConfiguredMock(TestResult::class, [
                 'state' => TestResultState::Fail,
+                'path' => 'path2',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $exception2
@@ -235,10 +237,10 @@ final class NormalPrinterTest extends TestCase
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('ERRORS:');
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('1:');
+        $exptectedOutput->writeLn('1: path1');
         $exptectedOutput->writeLn((string) $error1);
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('2:');
+        $exptectedOutput->writeLn('2: path2');
         $exptectedOutput->writeLn((string) $error2);
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('');
@@ -247,12 +249,14 @@ final class NormalPrinterTest extends TestCase
         $printer->end([
             $this->createConfiguredMock(TestResult::class, [
                 'state' => TestResultState::Error,
+                'path' => 'path1',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $error1
             ]),
             $this->createConfiguredMock(TestResult::class, [
                 'state' => TestResultState::Error,
+                'path' => 'path2',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $error2
@@ -279,19 +283,19 @@ final class NormalPrinterTest extends TestCase
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('FAILURES:');
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('1:');
+        $exptectedOutput->writeLn('1: path1');
         $exptectedOutput->writeLn((string) $exception1);
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('2:');
+        $exptectedOutput->writeLn('2: path2');
         $exptectedOutput->writeLn((string) $exception2);
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('ERRORS:');
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('1:');
+        $exptectedOutput->writeLn('1: path3');
         $exptectedOutput->writeLn((string) $error1);
         $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('2:');
+        $exptectedOutput->writeLn('2: path4');
         $exptectedOutput->writeLn((string) $error2);
         $exptectedOutput->writeLn('');
         $exptectedOutput->writeLn('');
@@ -300,24 +304,28 @@ final class NormalPrinterTest extends TestCase
         $printer->end([
             $this->createConfiguredMock(TestResult::class, [
                 'state' => TestResultState::Fail,
+                'path' => 'path1',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $exception1
             ]),
             $this->createConfiguredMock(TestResult::class, [
                 'state' => TestResultState::Error,
+                'path' => 'path3',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $error1
             ]),
             $this->createConfiguredMock(TestResult::class, [
                 'state' => TestResultState::Fail,
+                'path' => 'path2',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $exception2
             ]),
             $this->createConfiguredMock(TestResult::class, [
                 'state' => TestResultState::Error,
+                'path' => 'path4',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $error2
