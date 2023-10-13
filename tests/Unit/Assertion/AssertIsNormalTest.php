@@ -28,8 +28,6 @@ final class AssertIsNormalTest extends TestCase
             'isThrowCompletion' => false
         ]);
 
-        $s = serialize(new GenericTestConfig('a', 'b', new GenericFrontmatter('description: x')));
-
         $assertion = new AssertIsNormal($facadeMock);
         $assertion->assert('AbruptCompletion');
     }
