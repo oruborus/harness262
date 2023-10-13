@@ -7,4 +7,4 @@ use Oru\Harness\Test\GenericTestResult;
 
 require './vendor/autoload.php';
 
-echo serialize(new GenericTestResult(TestResultState::Success, [], 0));
+echo serialize(new GenericTestResult(TestResultState::Success, 'path', [], 0));

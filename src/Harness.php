@@ -187,20 +187,23 @@ final readonly class Harness
                     // iii. Set **cacheResult**.state to `cache`.
                     state: TestResultState::Cache,
 
-                    // iv. Set **cacheResult**.duration to **testEndTime** - **testStartTime**.
+                    // iv: Set **cacheResult**.path to **testConfig**.path()
+                    path: $testConfig->path(),
+
+                    // v. Set **cacheResult**.duration to **testEndTime** - **testStartTime**.
                     duration: $testEndTime - $testStartTime,
 
-                    // v. Set **cacheResult**.usedFiles to **cache**.usedFiles.
+                    // vi. Set **cacheResult**.usedFiles to **cache**.usedFiles.
                     usedFiles: $cacheResult->usedFiles()
                 );
 
-                // vi. Append **cacheResult** to **resultList**.
+                // vii. Append **cacheResult** to **resultList**.
                 $resultList[] = $cacheResult;
 
-                // vii. Perform **printer**.step(cache).
+                // viii. Perform **printer**.step(cache).
                 $printer->step(TestResultState::Cache);
 
-                // viii. Continue.
+                // ix. Continue.
                 continue;
             }
 

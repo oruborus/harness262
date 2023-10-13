@@ -15,6 +15,7 @@ final readonly class GenericTestResult implements TestResult
      */
     public function __construct(
         private TestResultState $state,
+        private string $path,
         private array $usedFiles,
         private int $duration,
         private ?Throwable $throwable = null,
@@ -24,6 +25,11 @@ final readonly class GenericTestResult implements TestResult
     public function state(): TestResultState
     {
         return $this->state;
+    }
+
+    public function path(): string
+    {
+        return $this->path;
     }
 
     /**

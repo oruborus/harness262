@@ -9,4 +9,4 @@ require './vendor/autoload.php';
 
 usleep(100);
 
-echo serialize(new GenericTestResult(TestResultState::Success, [], 0));
+echo serialize(new GenericTestResult(TestResultState::Success, 'path', [], 0));

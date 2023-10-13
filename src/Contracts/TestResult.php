@@ -10,6 +10,8 @@ interface TestResult
 {
     public function state(): TestResultState;
 
+    public function path(): string;
+
     /**
      * @return string[]
      */

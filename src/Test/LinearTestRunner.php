@@ -36,7 +36,7 @@ final class LinearTestRunner implements TestRunner
         $differences = array_diff($config->frontmatter()->features(), $this->facade->engineSupportedFeatures());
 
         if (count($differences) > 0) {
-            $this->addResult(new GenericTestResult(TestResultState::Skip, [], 0));
+            $this->addResult(new GenericTestResult(TestResultState::Skip, $config->path(), [], 0));
             return;
         }
 
@@ -52,7 +52,7 @@ final class LinearTestRunner implements TestRunner
              */
             $actual = $this->facade->engineRun();
         } catch (Throwable $throwable) {
-            $this->addResult(new GenericTestResult(TestResultState::Error, [], 0, $throwable));
+            $this->addResult(new GenericTestResult(TestResultState::Error, $config->path(), [], 0, $throwable));
             return;
         }
 
@@ -61,11 +61,11 @@ final class LinearTestRunner implements TestRunner
         try {
             $assertion->assert($actual);
         } catch (AssertionFailedException $assertionFailedException) {
-            $this->addResult(new GenericTestResult(TestResultState::Fail, [], 0, $assertionFailedException));
+            $this->addResult(new GenericTestResult(TestResultState::Fail, $config->path(), [], 0, $assertionFailedException));
             return;
         }
 
-        $this->addResult(new GenericTestResult(TestResultState::Success, [], 0));
+        $this->addResult(new GenericTestResult(TestResultState::Success, $config->path(), [], 0));
         return;
     }
 

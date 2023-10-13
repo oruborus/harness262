@@ -18,13 +18,15 @@ final class GenericTestResultTest extends TestCase
     public function actsAsValueObject(): void
     {
         $expectedState = TestResultState::Error;
+        $expectedPath = 'path/to/some/test/file';
         $expectedUsedFiles = ['A', 'B'];
         $expectedDuration = 123;
         $expectedThrowable = new RuntimeException('Error');
 
-        $actual = new GenericTestResult($expectedState, $expectedUsedFiles, $expectedDuration, $expectedThrowable);
+        $actual = new GenericTestResult($expectedState, $expectedPath, $expectedUsedFiles, $expectedDuration, $expectedThrowable);
 
         $this->assertSame($expectedState, $actual->state());
+        $this->assertSame($expectedPath, $actual->path());
         $this->assertSame($expectedUsedFiles, $actual->usedFiles());
         $this->assertSame($expectedDuration, $actual->duration());
         $this->assertSame($expectedThrowable, $actual->throwable());
