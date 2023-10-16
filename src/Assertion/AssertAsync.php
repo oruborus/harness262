@@ -30,7 +30,7 @@ final readonly class AssertAsync implements Assertion
             throw new EngineException('Expected string output');
         }
 
-        if ($actual === static::SUCCESS_SEQUENCE) {
+        if (str_starts_with($actual, static::SUCCESS_SEQUENCE)) {
             return;
         }
 
