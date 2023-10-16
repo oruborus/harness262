@@ -11,6 +11,24 @@ Run the following command to execute the complete test suite. Using the jit is a
 $ harness ./vendor/tc39/test262/test
 ```
 
+### Command-line options
+
+#### `--debug`
+Runs the testsuite in sequence and allows for step-debugging using xdebug or similar solutions.
+
+#### `--async` (deprecated)
+Runs the testsuite in parallel using multiple php processes.
+This option will be phased out in the future, as this is the intended standard behavior.
+
+#### `--no-cache`, `-n`
+Disables caching of test results.
+
+#### `--silent`, `-s`
+Runs the testsuite without output.
+
+#### `--verbose`, `-v`
+Runs the testsuite with extended output.
+
 ### Testing
 
 ```bash
