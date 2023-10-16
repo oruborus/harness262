@@ -55,7 +55,7 @@ final class LinearTestRunner implements TestRunner
 
         try {
             /**
-             * @psalm-suppress MixedAssignment  Test outcommes intentionally return `mixed`
+             * @psalm-suppress MixedAssignment  Test outcomes intentionally return `mixed`
              */
             $actual = $this->runTest($config);
         } catch (Throwable $throwable) {
