@@ -1,5 +1,5 @@
 --TEST--
-harness empty.js
+harness empty.js empty.js error.js empty.js --debug
 --SKIPIF--
 <?php
 
@@ -16,7 +16,9 @@ require_once __DIR__ . '/../bootstrap.php';
 $facade = new \Tests\Utility\Facade\TestFacade();
 
 $_SERVER['argv'][] = './tests/EndToEnd/Fixtures/empty.js';
-$_SERVER['argv'][] = '--no-cache';
+$_SERVER['argv'][] = './tests/EndToEnd/Fixtures/empty.js';
+$_SERVER['argv'][] = './tests/EndToEnd/Fixtures/error.js';
+$_SERVER['argv'][] = './tests/EndToEnd/Fixtures/empty.js';
 $_SERVER['argv'][] = '--debug';
 
 (new \Oru\Harness\Harness($facade))->run($_SERVER['argv']);
@@ -24,6 +26,13 @@ $_SERVER['argv'][] = '--debug';
 
 EcmaScript Test Harness
 
-.                                                               1 / 1 (100%)
+..E.                                                            4 / 4 (100%)
 
 Duration: %d:%d
+
+There where error(s)!
+
+ERRORS:
+
+1: ./tests/EndToEnd/Fixtures/error.js
+%A

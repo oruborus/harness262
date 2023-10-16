@@ -1,5 +1,5 @@
 --TEST--
-harness empty.js --async
+harness empty.js empty.js empty.js empty.js
 --SKIPIF--
 <?php
 

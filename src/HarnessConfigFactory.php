@@ -87,11 +87,7 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             $verbosity = PrinterVerbosity::Silent;
         }
 
-        $testRunnerMode = TestRunnerMode::Parallel;
-
-        if (array_key_exists('async', $longOptions)) {
-            $testRunnerMode = TestRunnerMode::Async;
-        }
+        $testRunnerMode = TestRunnerMode::Async;
 
         if (array_key_exists('debug', $longOptions)) {
             $testRunnerMode = TestRunnerMode::Linear;

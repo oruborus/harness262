@@ -1,5 +1,5 @@
 --TEST--
-harness empty.js --async
+harness empty.js empty.js error.js empty.js
 --SKIPIF--
 <?php
 
@@ -20,7 +20,6 @@ $_SERVER['argv'][] = './tests/EndToEnd/Fixtures/empty.js';
 $_SERVER['argv'][] = './tests/EndToEnd/Fixtures/error.js';
 $_SERVER['argv'][] = './tests/EndToEnd/Fixtures/empty.js';
 $_SERVER['argv'][] = '--no-cache';
-$_SERVER['argv'][] = '--async';
 
 (new \Oru\Harness\Harness($facade))->run($_SERVER['argv']);
 --EXPECTREGEX--
