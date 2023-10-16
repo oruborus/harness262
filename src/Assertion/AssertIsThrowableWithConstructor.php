@@ -34,7 +34,7 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         $exception = $this->facade->completionGetValue($actual);
 
         if (!$this->facade->isObject($exception)) {
-            throw new AssertionFailedException('`ThrowCompletion` does not contain an `ObjectValue`');
+            throw new AssertionFailedException("`ThrowCompletion` does not contain an `ObjectValue`, got '{$this->facade->toString($exception)}'");
         }
 
         try {

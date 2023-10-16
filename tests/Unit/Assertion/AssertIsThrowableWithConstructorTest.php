@@ -37,18 +37,19 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
     #[Test]
     public function throwsWhenProvidedThrowCompletionDoesNotContainAnObject(): void
     {
-        $this->expectExceptionObject(new AssertionFailedException('`ThrowCompletion` does not contain an `ObjectValue`'));
+        $this->expectExceptionObject(new AssertionFailedException("`ThrowCompletion` does not contain an `ObjectValue`, got 'StringValue'"));
 
         $facadeMock = $this->createConfiguredMock(Facade::class, [
             'isThrowCompletion' => true,
             'isObject' => false,
+            'toString' => 'StringValue'
         ]);
 
         $assertion = new AssertIsThrowableWithConstructor(
             $facadeMock,
             $this->createMock(FrontmatterNegative::class)
         );
-        $assertion->assert('ThrowCompletion');
+        $assertion->assert('StringValue');
     }
 
     #[Test]
