@@ -7,7 +7,6 @@ namespace Tests\Unit\Assertion;
 use Oru\Harness\Assertion\AssertAsync;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Assertion\Exception\EngineException;
-use Oru\Harness\Contracts\Facade;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -21,7 +20,7 @@ final class AssertAsyncTest extends TestCase
     {
         $this->expectExceptionObject(new EngineException('Expected string output'));
 
-        $assertion = new AssertAsync($this->createMock(Facade::class));
+        $assertion = new AssertAsync();
 
         $assertion->assert(false);
     }
@@ -31,8 +30,7 @@ final class AssertAsyncTest extends TestCase
     {
         $this->expectExceptionObject(new EngineException('Expected string output to start with `Test262:AsyncTestFailure:` in case of failure, got: "WRONG"'));
 
-        $facadeMock = $this->createMock(Facade::class);
-        $assertion = new AssertAsync($facadeMock);
+        $assertion = new AssertAsync();
 
         $assertion->assert('WRONG');
     }
@@ -41,7 +39,7 @@ final class AssertAsyncTest extends TestCase
     public function throwsWhenProvidedValueAssertionExceptionWhenAsyncTestFailed(): void
     {
         $expectedException = null;
-        $assertion = new AssertAsync($this->createMock(Facade::class));
+        $assertion = new AssertAsync();
 
         try {
             $assertion->assert('Test262:AsyncTestFailure:Test262Error:Something went wrong');
@@ -56,7 +54,7 @@ final class AssertAsyncTest extends TestCase
     #[Test]
     public function completesCorrectlyWHenStringMatchesTheCompleteSequence(): void
     {
-        $assertion = new AssertAsync($this->createMock(Facade::class));
+        $assertion = new AssertAsync();
 
         $actual = $assertion->assert('Test262:AsyncTestComplete');
 
