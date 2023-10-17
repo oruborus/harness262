@@ -7,6 +7,7 @@ namespace Tests\Unit\Assertion;
 use Oru\Harness\Assertion\AssertAsync;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Assertion\Exception\EngineException;
+use Oru\Harness\Contracts\Assertion;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -16,11 +17,23 @@ use Throwable;
 final class AssertAsyncTest extends TestCase
 {
     #[Test]
+    public function throwsWhenProvidedValueIsNotANormalCompletion(): void
+    {
+        $expectedException = new AssertionFailedException('Provided value is not a NormalCompletion');
+        $this->expectExceptionObject($expectedException);
+
+        $assertionMock = $this->createMock(Assertion::class);
+        $assertionMock->method('assert')->willThrowException($expectedException);
+        $assertion = new AssertAsync($assertionMock);
+
+        $assertion->assert(false);
+    }
+    #[Test]
     public function throwsWhenProvidedValueIsNotAString(): void
     {
         $this->expectExceptionObject(new EngineException('Expected string output'));
-
-        $assertion = new AssertAsync();
+        $assertionMock = $this->createMock(Assertion::class);
+        $assertion = new AssertAsync($assertionMock);
 
         $assertion->assert(false);
     }
@@ -29,8 +42,8 @@ final class AssertAsyncTest extends TestCase
     public function throwsWhenProvidedValueIsNotAStringWithCorrectStartSequence(): void
     {
         $this->expectExceptionObject(new EngineException('Expected string output to start with `Test262:AsyncTestFailure:` in case of failure, got: "WRONG"'));
-
-        $assertion = new AssertAsync();
+        $assertionMock = $this->createMock(Assertion::class);
+        $assertion = new AssertAsync($assertionMock);
 
         $assertion->assert('WRONG');
     }
@@ -39,7 +52,8 @@ final class AssertAsyncTest extends TestCase
     public function throwsWhenProvidedValueAssertionExceptionWhenAsyncTestFailed(): void
     {
         $expectedException = null;
-        $assertion = new AssertAsync();
+        $assertionMock = $this->createMock(Assertion::class);
+        $assertion = new AssertAsync($assertionMock);
 
         try {
             $assertion->assert('Test262:AsyncTestFailure:Test262Error:Something went wrong');
@@ -54,7 +68,8 @@ final class AssertAsyncTest extends TestCase
     #[Test]
     public function completesCorrectlyWHenStringMatchesTheCompleteSequence(): void
     {
-        $assertion = new AssertAsync();
+        $assertionMock = $this->createMock(Assertion::class);
+        $assertion = new AssertAsync($assertionMock);
 
         $actual = $assertion->assert('Test262:AsyncTestComplete');
 

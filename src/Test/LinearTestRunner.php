@@ -86,8 +86,15 @@ final class LinearTestRunner implements TestRunner
         }
 
         ob_start();
-        $this->facade->engineRun();
-        return ob_get_clean();
+        /**
+         * @psalm-suppress MixedAssignment  Engine intentionally returns `mixed`
+         */
+        $returnValue = $this->facade->engineRun();
+        $output = ob_get_clean();
+
+        return $this->facade->isNormalCompletion($returnValue) ?
+            $output :
+            $returnValue;
     }
 
     private function addResult(TestResult $result): void

@@ -245,6 +245,7 @@ final class LinearTestRunnerTest extends TestCase
         $facadeMock->method('engineRun')->willReturnCallback(static function () use ($expected): void {
             echo $expected;
         });
+        $facadeMock->method('isNormalCompletion')->willReturn(true);
         $assertionMock = $this->createMock(Assertion::class);
         $assertionMock->expects($this->once())->method('assert')->with($expected);
         $assertionFactoryMock = $this->createConfiguredMock(AssertionFactory::class, [

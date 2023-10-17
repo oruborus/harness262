@@ -26,7 +26,9 @@ final readonly class GenericAssertionFactory implements AssertionFactory
         }
 
         if (in_array(FrontmatterFlag::async, $config->frontmatter()->flags())) {
-            return new AssertAsync();
+            return new AssertAsync(
+                new AssertIsNormal($this->facade)
+            );
         }
 
         return new AssertIsNormal($this->facade);
