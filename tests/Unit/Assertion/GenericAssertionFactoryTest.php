@@ -7,6 +7,7 @@ namespace Tests\Unit\Assertion;
 use Oru\Harness\Assertion\AssertAsync;
 use Oru\Harness\Assertion\AssertIsNormal;
 use Oru\Harness\Assertion\AssertIsThrowableWithConstructor;
+use Oru\Harness\Assertion\AssertMultiple;
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\Frontmatter;
@@ -15,12 +16,9 @@ use Oru\Harness\Contracts\FrontmatterNegative;
 use Oru\Harness\Contracts\TestConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(GenericAssertionFactory::class)]
-#[UsesClass(AssertIsNormal::class)]
-#[UsesClass(AssertIsThrowableWithConstructor::class)]
 final class GenericAssertionFactoryTest extends TestCase
 {
     #[Test]
@@ -68,6 +66,9 @@ final class GenericAssertionFactoryTest extends TestCase
             ])
         );
 
-        $this->assertInstanceOf(AssertAsync::class, $actual);
+        $this->assertInstanceOf(AssertMultiple::class, $actual);
+        /** @var AssertMultiple $actual */
+        $this->assertInstanceOf(AssertIsNormal::class, $actual->assertions()[0]);
+        $this->assertInstanceOf(AssertAsync::class, $actual->assertions()[1]);
     }
 }

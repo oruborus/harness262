@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assertion;
 
-use Oru\Harness\Assertion\AssertAsync;
 use Oru\Harness\Assertion\AssertMultiple;
-use Oru\Harness\Assertion\Exception\AssertionFailedException;
-use Oru\Harness\Assertion\Exception\EngineException;
 use Oru\Harness\Contracts\Assertion;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Throwable;
 
 #[CoversClass(AssertMultiple::class)]
 final class AssertMultipleTest extends TestCase

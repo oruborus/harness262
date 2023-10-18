@@ -14,11 +14,6 @@ use function substr;
 
 final readonly class AssertAsync implements Assertion
 {
-    public function __construct(
-        private Assertion $assertIsNormal
-    ) {
-    }
-
     private const SUCCESS_SEQUENCE = 'Test262:AsyncTestComplete';
 
     private const FAILURE_SEQUENCE = 'Test262:AsyncTestFailure:';
@@ -31,8 +26,6 @@ final readonly class AssertAsync implements Assertion
      */
     public function assert(mixed $actual): void
     {
-        $this->assertIsNormal->assert($actual);
-
         if (!is_string($actual)) {
             throw new EngineException('Expected string output');
         }
