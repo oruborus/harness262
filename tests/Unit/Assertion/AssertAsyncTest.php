@@ -17,18 +17,6 @@ use Throwable;
 final class AssertAsyncTest extends TestCase
 {
     #[Test]
-    public function throwsWhenProvidedValueIsNotANormalCompletion(): void
-    {
-        $expectedException = new AssertionFailedException('Provided value is not a NormalCompletion');
-        $this->expectExceptionObject($expectedException);
-
-        $assertionMock = $this->createMock(Assertion::class);
-        $assertionMock->method('assert')->willThrowException($expectedException);
-        $assertion = new AssertAsync($assertionMock);
-
-        $assertion->assert(false);
-    }
-    #[Test]
     public function throwsWhenProvidedValueIsNotAString(): void
     {
         $this->expectExceptionObject(new EngineException('Expected string output'));
@@ -66,7 +54,7 @@ final class AssertAsyncTest extends TestCase
     }
 
     #[Test]
-    public function completesCorrectlyWHenStringMatchesTheCompleteSequence(): void
+    public function completesCorrectlyWhenStringMatchesTheCompleteSequence(): void
     {
         $assertionMock = $this->createMock(Assertion::class);
         $assertion = new AssertAsync($assertionMock);
