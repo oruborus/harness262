@@ -16,6 +16,7 @@ use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_pop;
+use function array_values;
 use function ctype_alpha;
 use function explode;
 use function implode;
@@ -93,7 +94,12 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             $testRunnerMode = TestRunnerMode::Linear;
         }
 
-        return new class($paths, $cache, $testRunnerMode, $verbosity) implements OutputConfig, PrinterConfig, TestSuiteConfig
+        return new class(
+            array_values($paths),
+            $cache,
+            $testRunnerMode,
+            $verbosity
+        ) implements OutputConfig, PrinterConfig, TestSuiteConfig
         {
             public function __construct(
                 /**
