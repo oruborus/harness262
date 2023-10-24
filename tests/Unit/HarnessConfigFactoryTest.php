@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Generator;
+use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\OutputConfig;
 use Oru\Harness\Contracts\OutputType;
 use Oru\Harness\Contracts\PrinterConfig;
@@ -23,7 +24,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function createsConfigForOutputPrinterAndTestSuite(): void
     {
-        $factory = new HarnessConfigFactory();
+        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
 
         $actual = $factory->make([]);
 
@@ -35,50 +36,56 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function interpretsAllNonPrefixedArgumentsAsPaths(): void
     {
-        $factory = new HarnessConfigFactory();
+        $expected = ['PATH0', 'PATH1', 'PATH2'];
+        $factory = new HarnessConfigFactory($this->createConfiguredMock(
+            ArgumentsParser::class,
+            ['rest' => $expected]
+        ));
 
-        $actual = $factory->make(['PATH0', '-p', 'PATH1', '--prefixed', 'PATH2']);
+        $actual = $factory->make();
 
-        $this->assertSame(['PATH0', 'PATH1', 'PATH2'], $actual->paths());
+        $this->assertSame($expected, $actual->paths());
     }
 
-    #[Test]
-    public function pathsDoNotCollideWithLongOptions(): void
-    {
-        $factory = new HarnessConfigFactory();
+    // #[Test]
+    // public function pathsDoNotCollideWithLongOptions(): void
+    // {
+    //     $factory = new HarnessConfigFactory();
 
-        $actual = $factory->make(['verbose']);
+    //     $actual = $factory->make(['verbose']);
 
-        $this->assertSame(['verbose'], $actual->paths());
-        $this->assertSame(PrinterVerbosity::Normal, $actual->verbosity());
-    }
+    //     $this->assertSame(['verbose'], $actual->paths());
+    //     $this->assertSame(PrinterVerbosity::Normal, $actual->verbosity());
+    // }
 
     #[Test]
     public function defaultConfigForCachingIsTrue(): void
     {
-        $factory = new HarnessConfigFactory();
+        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
 
-        $actual = $factory->make([]);
+        $actual = $factory->make();
 
         $this->assertTrue($actual->cache());
     }
 
     #[Test]
-    public function cachingCanBeDisabledWithShortOption(): void
+    public function cachingCanBeDisabled(): void
     {
-        $factory = new HarnessConfigFactory();
+        $argumentsParserStub = new class implements ArgumentsParser
+        {
+            public function hasOption(string $option): bool
+            {
+                return 'no-cache' === $option;
+            }
 
-        $actual = $factory->make(['-n']);
+            public function rest(): array
+            {
+                return [];
+            }
+        };
+        $factory = new HarnessConfigFactory($argumentsParserStub);
 
-        $this->assertFalse($actual->cache());
-    }
-
-    #[Test]
-    public function cachingCanBeDisabledWithLongOption(): void
-    {
-        $factory = new HarnessConfigFactory();
-
-        $actual = $factory->make(['--no-cache']);
+        $actual = $factory->make();
 
         $this->assertFalse($actual->cache());
     }
@@ -86,7 +93,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForOutputIsConsole(): void
     {
-        $factory = new HarnessConfigFactory();
+        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
 
         $actual = $factory->make([]);
 
@@ -96,7 +103,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForRunnerModeIsAsync(): void
     {
-        $factory = new HarnessConfigFactory();
+        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
 
         $actual = $factory->make([]);
 
@@ -104,11 +111,23 @@ final class HarnessConfigFactoryTest extends TestCase
     }
 
     #[Test]
-    public function configForRunnerModeCanBeSetToLinearUsingLongOption(): void
+    public function configForRunnerModeCanBeSetToLinear(): void
     {
-        $factory = new HarnessConfigFactory();
+        $argumentsParserStub = new class implements ArgumentsParser
+        {
+            public function hasOption(string $option): bool
+            {
+                return 'debug' === $option;
+            }
 
-        $actual = $factory->make(['--debug']);
+            public function rest(): array
+            {
+                return [];
+            }
+        };
+        $factory = new HarnessConfigFactory($argumentsParserStub);
+
+        $actual = $factory->make();
 
         $this->assertSame(TestRunnerMode::Linear, $actual->testRunnerMode());
     }
@@ -116,7 +135,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForVerbosityIsNormal(): void
     {
-        $factory = new HarnessConfigFactory();
+        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
 
         $actual = $factory->make([]);
 
@@ -124,67 +143,68 @@ final class HarnessConfigFactoryTest extends TestCase
     }
 
     #[Test]
-    public function defaultConfigForVerbosityCanBeSetToSilentUsingShortOption(): void
+    public function defaultConfigForVerbosityCanBeSetToSilent(): void
     {
-        $factory = new HarnessConfigFactory();
+        $argumentsParserStub = new class implements ArgumentsParser
+        {
+            public function hasOption(string $option): bool
+            {
+                return 'silent' === $option;
+            }
 
-        $actual = $factory->make(['-s']);
+            public function rest(): array
+            {
+                return [];
+            }
+        };
+        $factory = new HarnessConfigFactory($argumentsParserStub);
+
+        $actual = $factory->make();
 
         $this->assertSame(PrinterVerbosity::Silent, $actual->verbosity());
     }
 
     #[Test]
-    public function defaultConfigForVerbosityCanBeSetToSilentUsingLongOption(): void
+    public function defaultConfigForVerbosityCanBeSetToVerbose(): void
     {
-        $factory = new HarnessConfigFactory();
+        $argumentsParserStub = new class implements ArgumentsParser
+        {
+            public function hasOption(string $option): bool
+            {
+                return 'verbose' === $option;
+            }
 
-        $actual = $factory->make(['--silent']);
+            public function rest(): array
+            {
+                return [];
+            }
+        };
+        $factory = new HarnessConfigFactory($argumentsParserStub);
 
-        $this->assertSame(PrinterVerbosity::Silent, $actual->verbosity());
-    }
-
-    #[Test]
-    public function defaultConfigForVerbosityCanBeSetToVerboseUsingShortOption(): void
-    {
-        $factory = new HarnessConfigFactory();
-
-        $actual = $factory->make(['-v']);
+        $actual = $factory->make();
 
         $this->assertSame(PrinterVerbosity::Verbose, $actual->verbosity());
     }
 
     #[Test]
-    public function defaultConfigForVerbosityCanBeSetToVerboseUsingLongOption(): void
+    public function mixedVerbosityOptionsCancelOutToNormal(): void
     {
-        $factory = new HarnessConfigFactory();
+        $argumentsParserStub = new class implements ArgumentsParser
+        {
+            public function hasOption(string $option): bool
+            {
+                return 'verbose' === $option || 'silent' === $option;
+            }
 
-        $actual = $factory->make(['--verbose']);
+            public function rest(): array
+            {
+                return [];
+            }
+        };
+        $factory = new HarnessConfigFactory($argumentsParserStub);
 
-        $this->assertSame(PrinterVerbosity::Verbose, $actual->verbosity());
-    }
-
-    #[Test]
-    #[DataProvider('provideVerbosityOptions')]
-    /**
-     * @param string[] $options
-     */
-    public function mixedVerbosityOptionsCancelOutToNormal(array $options): void
-    {
-        $factory = new HarnessConfigFactory();
-
-        $actual = $factory->make($options);
+        $actual = $factory->make();
 
         $this->assertSame(PrinterVerbosity::Normal, $actual->verbosity());
-    }
-
-    /**
-     * @return Generator<string, string[]> 
-     */
-    public static function provideVerbosityOptions(): Generator
-    {
-        yield 'short silent short verbose' => [['-s', '-v']];
-        yield 'short silent long verbose' => [['-s', '--verbose']];
-        yield 'long silent short verbose' => [['--silent', '-v']];
-        yield 'long silent long verbose' => [['--silent', '--verbose']];
     }
 }

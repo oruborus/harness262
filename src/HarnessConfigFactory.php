@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Oru\Harness;
 
+use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\ConfigFactory;
 use Oru\Harness\Contracts\OutputConfig;
 use Oru\Harness\Contracts\OutputType;
@@ -12,90 +13,41 @@ use Oru\Harness\Contracts\PrinterVerbosity;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 
-use function array_filter;
-use function array_key_exists;
-use function array_map;
-use function array_pop;
-use function array_values;
-use function ctype_alpha;
-use function explode;
-use function implode;
-use function in_array;
-use function str_split;
-use function str_starts_with;
-use function strtolower;
-use function substr;
-
 final readonly class HarnessConfigFactory implements ConfigFactory
 {
-    /**
-     * @param string[] $input
-     */
-    public function make(array $input): OutputConfig&PrinterConfig&TestSuiteConfig
+    public function __construct(
+        private ArgumentsParser $argumentsParser
+    ) {
+    }
+
+    public function make(): OutputConfig&PrinterConfig&TestSuiteConfig
     {
-        $shortOptions = array_map(
-            strtolower(...),
-            array_filter(
-                str_split(
-                    implode(
-                        array_filter(
-                            $input,
-                            static fn (string $option): bool => str_starts_with($option, '-') && !str_starts_with($option, '--')
-                        )
-                    )
-                ),
-                ctype_alpha(...)
-            )
-        );
+        $paths = $this->argumentsParser->rest();
 
-        $longOptions = [];
-        $filteredOptions = array_filter(
-            $input,
-            static fn (string $option): bool => str_starts_with($option, '--')
-        );
-
-        foreach ($filteredOptions as $option) {
-            $values = explode(
-                '=',
-                substr(
-                    strtolower($option),
-                    2
-                )
-            );
-            $key = array_pop($values);
-
-            $longOptions[$key] = $values;
-        }
-
-        $paths = array_filter(
-            $input,
-            static fn (string $option): bool => !str_starts_with($option, '-')
-        );
-
-        $cache = (!in_array('n', $shortOptions, true) && !array_key_exists('no-cache', $longOptions));
+        $cache = !$this->argumentsParser->hasOption('no-cache');
 
         $verbosity = PrinterVerbosity::Normal;
         if (
-            (in_array('v', $shortOptions, true) || array_key_exists('verbose', $longOptions))
-            && !(in_array('s', $shortOptions, true) || array_key_exists('silent', $longOptions))
+            $this->argumentsParser->hasOption('verbose')
+            && !$this->argumentsParser->hasOption('silent')
         ) {
             $verbosity = PrinterVerbosity::Verbose;
         }
         if (
-            (in_array('s', $shortOptions, true) || array_key_exists('silent', $longOptions))
-            && !(in_array('v', $shortOptions, true) || array_key_exists('verbose', $longOptions))
+            $this->argumentsParser->hasOption('silent')
+            && !$this->argumentsParser->hasOption('verbose')
         ) {
             $verbosity = PrinterVerbosity::Silent;
         }
 
         $testRunnerMode = TestRunnerMode::Async;
 
-        if (array_key_exists('debug', $longOptions)) {
+        if ($this->argumentsParser->hasOption('debug')) {
             $testRunnerMode = TestRunnerMode::Linear;
         }
 
         return new class(
-            array_values($paths),
+            $paths,
             $cache,
             $testRunnerMode,
             $verbosity

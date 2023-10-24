@@ -8,6 +8,7 @@ use Iterator;
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Cache\GenericCacheRepository;
 use Oru\Harness\Cache\NoCacheRepository;
+use Oru\Harness\Cli\CliArgumentsParser;
 use Oru\Harness\Command\ClonedPhpCommand;
 use Oru\Harness\Contracts\CacheResultRecord;
 use Oru\Harness\Contracts\Facade;
@@ -66,7 +67,7 @@ final readonly class Harness
     }
 
     /**
-     * @param string[] $arguments
+     * @param list<string> $arguments
      *
      * @throws RuntimeException
      */
@@ -75,14 +76,23 @@ final readonly class Harness
         array_shift($arguments);
 
         $testStorage       = new FileStorage('.');
-        $configFactory     = new HarnessConfigFactory();
+        $argumentsParser   = new CliArgumentsParser(
+            $arguments,
+            [
+                'no-cache' => 'n',
+                'silent' => 's',
+                'verbose' => 'v',
+                'debug' => null,
+            ]
+        );
+        $configFactory     = new HarnessConfigFactory($argumentsParser);
         $testConfigFactory = new GenericTestConfigFactory($testStorage);
         $printerFactory    = new GenericPrinterFactory();
         $outputFactory     = new GenericOutputFactory();
         $assertionFactory  = new GenericAssertionFactory($this->facade);
         $command           = new ClonedPhpCommand(realpath(static::TEMPLATE_PATH . '.php'));
 
-        $config  = $configFactory->make($arguments);
+        $config  = $configFactory->make();
         $output  = $outputFactory->make($config);
         $printer = $printerFactory->make($config, $output, 0);
 
