@@ -6,6 +6,7 @@ namespace Tests\Unit\Cli;
 
 use Oru\Harness\Cli\CliArgumentsParser;
 use Oru\Harness\Cli\Exception\InvalidOptionException;
+use Oru\Harness\Cli\Exception\MissingArgumentException;
 use Oru\Harness\Cli\Exception\UnknownOptionException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -17,10 +18,7 @@ final class CliArgumentsParserTest extends TestCase
     #[Test]
     public function takesShortOptionsFromArgvAndMapsToLongOption(): void
     {
-        $parser = new CliArgumentsParser(
-            ['-o'],
-            ['option' => 'o']
-        );
+        $parser = new CliArgumentsParser(['-o'], ['option' => 'o']);
 
         $actual = $parser->hasOption('option');
 
@@ -32,10 +30,7 @@ final class CliArgumentsParserTest extends TestCase
     {
         $this->expectExceptionObject(new UnknownOptionException('Unknown short option `o` provided'));
 
-        new CliArgumentsParser(
-            ['-o'],
-            []
-        );
+        new CliArgumentsParser(['-o'], []);
     }
 
     #[Test]
@@ -57,10 +52,7 @@ final class CliArgumentsParserTest extends TestCase
     #[Test]
     public function takesLongOptionsFromArgv(): void
     {
-        $parser = new CliArgumentsParser(
-            ['--option'],
-            ['option' => null]
-        );
+        $parser = new CliArgumentsParser(['--option'], ['option' => null]);
 
         $actual = $parser->hasOption('option');
 
@@ -72,10 +64,7 @@ final class CliArgumentsParserTest extends TestCase
     {
         $this->expectExceptionObject(new UnknownOptionException('Unknown long option `option` provided'));
 
-        new CliArgumentsParser(
-            ['--option'],
-            []
-        );
+        new CliArgumentsParser(['--option'], []);
     }
 
     #[Test]
@@ -98,10 +87,7 @@ final class CliArgumentsParserTest extends TestCase
     {
         $this->expectExceptionObject(new InvalidOptionException('Invalid option `-` provided'));
 
-        new CliArgumentsParser(
-            ['-'],
-            []
-        );
+        new CliArgumentsParser(['-'], []);
     }
 
     #[Test]
@@ -109,9 +95,62 @@ final class CliArgumentsParserTest extends TestCase
     {
         $this->expectExceptionObject(new InvalidOptionException('Invalid option `--` provided'));
 
-        new CliArgumentsParser(
-            ['--'],
-            []
-        );
+        new CliArgumentsParser(['--'], []);
+    }
+
+    #[Test]
+    public function failsWhenLongOptionMissesRequiredArgument(): void
+    {
+        $this->expectExceptionObject(new MissingArgumentException('Missing argument for option `option`'));
+
+        new CliArgumentsParser(['--option'], ['option' => ':']);
+    }
+
+    #[Test]
+    public function failsWhenLongOptionMissesRequiredArgumentAsTheNextOptionFollows(): void
+    {
+        $this->expectExceptionObject(new MissingArgumentException('Missing argument for option `option1`'));
+
+        new CliArgumentsParser(['--option1', '--option2'], ['option1' => ':', 'option2' => null]);
+    }
+
+    #[Test]
+    public function canGetProvidedArgumentForLongOption(): void
+    {
+        $parser = new CliArgumentsParser(['--option', 'argument'], ['option' => ':']);
+
+        $actual = $parser->getOption('option');
+
+        $this->assertSame('argument', $actual);
+    }
+
+    #[Test]
+    public function throwsWhenArgumentForUnKnownOptionIsRequested(): void
+    {
+        $this->expectExceptionObject(new UnknownOptionException("Unknown option `option` requested"));
+
+        $parser = new CliArgumentsParser([], []);
+
+        $parser->getOption('option');
+    }
+
+    #[Test]
+    public function throwsWhenArgumentForKnownOptionIsNotSetButRequested(): void
+    {
+        $this->expectExceptionObject(new MissingArgumentException("Argument for `option` was not provided"));
+
+        $parser = new CliArgumentsParser(['--option'], ['option' => null]);
+
+        $parser->getOption('option');
+    }
+
+    #[Test]
+    public function providedArgumentForOptionIsNotInRest(): void
+    {
+        $parser = new CliArgumentsParser(['--option', 'argument'], ['option' => ':']);
+
+        $actual = $parser->rest();
+
+        $this->assertNotContains('argument', $actual);
     }
 }

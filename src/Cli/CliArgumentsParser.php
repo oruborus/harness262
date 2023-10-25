@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace Oru\Harness\Cli;
 
 use Oru\Harness\Cli\Exception\InvalidOptionException;
+use Oru\Harness\Cli\Exception\MissingArgumentException;
 use Oru\Harness\Cli\Exception\UnknownOptionException;
 use Oru\Harness\Contracts\ArgumentsParser;
 
 use function array_key_exists;
 use function array_search;
-use function array_values;
-use function strlen;
+use function is_null;
+use function str_contains;
+use function str_starts_with;
 use function substr;
 
 final class CliArgumentsParser implements ArgumentsParser
@@ -59,7 +61,21 @@ final class CliArgumentsParser implements ArgumentsParser
                     throw new UnknownOptionException("Unknown long option `{$longOption}` provided");
                 }
 
-                $this->options[$longOption] = null;
+                $value = null;
+                if (!is_null($configuration[$longOption]) && str_contains($configuration[$longOption], ':')) {
+                    if (!isset($arguments[$index + 1])) {
+                        throw new MissingArgumentException("Missing argument for option `{$longOption}`");
+                    }
+
+                    if (str_starts_with($arguments[$index + 1], '-')) {
+                        throw new MissingArgumentException("Missing argument for option `{$longOption}`");
+                    }
+
+                    $value = $arguments[$index + 1];
+                    $index++;
+                }
+
+                $this->options[$longOption] = $value;
                 continue;
             }
 
@@ -71,6 +87,8 @@ final class CliArgumentsParser implements ArgumentsParser
                     throw new UnknownOptionException("Unknown short option `{$shortOption}` provided");
                 }
 
+                // FIXME: Throw if expaned option requires an argument
+
                 $this->options[$longOption] = null;
             }
         }
@@ -79,6 +97,23 @@ final class CliArgumentsParser implements ArgumentsParser
     public function hasOption(string $option): bool
     {
         return array_key_exists($option, $this->options);
+    }
+
+    /**
+     * @throws UnknownOptionException
+     * @throws MissingArgumentException
+     */
+    public function getOption(string $option): string
+    {
+        if (!array_key_exists($option, $this->options)) {
+            throw new UnknownOptionException("Unknown option `{$option}` requested");
+        }
+
+        if (is_null($this->options[$option])) {
+            throw new MissingArgumentException("Argument for `{$option}` was not provided");
+        }
+
+        return $this->options[$option];
     }
 
     /**

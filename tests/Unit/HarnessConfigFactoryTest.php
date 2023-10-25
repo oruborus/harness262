@@ -67,6 +67,11 @@ final class HarnessConfigFactoryTest extends TestCase
                 return 'no-cache' === $option;
             }
 
+            public function getOption(string $option): string
+            {
+                return '';
+            }
+
             public function rest(): array
             {
                 return [];
@@ -109,6 +114,11 @@ final class HarnessConfigFactoryTest extends TestCase
                 return 'debug' === $option;
             }
 
+            public function getOption(string $option): string
+            {
+                return '';
+            }
+
             public function rest(): array
             {
                 return [];
@@ -141,6 +151,11 @@ final class HarnessConfigFactoryTest extends TestCase
                 return 'silent' === $option;
             }
 
+            public function getOption(string $option): string
+            {
+                return '';
+            }
+
             public function rest(): array
             {
                 return [];
@@ -163,6 +178,11 @@ final class HarnessConfigFactoryTest extends TestCase
                 return 'verbose' === $option;
             }
 
+            public function getOption(string $option): string
+            {
+                return '';
+            }
+
             public function rest(): array
             {
                 return [];
@@ -183,6 +203,11 @@ final class HarnessConfigFactoryTest extends TestCase
             public function hasOption(string $option): bool
             {
                 return 'verbose' === $option || 'silent' === $option;
+            }
+
+            public function getOption(string $option): string
+            {
+                return '';
             }
 
             public function rest(): array
