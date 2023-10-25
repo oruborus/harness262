@@ -47,17 +47,6 @@ final class HarnessConfigFactoryTest extends TestCase
         $this->assertSame($expected, $actual->paths());
     }
 
-    // #[Test]
-    // public function pathsDoNotCollideWithLongOptions(): void
-    // {
-    //     $factory = new HarnessConfigFactory();
-
-    //     $actual = $factory->make(['verbose']);
-
-    //     $this->assertSame(['verbose'], $actual->paths());
-    //     $this->assertSame(PrinterVerbosity::Normal, $actual->verbosity());
-    // }
-
     #[Test]
     public function defaultConfigForCachingIsTrue(): void
     {
