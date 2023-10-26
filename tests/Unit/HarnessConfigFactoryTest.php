@@ -18,9 +18,46 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
+use function array_key_exists;
+
 #[CoversClass(HarnessConfigFactory::class)]
 final class HarnessConfigFactoryTest extends TestCase
 {
+    /**
+     * @param array<string, ?string> $options
+     * @param list<string> $rest
+     */
+    private function createArgumentsParserStub(array $options = [], array $rest = []): ArgumentsParser
+    {
+        return new class($options, $rest) implements ArgumentsParser
+        {
+            /**
+             * @param array<string, ?string> $options
+             * @param list<string> $rest
+             */
+            public function __construct(
+                private array $options,
+                private array $rest
+            ) {
+            }
+
+            public function hasOption(string $option): bool
+            {
+                return array_key_exists($option, $this->options);
+            }
+
+            public function getOption(string $option): string
+            {
+                return $this->options[$option] ?? '';
+            }
+
+            public function rest(): array
+            {
+                return $this->rest;
+            }
+        };
+    }
+
     #[Test]
     public function createsConfigForOutputPrinterAndTestSuite(): void
     {
@@ -60,23 +97,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function cachingCanBeDisabled(): void
     {
-        $argumentsParserStub = new class implements ArgumentsParser
-        {
-            public function hasOption(string $option): bool
-            {
-                return 'no-cache' === $option;
-            }
-
-            public function getOption(string $option): string
-            {
-                return '';
-            }
-
-            public function rest(): array
-            {
-                return [];
-            }
-        };
+        $argumentsParserStub = $this->createArgumentsParserStub(['no-cache' => null]);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -107,23 +128,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function configForRunnerModeCanBeSetToLinear(): void
     {
-        $argumentsParserStub = new class implements ArgumentsParser
-        {
-            public function hasOption(string $option): bool
-            {
-                return 'debug' === $option;
-            }
-
-            public function getOption(string $option): string
-            {
-                return '';
-            }
-
-            public function rest(): array
-            {
-                return [];
-            }
-        };
+        $argumentsParserStub = $this->createArgumentsParserStub(['debug' => null]);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -144,23 +149,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForVerbosityCanBeSetToSilent(): void
     {
-        $argumentsParserStub = new class implements ArgumentsParser
-        {
-            public function hasOption(string $option): bool
-            {
-                return 'silent' === $option;
-            }
-
-            public function getOption(string $option): string
-            {
-                return '';
-            }
-
-            public function rest(): array
-            {
-                return [];
-            }
-        };
+        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null]);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -171,23 +160,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForVerbosityCanBeSetToVerbose(): void
     {
-        $argumentsParserStub = new class implements ArgumentsParser
-        {
-            public function hasOption(string $option): bool
-            {
-                return 'verbose' === $option;
-            }
-
-            public function getOption(string $option): string
-            {
-                return '';
-            }
-
-            public function rest(): array
-            {
-                return [];
-            }
-        };
+        $argumentsParserStub = $this->createArgumentsParserStub(['verbose' => null]);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -198,23 +171,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function mixedVerbosityOptionsCancelOutToNormal(): void
     {
-        $argumentsParserStub = new class implements ArgumentsParser
-        {
-            public function hasOption(string $option): bool
-            {
-                return 'verbose' === $option || 'silent' === $option;
-            }
-
-            public function getOption(string $option): string
-            {
-                return '';
-            }
-
-            public function rest(): array
-            {
-                return [];
-            }
-        };
+        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null, 'verbose' => null]);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
