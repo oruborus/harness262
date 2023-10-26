@@ -12,6 +12,7 @@ use Oru\Harness\Contracts\PrinterConfig;
 use Oru\Harness\Contracts\PrinterVerbosity;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
+use RuntimeException;
 
 final readonly class HarnessConfigFactory implements ConfigFactory
 {
@@ -23,6 +24,9 @@ final readonly class HarnessConfigFactory implements ConfigFactory
     public function make(): OutputConfig&PrinterConfig&TestSuiteConfig
     {
         $paths = $this->argumentsParser->rest();
+        if ($paths === []) {
+            throw new RuntimeException('No test path specified. Aborting.');
+        }
 
         $cache = !$this->argumentsParser->hasOption('no-cache');
 

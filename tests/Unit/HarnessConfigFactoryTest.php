@@ -17,6 +17,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 use function array_key_exists;
 
@@ -61,9 +62,10 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function createsConfigForOutputPrinterAndTestSuite(): void
     {
-        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
+        $argumentsParserStub = $this->createArgumentsParserStub([], ['path']);
+        $factory = new HarnessConfigFactory($argumentsParserStub);
 
-        $actual = $factory->make([]);
+        $actual = $factory->make();
 
         $this->assertInstanceOf(OutputConfig::class, $actual);
         $this->assertInstanceOf(PrinterConfig::class, $actual);
@@ -85,9 +87,20 @@ final class HarnessConfigFactoryTest extends TestCase
     }
 
     #[Test]
+    public function failsWhenPathsIsEmpty(): void
+    {
+        $this->expectExceptionObject(new RuntimeException('No test path specified. Aborting.'));
+
+        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
+
+        $factory->make();
+    }
+
+    #[Test]
     public function defaultConfigForCachingIsTrue(): void
     {
-        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
+        $argumentsParserStub = $this->createArgumentsParserStub([], ['path']);
+        $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
 
@@ -97,7 +110,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function cachingCanBeDisabled(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['no-cache' => null]);
+        $argumentsParserStub = $this->createArgumentsParserStub(['no-cache' => null], ['path']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -108,7 +121,8 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForOutputIsConsole(): void
     {
-        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
+        $argumentsParserStub = $this->createArgumentsParserStub([], ['path']);
+        $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make([]);
 
@@ -118,7 +132,8 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForRunnerModeIsAsync(): void
     {
-        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
+        $argumentsParserStub = $this->createArgumentsParserStub([], ['path']);
+        $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make([]);
 
@@ -128,7 +143,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function configForRunnerModeCanBeSetToLinear(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['debug' => null]);
+        $argumentsParserStub = $this->createArgumentsParserStub(['debug' => null], ['path']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -139,7 +154,8 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForVerbosityIsNormal(): void
     {
-        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
+        $argumentsParserStub = $this->createArgumentsParserStub([], ['path']);
+        $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make([]);
 
@@ -149,7 +165,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForVerbosityCanBeSetToSilent(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null]);
+        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null], ['path']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -160,7 +176,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForVerbosityCanBeSetToVerbose(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['verbose' => null]);
+        $argumentsParserStub = $this->createArgumentsParserStub(['verbose' => null], ['path']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -171,7 +187,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function mixedVerbosityOptionsCancelOutToNormal(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null, 'verbose' => null]);
+        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null, 'verbose' => null], ['path']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
