@@ -25,6 +25,9 @@ Runs the testsuite without output.
 #### `--verbose`, `-v`
 Runs the testsuite with extended output.
 
+#### `--filter <pattern>`
+Filters the provided paths via using the regular expression `<pattern>`.
+
 ### Testing
 
 ```bash

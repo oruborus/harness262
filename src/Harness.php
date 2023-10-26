@@ -76,6 +76,7 @@ final readonly class Harness
                 'silent' => 's',
                 'verbose' => 'v',
                 'debug' => null,
+                'filter' => ':',
             ]
         );
         $configFactory     = new HarnessConfigFactory($argumentsParser);

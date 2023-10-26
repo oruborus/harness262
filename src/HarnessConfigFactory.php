@@ -18,9 +18,11 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
 
+use function array_filter;
 use function file_exists;
 use function is_dir;
 use function is_file;
+use function preg_match;
 
 final readonly class HarnessConfigFactory implements ConfigFactory
 {
@@ -63,6 +65,12 @@ final readonly class HarnessConfigFactory implements ConfigFactory
                 }
             }
         }
+
+        if ($this->argumentsParser->hasOption('filter')) {
+            $pattern = "/{$this->argumentsParser->getOption('filter')}/";
+            $paths = array_filter($paths, static fn (string $path): bool => (bool) preg_match($pattern, $path));
+        }
+
         if ($paths === []) {
             throw new RuntimeException('No test path specified. Aborting.');
         }

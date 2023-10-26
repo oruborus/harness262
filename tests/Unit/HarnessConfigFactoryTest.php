@@ -216,4 +216,15 @@ final class HarnessConfigFactoryTest extends TestCase
 
         $this->assertCount(6, $actual->paths());
     }
+
+    #[Test]
+    public function filtersProvidedPathsWithRegularExpressions(): void
+    {
+        $argumentsParserStub = $this->createArgumentsParserStub(['filter' => '.*PATH[12].*'], [__DIR__ . '/Fixtures']);
+        $factory = new HarnessConfigFactory($argumentsParserStub);
+
+        $actual = $factory->make();
+
+        $this->assertCount(4, $actual->paths());
+    }
 }
