@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Oru\Harness;
 
-use Iterator;
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Cache\GenericCacheRepository;
 use Oru\Harness\Cache\NoCacheRepository;
@@ -26,18 +25,12 @@ use Oru\Harness\Test\GenericTestConfigFactory;
 use Oru\Harness\Test\GenericTestResult;
 use Oru\Harness\Test\LinearTestRunner;
 use Oru\Harness\Test\ParallelTestRunner;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use RuntimeException;
-use Stringable;
 
 use function array_shift;
 use function count;
-use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
-use function is_dir;
-use function is_file;
 use function is_null;
 use function realpath;
 use function str_ends_with;
@@ -127,50 +120,16 @@ final readonly class Harness
 
         // 4. For each **providedPath** of **config**.[[Paths]], do
         foreach ($config->paths() as $providedPath) {
-            // a. If **providedPath** does not exist, then throw a RuntimeException.
-            if (!file_exists($providedPath)) {
-                throw new RuntimeException("Provided path `{$providedPath}` does not exist");
+            // FIXME: a. If file is not a valid ECMAScript file, then skip.
+            if (str_ends_with($providedPath, '_FIXTURE.js')) {
+                continue;
             }
 
-            // b. If **providedPath** points to a file, then
-            if (is_file($providedPath)) {
-                // FIXME: i. If file is not a valid ECMAScript file, then throw a RuntimeException.
+            // b. Let **testConfigs** the frontmatter configurations of the file stored at **providedPath**.
+            $testConfigs = $testConfigFactory->make($providedPath);
 
-                // ii. Let **testConfigs** the frontmatter configurations of the file stored at **providedPath**.
-                $testConfigs = $testConfigFactory->make($providedPath);
-
-                // iii. Append **testConfig** to **preparedTestConfigurations**.
-                $preparedTestConfigurations = [...$preparedTestConfigurations, ...$testConfigs];
-            }
-
-            // c. Else, if **providedPath** points to a directory, then
-            elseif (is_dir($providedPath)) {
-                // i. For each recursively contained file **filePath** in **providedPath**, do
-                /**
-                 * @var Iterator<Stringable> $it
-                 */
-                $it = new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator($providedPath, RecursiveDirectoryIterator::SKIP_DOTS)
-                );
-                foreach ($it as $filePath) {
-                    // FIXME: 1. If file is not a valid ECMAScript file, then continue.
-                    if (str_ends_with((string) $filePath, '_FIXTURE.js')) {
-                        continue;
-                    }
-
-                    // 2. Let **testConfigs** the frontmatter configurations of the file stored at **filePath**.
-                    $testConfigs = $testConfigFactory->make((string) $filePath);
-
-                    // 3. Append **testConfigs** to **preparedTestConfigurations**.
-                    $preparedTestConfigurations = [...$preparedTestConfigurations, ...$testConfigs];
-                }
-            }
-
-            // d. Else
-            else {
-                // i. Throw a RuntimeException.
-                throw new RuntimeException("Provided path `{$providedPath}` does neither point to a directory nor a file");
-            }
+            // iii. Append **testConfig** to **preparedTestConfigurations**.
+            $preparedTestConfigurations = [...$preparedTestConfigurations, ...$testConfigs];
         }
 
         // 5. Perform **printer**.setStepCount(count(**preparedTestConfigurations**)).
