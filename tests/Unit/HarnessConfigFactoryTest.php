@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use Generator;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\OutputConfig;
 use Oru\Harness\Contracts\OutputType;
@@ -14,7 +13,6 @@ use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use Oru\Harness\HarnessConfigFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
