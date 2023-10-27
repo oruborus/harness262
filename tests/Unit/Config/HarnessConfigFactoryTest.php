@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit;
+namespace Tests\Unit\Config;
 
+use Oru\Harness\Config\HarnessConfigFactory;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\OutputConfig;
 use Oru\Harness\Contracts\OutputType;
@@ -11,7 +12,6 @@ use Oru\Harness\Contracts\PrinterConfig;
 use Oru\Harness\Contracts\PrinterVerbosity;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
-use Oru\Harness\HarnessConfigFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -60,7 +60,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function createsConfigForOutputPrinterAndTestSuite(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -73,7 +73,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function interpretsAllNonPrefixedArgumentsAsPaths(): void
     {
-        $expected = [__DIR__ . '/Fixtures/PATH0', __DIR__ . '/Fixtures/PATH1', __DIR__ . '/Fixtures/PATH2'];
+        $expected = [__DIR__ . '/../Fixtures/PATH0', __DIR__ . '/../Fixtures/PATH1', __DIR__ . '/../Fixtures/PATH2'];
         $factory = new HarnessConfigFactory($this->createConfiguredMock(
             ArgumentsParser::class,
             ['rest' => $expected]
@@ -97,7 +97,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForCachingIsTrue(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -108,7 +108,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function cachingCanBeDisabled(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['no-cache' => null], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub(['no-cache' => null], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -119,7 +119,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForOutputIsConsole(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make([]);
@@ -130,7 +130,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForRunnerModeIsAsync(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make([]);
@@ -141,7 +141,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function configForRunnerModeCanBeSetToLinear(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['debug' => null], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub(['debug' => null], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -152,7 +152,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForVerbosityIsNormal(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make([]);
@@ -163,7 +163,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForVerbosityCanBeSetToSilent(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -174,7 +174,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForVerbosityCanBeSetToVerbose(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['verbose' => null], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub(['verbose' => null], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -185,7 +185,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function mixedVerbosityOptionsCancelOutToNormal(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null, 'verbose' => null], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null, 'verbose' => null], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -209,7 +209,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function addsValidDirectoryContentsRecursivelyToPaths(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -220,7 +220,7 @@ final class HarnessConfigFactoryTest extends TestCase
     #[Test]
     public function filtersProvidedPathsWithRegularExpressions(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['filter' => '.*PATH[12].*'], [__DIR__ . '/Fixtures']);
+        $argumentsParserStub = $this->createArgumentsParserStub(['filter' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();

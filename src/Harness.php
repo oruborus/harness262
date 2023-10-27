@@ -9,6 +9,7 @@ use Oru\Harness\Cache\GenericCacheRepository;
 use Oru\Harness\Cache\NoCacheRepository;
 use Oru\Harness\Cli\CliArgumentsParser;
 use Oru\Harness\Command\ClonedPhpCommand;
+use Oru\Harness\Config\HarnessConfigFactory;
 use Oru\Harness\Contracts\CacheResultRecord;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\Storage;

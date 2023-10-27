@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness;
+namespace Oru\Harness\Config;
 
 use FilesystemIterator;
 use Iterator;
