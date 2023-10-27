@@ -11,6 +11,7 @@ use Oru\Harness\Cli\CliArgumentsParser;
 use Oru\Harness\Command\ClonedPhpCommand;
 use Oru\Harness\Config\GenericTestConfigFactory;
 use Oru\Harness\Config\HarnessConfigFactory;
+use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
 use Oru\Harness\Contracts\CacheResultRecord;
 use Oru\Harness\Contracts\Facade;
@@ -82,6 +83,7 @@ final readonly class Harness
             ]
         );
         $configFactory        = new HarnessConfigFactory($argumentsParser);
+        $outputConfigFactory  = new OutputConfigFactory($argumentsParser);
         $printerConfigFactory = new PrinterConfigFactory($argumentsParser);
         $testConfigFactory    = new GenericTestConfigFactory($testStorage);
         $printerFactory       = new GenericPrinterFactory();
@@ -90,8 +92,9 @@ final readonly class Harness
         $command              = new ClonedPhpCommand(realpath(static::TEMPLATE_PATH . '.php'));
 
         $config        = $configFactory->make();
+        $outputConfig  = $outputConfigFactory->make();
         $printerConfig = $printerConfigFactory->make();
-        $output        = $outputFactory->make($config);
+        $output        = $outputFactory->make($outputConfig);
         $printer       = $printerFactory->make($printerConfig, $output, 0);
 
         // FIXME: Move to `CacheRepositoryFactory`

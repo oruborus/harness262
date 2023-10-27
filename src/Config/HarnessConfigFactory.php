@@ -8,8 +8,6 @@ use FilesystemIterator;
 use Iterator;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\ConfigFactory;
-use Oru\Harness\Contracts\OutputConfig;
-use Oru\Harness\Contracts\OutputType;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use RecursiveDirectoryIterator;
@@ -32,7 +30,7 @@ final readonly class HarnessConfigFactory implements ConfigFactory
     /**
      * @throws RuntimeException
      */
-    public function make(): OutputConfig&TestSuiteConfig
+    public function make(): TestSuiteConfig
     {
         $paths = $this->argumentsParser->rest();
         $paths = [];
@@ -85,7 +83,7 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             $paths,
             $cache,
             $testRunnerMode
-        ) implements OutputConfig, TestSuiteConfig
+        ) implements TestSuiteConfig
         {
             public function __construct(
                 /**
@@ -108,14 +106,6 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             public function cache(): bool
             {
                 return $this->cache;
-            }
-
-            /**
-             * @return OutputType[]
-             */
-            public function outputTypes(): array
-            {
-                return [OutputType::Console];
             }
 
             public function testRunnerMode(): TestRunnerMode

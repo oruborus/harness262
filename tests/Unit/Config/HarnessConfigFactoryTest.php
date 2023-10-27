@@ -6,8 +6,6 @@ namespace Tests\Unit\Config;
 
 use Oru\Harness\Config\HarnessConfigFactory;
 use Oru\Harness\Contracts\ArgumentsParser;
-use Oru\Harness\Contracts\OutputConfig;
-use Oru\Harness\Contracts\OutputType;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -56,14 +54,13 @@ final class HarnessConfigFactoryTest extends TestCase
     }
 
     #[Test]
-    public function createsConfigForOutputAndTestSuite(): void
+    public function createsConfigForTestSuite(): void
     {
         $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
 
-        $this->assertInstanceOf(OutputConfig::class, $actual);
         $this->assertInstanceOf(TestSuiteConfig::class, $actual);
     }
 
@@ -111,17 +108,6 @@ final class HarnessConfigFactoryTest extends TestCase
         $actual = $factory->make();
 
         $this->assertFalse($actual->cache());
-    }
-
-    #[Test]
-    public function defaultConfigForOutputIsConsole(): void
-    {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
-
-        $actual = $factory->make([]);
-
-        $this->assertSame([OutputType::Console], $actual->outputTypes());
     }
 
     #[Test]
