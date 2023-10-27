@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Config;
 
-use Oru\Harness\Config\HarnessConfigFactory;
+use Oru\Harness\Config\TestSuiteConfigFactory;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
@@ -15,8 +15,8 @@ use RuntimeException;
 
 use function array_key_exists;
 
-#[CoversClass(HarnessConfigFactory::class)]
-final class HarnessConfigFactoryTest extends TestCase
+#[CoversClass(TestSuiteConfigFactory::class)]
+final class TestSuiteConfigFactoryTest extends TestCase
 {
     /**
      * @param array<string, ?string> $options
@@ -57,7 +57,7 @@ final class HarnessConfigFactoryTest extends TestCase
     public function createsConfigForTestSuite(): void
     {
         $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
 
@@ -68,7 +68,7 @@ final class HarnessConfigFactoryTest extends TestCase
     public function interpretsAllNonPrefixedArgumentsAsPaths(): void
     {
         $expected = [__DIR__ . '/../Fixtures/PATH0', __DIR__ . '/../Fixtures/PATH1', __DIR__ . '/../Fixtures/PATH2'];
-        $factory = new HarnessConfigFactory($this->createConfiguredMock(
+        $factory = new TestSuiteConfigFactory($this->createConfiguredMock(
             ArgumentsParser::class,
             ['rest' => $expected]
         ));
@@ -83,7 +83,7 @@ final class HarnessConfigFactoryTest extends TestCase
     {
         $this->expectExceptionObject(new RuntimeException('No test path specified. Aborting.'));
 
-        $factory = new HarnessConfigFactory($this->createMock(ArgumentsParser::class));
+        $factory = new TestSuiteConfigFactory($this->createMock(ArgumentsParser::class));
 
         $factory->make();
     }
@@ -92,7 +92,7 @@ final class HarnessConfigFactoryTest extends TestCase
     public function defaultConfigForCachingIsTrue(): void
     {
         $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
 
@@ -103,7 +103,7 @@ final class HarnessConfigFactoryTest extends TestCase
     public function cachingCanBeDisabled(): void
     {
         $argumentsParserStub = $this->createArgumentsParserStub(['no-cache' => null], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
 
@@ -114,7 +114,7 @@ final class HarnessConfigFactoryTest extends TestCase
     public function defaultConfigForRunnerModeIsAsync(): void
     {
         $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make([]);
 
@@ -125,7 +125,7 @@ final class HarnessConfigFactoryTest extends TestCase
     public function configForRunnerModeCanBeSetToLinear(): void
     {
         $argumentsParserStub = $this->createArgumentsParserStub(['debug' => null], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
 
@@ -137,7 +137,7 @@ final class HarnessConfigFactoryTest extends TestCase
     {
         $this->expectExceptionObject(new RuntimeException("Provided path `AAA` does not exist"));
 
-        $factory = new HarnessConfigFactory($this->createConfiguredMock(
+        $factory = new TestSuiteConfigFactory($this->createConfiguredMock(
             ArgumentsParser::class,
             ['rest' => ['AAA']]
         ));
@@ -149,7 +149,7 @@ final class HarnessConfigFactoryTest extends TestCase
     public function addsValidDirectoryContentsRecursivelyToPaths(): void
     {
         $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
 
@@ -160,7 +160,7 @@ final class HarnessConfigFactoryTest extends TestCase
     public function filtersProvidedPathsWithRegularExpressions(): void
     {
         $argumentsParserStub = $this->createArgumentsParserStub(['filter' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
 

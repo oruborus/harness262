@@ -10,7 +10,7 @@ use Oru\Harness\Cache\NoCacheRepository;
 use Oru\Harness\Cli\CliArgumentsParser;
 use Oru\Harness\Command\ClonedPhpCommand;
 use Oru\Harness\Config\GenericTestConfigFactory;
-use Oru\Harness\Config\HarnessConfigFactory;
+use Oru\Harness\Config\TestSuiteConfigFactory;
 use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
 use Oru\Harness\Contracts\CacheResultRecord;
@@ -82,7 +82,7 @@ final readonly class Harness
                 'filter' => ':',
             ]
         );
-        $configFactory        = new HarnessConfigFactory($argumentsParser);
+        $configFactory        = new TestSuiteConfigFactory($argumentsParser);
         $outputConfigFactory  = new OutputConfigFactory($argumentsParser);
         $printerConfigFactory = new PrinterConfigFactory($argumentsParser);
         $testConfigFactory    = new GenericTestConfigFactory($testStorage);

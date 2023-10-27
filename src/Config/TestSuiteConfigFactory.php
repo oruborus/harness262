@@ -20,7 +20,7 @@ use function is_dir;
 use function is_file;
 use function preg_match;
 
-final readonly class HarnessConfigFactory implements ConfigFactory
+final readonly class TestSuiteConfigFactory implements ConfigFactory
 {
     public function __construct(
         private ArgumentsParser $argumentsParser
