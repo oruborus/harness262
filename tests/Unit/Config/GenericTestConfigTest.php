@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Test;
+namespace Tests\Unit\Config;
 
+use Oru\Harness\Config\GenericTestConfig;
 use Oru\Harness\Contracts\Frontmatter;
-use Oru\Harness\Test\GenericTestConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

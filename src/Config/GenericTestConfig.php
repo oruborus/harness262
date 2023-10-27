@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Test;
+namespace Oru\Harness\Config;
 
 use Oru\Harness\Contracts\Frontmatter;
 use Oru\Harness\Contracts\TestConfig;

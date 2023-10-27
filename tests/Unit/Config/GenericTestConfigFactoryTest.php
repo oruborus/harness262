@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Test;
+namespace Tests\Unit\Config;
 
 use Generator;
+use Oru\Harness\Config\Exception\MissingFrontmatterException;
+use Oru\Harness\Config\GenericTestConfig;
+use Oru\Harness\Config\GenericTestConfigFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\Storage;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
-use Oru\Harness\Test\Exception\MissingFrontmatterException;
-use Oru\Harness\Test\GenericTestConfig;
-use Oru\Harness\Test\GenericTestConfigFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;

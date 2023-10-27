@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Test;
+namespace Oru\Harness\Config;
 
+use Oru\Harness\Config\Exception\MissingFrontmatterException;
 use Oru\Harness\Contracts\Storage;
 use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestConfigFactory;
@@ -12,7 +13,6 @@ use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedKeyException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedNegativePhaseException;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
-use Oru\Harness\Test\Exception\MissingFrontmatterException;
 use RuntimeException;
 use Symfony\Component\Yaml\Exception\ParseException;
 

@@ -6,6 +6,7 @@ namespace Tests\Unit\Test;
 
 use ErrorException;
 use Fiber;
+use Oru\Harness\Config\GenericTestConfig;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\Printer;
@@ -13,7 +14,6 @@ use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
-use Oru\Harness\Test\GenericTestConfig;
 use Oru\Harness\Test\GenericTestResult;
 use Oru\Harness\Test\ParallelTestRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
