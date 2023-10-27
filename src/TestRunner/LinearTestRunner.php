@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Oru\Harness\TestRunner;
 
+use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Contracts\AssertionFactory;
+use Oru\Harness\Contracts\Facade;
+use Oru\Harness\Contracts\FrontmatterFlag;
+use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunner;
-use Oru\Harness\Assertion\Exception\AssertionFailedException;
-use Oru\Harness\Assertion\Exception\EngineException;
-use Oru\Harness\Contracts\Facade;
-use Oru\Harness\Contracts\FrontmatterFlag;
-use Oru\Harness\Contracts\Printer;
 use Throwable;
 
 use function array_diff;
