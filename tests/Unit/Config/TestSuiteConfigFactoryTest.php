@@ -5,58 +5,21 @@ declare(strict_types=1);
 namespace Tests\Unit\Config;
 
 use Oru\Harness\Config\TestSuiteConfigFactory;
-use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-
-use function array_key_exists;
+use Tests\Utility\ArgumentsParser\ArgumentsParserStub;
 
 #[CoversClass(TestSuiteConfigFactory::class)]
 final class TestSuiteConfigFactoryTest extends TestCase
 {
-    /**
-     * @param array<string, ?string> $options
-     * @param list<string> $rest
-     */
-    private function createArgumentsParserStub(array $options = [], array $rest = []): ArgumentsParser
-    {
-        return new class($options, $rest) implements ArgumentsParser
-        {
-            /**
-             * @param array<string, ?string> $options
-             * @param list<string> $rest
-             */
-            public function __construct(
-                private array $options,
-                private array $rest
-            ) {
-            }
-
-            public function hasOption(string $option): bool
-            {
-                return array_key_exists($option, $this->options);
-            }
-
-            public function getOption(string $option): string
-            {
-                return $this->options[$option] ?? '';
-            }
-
-            public function rest(): array
-            {
-                return $this->rest;
-            }
-        };
-    }
-
     #[Test]
     public function createsConfigForTestSuite(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -68,10 +31,8 @@ final class TestSuiteConfigFactoryTest extends TestCase
     public function interpretsAllNonPrefixedArgumentsAsPaths(): void
     {
         $expected = [__DIR__ . '/../Fixtures/PATH0', __DIR__ . '/../Fixtures/PATH1', __DIR__ . '/../Fixtures/PATH2'];
-        $factory = new TestSuiteConfigFactory($this->createConfiguredMock(
-            ArgumentsParser::class,
-            ['rest' => $expected]
-        ));
+        $argumentsParserStub = new ArgumentsParserStub([], $expected);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
 
@@ -83,7 +44,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     {
         $this->expectExceptionObject(new RuntimeException('No test path specified. Aborting.'));
 
-        $factory = new TestSuiteConfigFactory($this->createMock(ArgumentsParser::class));
+        $factory = new TestSuiteConfigFactory(new ArgumentsParserStub());
 
         $factory->make();
     }
@@ -91,7 +52,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForCachingIsTrue(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -102,7 +63,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function cachingCanBeDisabled(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['no-cache' => null], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub(['no-cache' => null], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -113,7 +74,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForRunnerModeIsAsync(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make([]);
@@ -124,7 +85,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function configForRunnerModeCanBeSetToLinear(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['debug' => null], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub(['debug' => null], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -137,10 +98,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     {
         $this->expectExceptionObject(new RuntimeException("Provided path `AAA` does not exist"));
 
-        $factory = new TestSuiteConfigFactory($this->createConfiguredMock(
-            ArgumentsParser::class,
-            ['rest' => ['AAA']]
-        ));
+        $factory = new TestSuiteConfigFactory(new ArgumentsParserStub([], ['AAA']));
 
         $factory->make();
     }
@@ -148,7 +106,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function addsValidDirectoryContentsRecursivelyToPaths(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -159,7 +117,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function filtersProvidedPathsWithRegularExpressions(): void
     {
-        $argumentsParserStub = $this->createArgumentsParserStub(['filter' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub(['filter' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
