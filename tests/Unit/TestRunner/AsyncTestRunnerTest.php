@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Test;
+namespace Tests\Unit\TestRunner;
 
 use Oru\Harness\Contracts\Loop;
 use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestRunner;
 use Oru\Harness\Loop\FiberTask;
-use Oru\Harness\Test\AsyncTestRunner;
+use Oru\Harness\TestRunner\AsyncTestRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;

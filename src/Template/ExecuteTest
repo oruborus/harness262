@@ -7,7 +7,7 @@ use Oru\Harness\Box\TestConfigFromStdinBox;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Printer\SilentPrinter;
 use Oru\Harness\Subprocess\SingleTestSubprocess;
-use Oru\Harness\Test\LinearTestRunner;
+use Oru\Harness\TestRunner\LinearTestRunner;
 
 const FACADE_PATH = '{{FACADE_PATH}}';
 

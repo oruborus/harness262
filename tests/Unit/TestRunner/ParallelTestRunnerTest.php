@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Test;
+namespace Tests\Unit\TestRunner;
 
 use ErrorException;
 use Fiber;
@@ -14,8 +14,8 @@ use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
-use Oru\Harness\Test\GenericTestResult;
-use Oru\Harness\Test\ParallelTestRunner;
+use Oru\Harness\TestRunner\GenericTestResult;
+use Oru\Harness\TestRunner\ParallelTestRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;

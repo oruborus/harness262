@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Oru\Harness\Contracts\TestResultState;
-use Oru\Harness\Test\GenericTestResult;
+use Oru\Harness\TestRunner\GenericTestResult;
 
 require './vendor/autoload.php';
 

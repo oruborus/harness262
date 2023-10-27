@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Test;
+namespace Oru\Harness\TestRunner;
 
 use Fiber;
 use Oru\Harness\Contracts\AssertionFactory;

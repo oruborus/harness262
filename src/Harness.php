@@ -22,10 +22,10 @@ use Oru\Harness\Output\GenericOutputFactory;
 use Oru\Harness\Printer\GenericPrinterFactory;
 use Oru\Harness\Storage\FileStorage;
 use Oru\Harness\Storage\SerializingFileStorage;
-use Oru\Harness\Test\AsyncTestRunner;
-use Oru\Harness\Test\GenericTestResult;
-use Oru\Harness\Test\LinearTestRunner;
-use Oru\Harness\Test\ParallelTestRunner;
+use Oru\Harness\TestRunner\AsyncTestRunner;
+use Oru\Harness\TestRunner\GenericTestResult;
+use Oru\Harness\TestRunner\LinearTestRunner;
+use Oru\Harness\TestRunner\ParallelTestRunner;
 use RuntimeException;
 
 use function array_shift;

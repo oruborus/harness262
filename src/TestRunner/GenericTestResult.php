@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Test;
+namespace Oru\Harness\TestRunner;
 
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
