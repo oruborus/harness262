@@ -1,5 +1,5 @@
 --TEST--
-harness Fixtures/ --filter "e.*\.js"
+harness Fixtures/ --filter "e(?:mpty)|(?:rror).*\.js"
 --SKIPIF--
 <?php
 
