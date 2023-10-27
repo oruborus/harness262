@@ -10,8 +10,6 @@ use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\ConfigFactory;
 use Oru\Harness\Contracts\OutputConfig;
 use Oru\Harness\Contracts\OutputType;
-use Oru\Harness\Contracts\PrinterConfig;
-use Oru\Harness\Contracts\PrinterVerbosity;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use RecursiveDirectoryIterator;
@@ -34,7 +32,7 @@ final readonly class HarnessConfigFactory implements ConfigFactory
     /**
      * @throws RuntimeException
      */
-    public function make(): OutputConfig&PrinterConfig&TestSuiteConfig
+    public function make(): OutputConfig&TestSuiteConfig
     {
         $paths = $this->argumentsParser->rest();
         $paths = [];
@@ -77,20 +75,6 @@ final readonly class HarnessConfigFactory implements ConfigFactory
 
         $cache = !$this->argumentsParser->hasOption('no-cache');
 
-        $verbosity = PrinterVerbosity::Normal;
-        if (
-            $this->argumentsParser->hasOption('verbose')
-            && !$this->argumentsParser->hasOption('silent')
-        ) {
-            $verbosity = PrinterVerbosity::Verbose;
-        }
-        if (
-            $this->argumentsParser->hasOption('silent')
-            && !$this->argumentsParser->hasOption('verbose')
-        ) {
-            $verbosity = PrinterVerbosity::Silent;
-        }
-
         $testRunnerMode = TestRunnerMode::Async;
 
         if ($this->argumentsParser->hasOption('debug')) {
@@ -100,9 +84,8 @@ final readonly class HarnessConfigFactory implements ConfigFactory
         return new class(
             $paths,
             $cache,
-            $testRunnerMode,
-            $verbosity
-        ) implements OutputConfig, PrinterConfig, TestSuiteConfig
+            $testRunnerMode
+        ) implements OutputConfig, TestSuiteConfig
         {
             public function __construct(
                 /**
@@ -111,7 +94,6 @@ final readonly class HarnessConfigFactory implements ConfigFactory
                 private array $paths,
                 private bool $cache,
                 private TestRunnerMode $testRunnerMode,
-                private PrinterVerbosity $printerVerbosity
             ) {
             }
 
@@ -134,11 +116,6 @@ final readonly class HarnessConfigFactory implements ConfigFactory
             public function outputTypes(): array
             {
                 return [OutputType::Console];
-            }
-
-            public function verbosity(): PrinterVerbosity
-            {
-                return $this->printerVerbosity;
             }
 
             public function testRunnerMode(): TestRunnerMode

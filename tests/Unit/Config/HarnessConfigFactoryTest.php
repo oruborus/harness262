@@ -8,8 +8,6 @@ use Oru\Harness\Config\HarnessConfigFactory;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\OutputConfig;
 use Oru\Harness\Contracts\OutputType;
-use Oru\Harness\Contracts\PrinterConfig;
-use Oru\Harness\Contracts\PrinterVerbosity;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -58,7 +56,7 @@ final class HarnessConfigFactoryTest extends TestCase
     }
 
     #[Test]
-    public function createsConfigForOutputPrinterAndTestSuite(): void
+    public function createsConfigForOutputAndTestSuite(): void
     {
         $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
         $factory = new HarnessConfigFactory($argumentsParserStub);
@@ -66,7 +64,6 @@ final class HarnessConfigFactoryTest extends TestCase
         $actual = $factory->make();
 
         $this->assertInstanceOf(OutputConfig::class, $actual);
-        $this->assertInstanceOf(PrinterConfig::class, $actual);
         $this->assertInstanceOf(TestSuiteConfig::class, $actual);
     }
 
@@ -147,50 +144,6 @@ final class HarnessConfigFactoryTest extends TestCase
         $actual = $factory->make();
 
         $this->assertSame(TestRunnerMode::Linear, $actual->testRunnerMode());
-    }
-
-    #[Test]
-    public function defaultConfigForVerbosityIsNormal(): void
-    {
-        $argumentsParserStub = $this->createArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
-
-        $actual = $factory->make([]);
-
-        $this->assertSame(PrinterVerbosity::Normal, $actual->verbosity());
-    }
-
-    #[Test]
-    public function defaultConfigForVerbosityCanBeSetToSilent(): void
-    {
-        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
-
-        $actual = $factory->make();
-
-        $this->assertSame(PrinterVerbosity::Silent, $actual->verbosity());
-    }
-
-    #[Test]
-    public function defaultConfigForVerbosityCanBeSetToVerbose(): void
-    {
-        $argumentsParserStub = $this->createArgumentsParserStub(['verbose' => null], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
-
-        $actual = $factory->make();
-
-        $this->assertSame(PrinterVerbosity::Verbose, $actual->verbosity());
-    }
-
-    #[Test]
-    public function mixedVerbosityOptionsCancelOutToNormal(): void
-    {
-        $argumentsParserStub = $this->createArgumentsParserStub(['silent' => null, 'verbose' => null], [__DIR__ . '/../Fixtures']);
-        $factory = new HarnessConfigFactory($argumentsParserStub);
-
-        $actual = $factory->make();
-
-        $this->assertSame(PrinterVerbosity::Normal, $actual->verbosity());
     }
 
     #[Test]
