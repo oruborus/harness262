@@ -8,6 +8,8 @@ interface Printer
 {
     public function setStepCount(int $stepCount): void;
 
+    public function writeLn(string $line): void;
+
     public function start(): void;
 
     public function step(TestResultState $state): void;

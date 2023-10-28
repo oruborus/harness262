@@ -38,6 +38,11 @@ final class NormalPrinter implements Printer
         $this->stepsPlanned = $stepCount;
     }
 
+    public function writeLn(string $line): void
+    {
+        $this->output->writeLn($line);
+    }
+
     public function start(): void
     {
         $this->output->writeLn('');

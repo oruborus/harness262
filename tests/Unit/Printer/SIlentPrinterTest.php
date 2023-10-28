@@ -18,6 +18,7 @@ final class SilentPrinterTest extends TestCase
     {
         $printer = new SilentPrinter();
 
+        $this->assertNull($printer->writeLn('Test'));
         $this->assertNull($printer->start());
         $this->assertNull($printer->setStepCount(231649));
         $this->assertNull($printer->step(TestResultState::Success));

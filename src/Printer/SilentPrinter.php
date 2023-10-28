@@ -13,6 +13,10 @@ final class SilentPrinter implements Printer
     {
     }
 
+    public function writeLn(string $line): void
+    {
+    }
+
     public function start(): void
     {
     }
