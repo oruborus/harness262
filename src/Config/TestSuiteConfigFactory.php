@@ -16,10 +16,10 @@ use Oru\Harness\Contracts\TestSuiteConfig;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
-use function array_filter;
 use function file_exists;
 use function is_dir;
 use function is_file;
+use function preg_grep;
 use function preg_match;
 use function restore_error_handler;
 use function set_error_handler;
@@ -76,7 +76,7 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
 
             $this->testRegularExpressionPattern($pattern);
 
-            $paths = array_filter($paths, static fn (string $path): bool => (bool) preg_match($pattern, $path));
+            $paths = preg_grep($pattern, $paths);
         }
 
         if ($paths === []) {
