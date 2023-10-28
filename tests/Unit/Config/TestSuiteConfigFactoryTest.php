@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Config;
 
+use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Config\TestSuiteConfigFactory;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
@@ -123,5 +124,30 @@ final class TestSuiteConfigFactoryTest extends TestCase
         $actual = $factory->make();
 
         $this->assertCount(4, $actual->paths());
+    }
+
+    #[Test]
+    public function failsWhenProvidedRegularExpressionPatternisMalformed(): void
+    {
+        $this->expectExceptionObject(new MalformedRegularExpressionPatternException('Compilation failed: missing closing parenthesis at offset 1'));
+
+        $argumentsParserStub = new ArgumentsParserStub(['filter' => '('], [__DIR__ . '/../Fixtures']);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
+
+        $factory->make();
+    }
+
+    #[Test]
+    public function errorHandlerFunctionalityIsRestoredAfterRun(): void
+    {
+        set_error_handler($expected = set_error_handler(null));
+        $argumentsParserStub = new ArgumentsParserStub(['filter' => '.*'], [__DIR__ . '/../Fixtures']);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
+
+        $factory->make();
+
+        set_error_handler($actual = set_error_handler(null));
+
+        $this->assertSame($expected, $actual);
     }
 }

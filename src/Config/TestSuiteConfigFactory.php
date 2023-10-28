@@ -6,6 +6,7 @@ namespace Oru\Harness\Config;
 
 use FilesystemIterator;
 use Iterator;
+use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\ConfigFactory;
 use Oru\Harness\Contracts\TestRunnerMode;
@@ -19,6 +20,11 @@ use function file_exists;
 use function is_dir;
 use function is_file;
 use function preg_match;
+use function restore_error_handler;
+use function set_error_handler;
+use function substr;
+
+use const E_WARNING;
 
 final readonly class TestSuiteConfigFactory implements ConfigFactory
 {
@@ -29,6 +35,7 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
 
     /**
      * @throws RuntimeException
+     * @throws MalformedRegularExpressionPatternException
      */
     public function make(): TestSuiteConfig
     {
@@ -64,6 +71,9 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
 
         if ($this->argumentsParser->hasOption('filter')) {
             $pattern = "/{$this->argumentsParser->getOption('filter')}/";
+
+            $this->testRegularExpressionPattern($pattern);
+
             $paths = array_filter($paths, static fn (string $path): bool => (bool) preg_match($pattern, $path));
         }
 
@@ -113,5 +123,19 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
                 return $this->testRunnerMode;
             }
         };
+    }
+
+    private function testRegularExpressionPattern(string $pattern): void
+    {
+        set_error_handler(static function (int $_, string $message): void {
+            throw new MalformedRegularExpressionPatternException(substr($message, 14));
+        }, E_WARNING);
+
+        /**
+         * @psalm-suppress ArgumentTypeCoercion
+         */
+        preg_match($pattern, '');
+
+        restore_error_handler();
     }
 }
