@@ -8,7 +8,12 @@ use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Cache\GenericCacheRepository;
 use Oru\Harness\Cache\NoCacheRepository;
 use Oru\Harness\Cli\CliArgumentsParser;
+use Oru\Harness\Cli\Exception\InvalidOptionException;
+use Oru\Harness\Cli\Exception\UnknownOptionException;
 use Oru\Harness\Command\ClonedPhpCommand;
+use Oru\Harness\Config\Exception\InvalidPathException;
+use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
+use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Config\GenericTestConfigFactory;
 use Oru\Harness\Config\TestSuiteConfigFactory;
 use Oru\Harness\Config\OutputConfigFactory;
@@ -28,7 +33,6 @@ use Oru\Harness\TestRunner\AsyncTestRunner;
 use Oru\Harness\TestRunner\GenericTestResult;
 use Oru\Harness\TestRunner\LinearTestRunner;
 use Oru\Harness\TestRunner\ParallelTestRunner;
-use RuntimeException;
 
 use function array_shift;
 use function count;
@@ -65,7 +69,8 @@ final readonly class Harness
     /**
      * @param list<string> $arguments
      *
-     * @throws RuntimeException
+     * @throws InvalidOptionException
+     * @throws UnknownOptionException
      */
     public function run(array $arguments): int
     {
@@ -82,43 +87,59 @@ final readonly class Harness
                 'filter' => ':',
             ]
         );
-        $configFactory        = new TestSuiteConfigFactory($argumentsParser);
-        $outputConfigFactory  = new OutputConfigFactory($argumentsParser);
-        $printerConfigFactory = new PrinterConfigFactory($argumentsParser);
-        $testConfigFactory    = new GenericTestConfigFactory($testStorage);
-        $printerFactory       = new GenericPrinterFactory();
-        $outputFactory        = new GenericOutputFactory();
-        $assertionFactory     = new GenericAssertionFactory($this->facade);
-        $command              = new ClonedPhpCommand(realpath(static::TEMPLATE_PATH . '.php'));
+        $testConfigFactory      = new GenericTestConfigFactory($testStorage);
+        $printerFactory         = new GenericPrinterFactory();
+        $outputFactory          = new GenericOutputFactory();
+        $assertionFactory       = new GenericAssertionFactory($this->facade);
+        $command                = new ClonedPhpCommand(realpath(static::TEMPLATE_PATH . '.php'));
 
-        $config        = $configFactory->make();
-        $outputConfig  = $outputConfigFactory->make();
-        $printerConfig = $printerConfigFactory->make();
-        $output        = $outputFactory->make($outputConfig);
-        $printer       = $printerFactory->make($printerConfig, $output, 0);
+        $outputConfigFactory    = new OutputConfigFactory($argumentsParser);
+        $outputConfig           = $outputConfigFactory->make();
+        $output                 = $outputFactory->make($outputConfig);
 
-        // FIXME: Move to `CacheRepositoryFactory`
-        /** 
-         * @var Storage<CacheResultRecord> $storage
-         */
-        $storage = new SerializingFileStorage('./.harness/cache');
-        $cacheRepository = $config->cache() ?
-            new GenericCacheRepository($storage) :
-            new NoCacheRepository();
-
-        // FIXME: Move to `TestRunnerFactory`
-        $testRunner = match ($config->testRunnerMode()) {
-            TestRunnerMode::Linear => new LinearTestRunner($this->facade, $assertionFactory, $printer),
-            TestRunnerMode::Parallel => new ParallelTestRunner($assertionFactory, $printer, $command),
-            TestRunnerMode::Async => new AsyncTestRunner(new ParallelTestRunner($assertionFactory, $printer, $command), new TaskLoop(8))
-        };
-
+        $printerConfigFactory   = new PrinterConfigFactory($argumentsParser);
+        $printerConfig          = $printerConfigFactory->make();
+        $printer                = $printerFactory->make($printerConfig, $output, 0);
 
         // 1. Let testSuiteStartTime be the current system time in seconds.
         $testSuiteStartTime = time();
 
         // 2. Perform **printer**.start().
         $printer->start();
+
+        try {
+            $testSuiteConfigFactory = new TestSuiteConfigFactory($argumentsParser);
+            $testSuiteConfig        = $testSuiteConfigFactory->make();
+        } catch (MalformedRegularExpressionPatternException $exception) {
+            $printer->writeLn('The provided regular expression pattern is malformed.');
+            $printer->writeLn('The following warning was issued:');
+            $printer->writeLn("\"{$exception->getMessage()}\"");
+            return 1;
+        } catch (InvalidPathException $exception) {
+            $printer->writeLn($exception->getMessage());
+            return 1;
+        } catch (MissingPathException $exception) {
+            // TODO: Print command usage here.
+            $printer->writeLn($exception->getMessage());
+            return 1;
+        }
+
+        // FIXME: Move to `CacheRepositoryFactory`
+        /** 
+         * @var Storage<CacheResultRecord> $storage
+         */
+        $storage = new SerializingFileStorage('./.harness/cache');
+        $cacheRepository = $testSuiteConfig->cache() ?
+            new GenericCacheRepository($storage) :
+            new NoCacheRepository();
+
+        // FIXME: Move to `TestRunnerFactory`
+        $testRunner = match ($testSuiteConfig->testRunnerMode()) {
+            TestRunnerMode::Linear => new LinearTestRunner($this->facade, $assertionFactory, $printer),
+            TestRunnerMode::Parallel => new ParallelTestRunner($assertionFactory, $printer, $command),
+            TestRunnerMode::Async => new AsyncTestRunner(new ParallelTestRunner($assertionFactory, $printer, $command), new TaskLoop(8))
+        };
+
 
         // 3. Let **preparedTestConfigurations** be a new empty list.
         /**
@@ -127,7 +148,7 @@ final readonly class Harness
         $preparedTestConfigurations = [];
 
         // 4. For each **providedPath** of **config**.[[Paths]], do
-        foreach ($config->paths() as $providedPath) {
+        foreach ($testSuiteConfig->paths() as $providedPath) {
             // FIXME: a. If file is not a valid ECMAScript file, then skip.
             if (str_ends_with($providedPath, '_FIXTURE.js')) {
                 continue;
