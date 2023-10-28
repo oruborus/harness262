@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Config;
 
+use Oru\Harness\Config\Exception\InvalidPathException;
 use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
+use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Config\TestSuiteConfigFactory;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 use Tests\Utility\ArgumentsParser\ArgumentsParserStub;
 
 #[CoversClass(TestSuiteConfigFactory::class)]
@@ -43,7 +44,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function failsWhenPathsIsEmpty(): void
     {
-        $this->expectExceptionObject(new RuntimeException('No test path specified. Aborting.'));
+        $this->expectExceptionObject(new MissingPathException('No test path specified. Aborting.'));
 
         $factory = new TestSuiteConfigFactory(new ArgumentsParserStub());
 
@@ -97,7 +98,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function failsWhenProvidedPathDoesNotExist(): void
     {
-        $this->expectExceptionObject(new RuntimeException("Provided path `AAA` does not exist"));
+        $this->expectExceptionObject(new InvalidPathException("Provided path `AAA` does not exist"));
 
         $factory = new TestSuiteConfigFactory(new ArgumentsParserStub([], ['AAA']));
 

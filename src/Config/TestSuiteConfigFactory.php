@@ -6,14 +6,15 @@ namespace Oru\Harness\Config;
 
 use FilesystemIterator;
 use Iterator;
+use Oru\Harness\Config\Exception\InvalidPathException;
 use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
+use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\ConfigFactory;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use RuntimeException;
 
 use function array_filter;
 use function file_exists;
@@ -34,8 +35,9 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
     }
 
     /**
-     * @throws RuntimeException
+     * @throws InvalidPathException
      * @throws MalformedRegularExpressionPatternException
+     * @throws MissingPathException
      */
     public function make(): TestSuiteConfig
     {
@@ -43,7 +45,7 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
         $paths = [];
         foreach ($this->argumentsParser->rest() as $providedPath) {
             if (!file_exists($providedPath)) {
-                throw new RuntimeException("Provided path `{$providedPath}` does not exist");
+                throw new InvalidPathException("Provided path `{$providedPath}` does not exist");
             }
 
             if (is_file($providedPath)) {
@@ -78,7 +80,7 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
         }
 
         if ($paths === []) {
-            throw new RuntimeException('No test path specified. Aborting.');
+            throw new MissingPathException('No test path specified. Aborting.');
         }
 
         $cache = !$this->argumentsParser->hasOption('no-cache');
@@ -125,6 +127,9 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
         };
     }
 
+    /**
+     * @throws MalformedRegularExpressionPatternException
+     */
     private function testRegularExpressionPattern(string $pattern): void
     {
         set_error_handler(static function (int $_, string $message): void {
