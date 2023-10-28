@@ -26,7 +26,7 @@ Runs the testsuite without output.
 Runs the testsuite with extended output.
 
 #### `--filter <pattern>`
-Filters the provided paths via using the regular expression `<pattern>`.
+Includes matching paths from the provided paths using the regular expression `<pattern>`.
 
 ### Testing
 
