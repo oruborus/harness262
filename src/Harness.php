@@ -81,11 +81,11 @@ final readonly class Harness
             $arguments,
             [
                 'no-cache' => 'n',
-                'silent' => 's',
-                'verbose' => 'v',
-                'debug' => null,
-                'filter' => ':',
-                'exclude' => ':',
+                'silent'   => 's',
+                'verbose'  => 'v',
+                'debug'    => null,
+                'include'  => ':',
+                'exclude'  => ':',
             ]
         );
         $testConfigFactory      = new GenericTestConfigFactory($testStorage);

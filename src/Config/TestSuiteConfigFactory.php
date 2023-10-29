@@ -73,8 +73,8 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
             }
         }
 
-        if ($this->argumentsParser->hasOption('filter')) {
-            $pattern = "/{$this->argumentsParser->getOption('filter')}/";
+        if ($this->argumentsParser->hasOption('include')) {
+            $pattern = "/{$this->argumentsParser->getOption('include')}/";
 
             $this->testRegularExpressionPattern($pattern);
 

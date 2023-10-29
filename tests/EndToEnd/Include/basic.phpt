@@ -1,5 +1,5 @@
 --TEST--
-harness Fixtures/ --filter "("
+harness Fixtures/ --include "e(?:mpty)|(?:rror).*\.js"
 --SKIPIF--
 <?php
 
@@ -18,14 +18,21 @@ $facade = new \Tests\Utility\Facade\TestFacade();
 $_SERVER['argv'][] = './tests/EndToEnd/Fixtures/';
 $_SERVER['argv'][] = '--no-cache';
 $_SERVER['argv'][] = '--debug';
-$_SERVER['argv'][] = '--filter';
-$_SERVER['argv'][] = '(';
+$_SERVER['argv'][] = '--include';
+$_SERVER['argv'][] = 'e(?:mpty)|(?:rror).*\.js';
 
 (new \Oru\Harness\Harness($facade))->run($_SERVER['argv']);
 --EXPECTF--
 
 EcmaScript Test Harness
 
-The provided regular expression pattern is malformed.
-The following warning was issued:
-"Compilation failed: missing closing parenthesis at offset 1"
+.E                                                              2 / 2 (100%)
+
+Duration: %d:%d
+
+There where error(s)!
+
+ERRORS:
+
+1: ./tests/EndToEnd/Fixtures/error.js
+%A

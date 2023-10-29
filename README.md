@@ -25,7 +25,7 @@ Runs the testsuite without output.
 #### `--verbose`, `-v`
 Runs the testsuite with extended output.
 
-#### `--filter <pattern>`
+#### `--include <pattern>`
 Includes matching paths from the provided paths using the regular expression `<pattern>`.
 
 #### `--exclude <pattern>`

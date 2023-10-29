@@ -119,9 +119,9 @@ final class TestSuiteConfigFactoryTest extends TestCase
     }
 
     #[Test]
-    public function filtersProvidedPathsWithRegularExpressions(): void
+    public function includesProvidedPathsWithRegularExpressions(): void
     {
-        $argumentsParserStub = new ArgumentsParserStub(['filter' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub(['include' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $actual = $factory->make();
@@ -176,7 +176,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
 
     public static function provideMalformedFilteringOptions(): Generator
     {
-        yield 'filter' => ['filter', '('];
+        yield 'include' => ['include', '('];
         yield 'exclude' => ['exclude', '('];
     }
 
@@ -189,7 +189,6 @@ final class TestSuiteConfigFactoryTest extends TestCase
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $factory->make();
-
         set_error_handler($actual = set_error_handler(null));
 
         $this->assertSame($expected, $actual);
@@ -197,7 +196,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
 
     public static function provideFilteringOptions(): Generator
     {
-        yield 'filter' => ['filter', '.*'];
+        yield 'include' => ['include', '.*'];
         yield 'exclude' => ['exclude', 'xxxxxxxxxxxx'];
     }
 }
