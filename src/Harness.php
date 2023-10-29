@@ -23,16 +23,12 @@ use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\Storage;
 use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestResultState;
-use Oru\Harness\Contracts\TestRunnerMode;
-use Oru\Harness\Loop\TaskLoop;
 use Oru\Harness\Output\GenericOutputFactory;
 use Oru\Harness\Printer\GenericPrinterFactory;
 use Oru\Harness\Storage\FileStorage;
 use Oru\Harness\Storage\SerializingFileStorage;
-use Oru\Harness\TestRunner\AsyncTestRunner;
 use Oru\Harness\TestRunner\GenericTestResult;
-use Oru\Harness\TestRunner\LinearTestRunner;
-use Oru\Harness\TestRunner\ParallelTestRunner;
+use Oru\Harness\TestRunner\GenericTestRunnerFactory;
 
 use function array_shift;
 use function count;
@@ -138,15 +134,8 @@ final readonly class Harness
             ) :
             new NoCacheRepository();
 
-        // FIXME: Move to `TestRunnerFactory`
-        $testRunner = match ($testSuiteConfig->testRunnerMode()) {
-            TestRunnerMode::Linear => new LinearTestRunner($this->facade, $assertionFactory, $printer),
-            TestRunnerMode::Parallel => new ParallelTestRunner($assertionFactory, $printer, $command),
-            TestRunnerMode::Async => new AsyncTestRunner(
-                new ParallelTestRunner($assertionFactory, $printer, $command),
-                new TaskLoop($testSuiteConfig->concurrency())
-            )
-        };
+        $testRunnerFactory = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command);
+        $testRunner = $testRunnerFactory->make($testSuiteConfig);
 
 
         // 3. Let **preparedTestConfigurations** be a new empty list.
