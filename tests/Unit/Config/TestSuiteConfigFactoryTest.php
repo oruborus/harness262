@@ -65,6 +65,17 @@ final class TestSuiteConfigFactoryTest extends TestCase
     }
 
     #[Test]
+    public function defaultConcurrencyIs8(): void
+    {
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
+
+        $actual = $factory->make();
+
+        $this->assertSame(8, $actual->concurrency());
+    }
+
+    #[Test]
     public function cachingCanBeDisabled(): void
     {
         $argumentsParserStub = new ArgumentsParserStub(['no-cache' => null], [__DIR__ . '/../Fixtures']);

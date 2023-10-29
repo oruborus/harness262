@@ -134,6 +134,11 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
             {
                 return $this->testRunnerMode;
             }
+
+            public function concurrency(): int
+            {
+                return 8;
+            }
         };
     }
 

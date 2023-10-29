@@ -142,7 +142,10 @@ final readonly class Harness
         $testRunner = match ($testSuiteConfig->testRunnerMode()) {
             TestRunnerMode::Linear => new LinearTestRunner($this->facade, $assertionFactory, $printer),
             TestRunnerMode::Parallel => new ParallelTestRunner($assertionFactory, $printer, $command),
-            TestRunnerMode::Async => new AsyncTestRunner(new ParallelTestRunner($assertionFactory, $printer, $command), new TaskLoop(8))
+            TestRunnerMode::Async => new AsyncTestRunner(
+                new ParallelTestRunner($assertionFactory, $printer, $command),
+                new TaskLoop($testSuiteConfig->concurrency())
+            )
         };
 
 

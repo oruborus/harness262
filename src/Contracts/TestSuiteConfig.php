@@ -14,4 +14,6 @@ interface TestSuiteConfig extends Config
     public function cache(): bool;
 
     public function testRunnerMode(): TestRunnerMode;
+
+    public function concurrency(): int;
 }
