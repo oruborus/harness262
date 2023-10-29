@@ -27,6 +27,7 @@ use function strlen;
 use function substr;
 
 use const E_WARNING;
+use const PREG_GREP_INVERT;
 
 final readonly class TestSuiteConfigFactory implements ConfigFactory
 {
@@ -78,6 +79,14 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
             $this->testRegularExpressionPattern($pattern);
 
             $paths = preg_grep($pattern, $paths);
+        }
+
+        if ($this->argumentsParser->hasOption('exclude')) {
+            $pattern = "/{$this->argumentsParser->getOption('exclude')}/";
+
+            $this->testRegularExpressionPattern($pattern);
+
+            $paths = preg_grep($pattern, $paths, PREG_GREP_INVERT);
         }
 
         if ($paths === []) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Config;
 
+use Generator;
 use Oru\Harness\Config\Exception\InvalidPathException;
 use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Config\Exception\MissingPathException;
@@ -11,6 +12,7 @@ use Oru\Harness\Config\TestSuiteConfigFactory;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Tests\Utility\ArgumentsParser\ArgumentsParserStub;
@@ -128,9 +130,21 @@ final class TestSuiteConfigFactoryTest extends TestCase
     }
 
     #[Test]
-    public function failsWhenProvidedRegularExpressionPatternIsMalformed(): void
+    public function excludesItemsFromProvidedPathsWithRegularExpressions(): void
     {
-        $argumentsParserStub = new ArgumentsParserStub(['filter' => '('], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub(['exclude' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures']);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
+
+        $actual = $factory->make();
+
+        $this->assertCount(2, $actual->paths());
+    }
+
+    #[Test]
+    #[DataProvider('provideMalformedFilteringOptions')]
+    public function failsWhenProvidedRegularExpressionPatternIsMalformed(string $option, string $argument): void
+    {
+        $argumentsParserStub = new ArgumentsParserStub([$option => $argument], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         try {
@@ -144,10 +158,11 @@ final class TestSuiteConfigFactoryTest extends TestCase
     }
 
     #[Test]
-    public function errorHandlerFunctionalityIsRestoredAfterFailingRun(): void
+    #[DataProvider('provideMalformedFilteringOptions')]
+    public function errorHandlerFunctionalityIsRestoredAfterFailingRun(string $option, string $argument): void
     {
         set_error_handler($expected = set_error_handler(null));
-        $argumentsParserStub = new ArgumentsParserStub(['filter' => '('], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([$option => $argument], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         try {
@@ -159,11 +174,18 @@ final class TestSuiteConfigFactoryTest extends TestCase
         $this->assertSame($expected, $actual);
     }
 
+    public static function provideMalformedFilteringOptions(): Generator
+    {
+        yield 'filter' => ['filter', '('];
+        yield 'exclude' => ['exclude', '('];
+    }
+
     #[Test]
-    public function errorHandlerFunctionalityIsRestoredAfterRun(): void
+    #[DataProvider('provideFilteringOptions')]
+    public function errorHandlerFunctionalityIsRestoredAfterRun(string $option, string $argument): void
     {
         set_error_handler($expected = set_error_handler(null));
-        $argumentsParserStub = new ArgumentsParserStub(['filter' => '.*'], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([$option => $argument], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
         $factory->make();
@@ -171,5 +193,11 @@ final class TestSuiteConfigFactoryTest extends TestCase
         set_error_handler($actual = set_error_handler(null));
 
         $this->assertSame($expected, $actual);
+    }
+
+    public static function provideFilteringOptions(): Generator
+    {
+        yield 'filter' => ['filter', '.*'];
+        yield 'exclude' => ['exclude', 'xxxxxxxxxxxx'];
     }
 }

@@ -85,6 +85,7 @@ final readonly class Harness
                 'verbose' => 'v',
                 'debug' => null,
                 'filter' => ':',
+                'exclude' => ':',
             ]
         );
         $testConfigFactory      = new GenericTestConfigFactory($testStorage);

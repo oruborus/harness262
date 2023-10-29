@@ -28,6 +28,9 @@ Runs the testsuite with extended output.
 #### `--filter <pattern>`
 Includes matching paths from the provided paths using the regular expression `<pattern>`.
 
+#### `--exclude <pattern>`
+Excludes matching paths from the provided paths using the regular expression `<pattern>`.
+
 ### Testing
 
 ```bash
