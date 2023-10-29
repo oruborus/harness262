@@ -131,7 +131,11 @@ final readonly class Harness
          */
         $storage = new SerializingFileStorage('./.harness/cache');
         $cacheRepository = $testSuiteConfig->cache() ?
-            new GenericCacheRepository($storage) :
+            new GenericCacheRepository(
+                $storage,
+                static fn (TestConfig $i): string => md5(serialize($i)),
+                static fn (string $i): string => hash_file('haval160,4', $i)
+            ) :
             new NoCacheRepository();
 
         // FIXME: Move to `TestRunnerFactory`

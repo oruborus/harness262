@@ -18,27 +18,15 @@ use function serialize;
 final readonly class GenericCacheRepository implements CacheRepository
 {
     /**
-     * @var callable(TestConfig):string $keyHashFunction
-     */
-    private mixed $keyHashFunction;
-
-    /**
-     * @var callable(string):string $fileHashFunction
-     */
-    private mixed $fileHashFunction;
-
-    /**
      * @param Storage<CacheResultRecord> $storage
      * @param callable(TestConfig):string $keyHashFunction
      * @param callable(string):string $fileHashFunction
      */
     public function __construct(
         private Storage $storage,
-        mixed $keyHashFunction = null,
-        mixed $fileHashFunction = null
+        private mixed $keyHashFunction,
+        private mixed $fileHashFunction
     ) {
-        $this->keyHashFunction = $keyHashFunction ?? static fn (TestConfig $i): string => md5(serialize($i));
-        $this->fileHashFunction = $fileHashFunction ?? static fn (string $i): string => hash_file('haval160,4', $i);
     }
 
     public function get(TestConfig $config): ?TestResult

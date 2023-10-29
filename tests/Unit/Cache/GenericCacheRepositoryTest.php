@@ -18,6 +18,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 use function file_put_contents;
+use function hash_file;
 use function md5;
 use function serialize;
 use function unlink;
@@ -43,7 +44,11 @@ final class GenericCacheRepositoryTest extends TestCase
     #[Test]
     public function returnsNullWhenNoCacheForConfigExists(): void
     {
-        $repository = new GenericCacheRepository($this->createMock(Storage::class));
+        $repository = new GenericCacheRepository(
+            $this->createMock(Storage::class),
+            static fn (TestConfig $i): string => md5(serialize($i)),
+            static fn (string $i): string => hash_file('haval160,4', $i)
+        );
         $config = $this->createMock(TestConfig::class);
 
         $actual = $repository->get($config);
@@ -75,7 +80,11 @@ final class GenericCacheRepositoryTest extends TestCase
     #[Test]
     public function returnsEqualResultWhenCacheFileExists(): void
     {
-        $repository = new GenericCacheRepository($this->getStorage());
+        $repository = new GenericCacheRepository(
+            $this->getStorage(),
+            static fn (TestConfig $i): string => md5(serialize($i)),
+            static fn (string $i): string => hash_file('haval160,4', $i)
+        );
         $config = $this->createMock(TestConfig::class);
         $result = $this->createConfiguredMock(TestResult::class, [
             'state' => TestResultState::Success,
@@ -93,7 +102,11 @@ final class GenericCacheRepositoryTest extends TestCase
     #[Test]
     public function returnsNullWhenCacheFileExistsButUsedFileWasChanged(): void
     {
-        $repository = new GenericCacheRepository($this->getStorage());
+        $repository = new GenericCacheRepository(
+            $this->getStorage(),
+            static fn (TestConfig $i): string => md5(serialize($i)),
+            static fn (string $i): string => hash_file('haval160,4', $i)
+        );
         $config = $this->createMock(TestConfig::class);
         $result = $this->createConfiguredMock(TestResult::class, [
             'state' => TestResultState::Success,
@@ -116,7 +129,11 @@ final class GenericCacheRepositoryTest extends TestCase
         $expected = md5(serialize($testConfigMock));
         $storageMock = $this->createMock(Storage::class);
         $storageMock->expects($this->once())->method('get')->with($expected);
-        $repository = new GenericCacheRepository($storageMock);
+        $repository = new GenericCacheRepository(
+            $storageMock,
+            static fn (TestConfig $i): string => md5(serialize($i)),
+            static fn (string $i): string => hash_file('haval160,4', $i)
+        );
 
         $repository->get($testConfigMock);
     }
