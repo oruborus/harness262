@@ -23,6 +23,7 @@ use function preg_grep;
 use function preg_match;
 use function restore_error_handler;
 use function set_error_handler;
+use function strlen;
 use function substr;
 
 use const E_WARNING;
@@ -127,20 +128,21 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
         };
     }
 
+    private const WARNING_PREFIX = 'preg_match(): ';
+
     /**
      * @throws MalformedRegularExpressionPatternException
      */
     private function testRegularExpressionPattern(string $pattern): void
     {
-        set_error_handler(static function (int $_, string $message): void {
-            throw new MalformedRegularExpressionPatternException(substr($message, 14));
+        set_error_handler(static function (int $_, string $message): never {
+            throw new MalformedRegularExpressionPatternException(substr($message, strlen(static::WARNING_PREFIX)));
         }, E_WARNING);
 
-        /**
-         * @psalm-suppress ArgumentTypeCoercion
-         */
-        preg_match($pattern, '');
-
-        restore_error_handler();
+        try {
+            preg_match($pattern, 'a');
+        } finally {
+            restore_error_handler();
+        }
     }
 }

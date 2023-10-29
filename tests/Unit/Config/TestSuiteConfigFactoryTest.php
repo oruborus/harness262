@@ -128,14 +128,35 @@ final class TestSuiteConfigFactoryTest extends TestCase
     }
 
     #[Test]
-    public function failsWhenProvidedRegularExpressionPatternisMalformed(): void
+    public function failsWhenProvidedRegularExpressionPatternIsMalformed(): void
     {
-        $this->expectExceptionObject(new MalformedRegularExpressionPatternException('Compilation failed: missing closing parenthesis at offset 1'));
-
         $argumentsParserStub = new ArgumentsParserStub(['filter' => '('], [__DIR__ . '/../Fixtures']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub);
 
-        $factory->make();
+        try {
+            $factory->make();
+        } catch (MalformedRegularExpressionPatternException $expectedException) {
+            $this->assertSame('Compilation failed: missing closing parenthesis at offset 1', $expectedException->getMessage());
+            return;
+        }
+
+        $this->fail('Failed to assert that exception of type "MalformedRegularExpressionPatternException" is thrown');
+    }
+
+    #[Test]
+    public function errorHandlerFunctionalityIsRestoredAfterFailingRun(): void
+    {
+        set_error_handler($expected = set_error_handler(null));
+        $argumentsParserStub = new ArgumentsParserStub(['filter' => '('], [__DIR__ . '/../Fixtures']);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
+
+        try {
+            $factory->make();
+        } catch (MalformedRegularExpressionPatternException) {
+        }
+        set_error_handler($actual = set_error_handler(null));
+
+        $this->assertSame($expected, $actual);
     }
 
     #[Test]
