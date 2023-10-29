@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Oru\Harness;
 
 use Oru\Harness\Assertion\GenericAssertionFactory;
-use Oru\Harness\Cache\GenericCacheRepository;
-use Oru\Harness\Cache\NoCacheRepository;
+use Oru\Harness\Cache\GenericCacheRepositoryFactory;
 use Oru\Harness\Cli\CliArgumentsParser;
 use Oru\Harness\Cli\Exception\InvalidOptionException;
 use Oru\Harness\Cli\Exception\UnknownOptionException;
@@ -18,15 +17,12 @@ use Oru\Harness\Config\GenericTestConfigFactory;
 use Oru\Harness\Config\TestSuiteConfigFactory;
 use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
-use Oru\Harness\Contracts\CacheResultRecord;
 use Oru\Harness\Contracts\Facade;
-use Oru\Harness\Contracts\Storage;
 use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Output\GenericOutputFactory;
 use Oru\Harness\Printer\GenericPrinterFactory;
 use Oru\Harness\Storage\FileStorage;
-use Oru\Harness\Storage\SerializingFileStorage;
 use Oru\Harness\TestRunner\GenericTestResult;
 use Oru\Harness\TestRunner\GenericTestRunnerFactory;
 
@@ -121,18 +117,8 @@ final readonly class Harness
             return 1;
         }
 
-        // FIXME: Move to `CacheRepositoryFactory`
-        /** 
-         * @var Storage<CacheResultRecord> $storage
-         */
-        $storage = new SerializingFileStorage('./.harness/cache');
-        $cacheRepository = $testSuiteConfig->cache() ?
-            new GenericCacheRepository(
-                $storage,
-                static fn (TestConfig $i): string => md5(serialize($i)),
-                static fn (string $i): string => hash_file('haval160,4', $i)
-            ) :
-            new NoCacheRepository();
+        $cacheRepositoryFactory = new GenericCacheRepositoryFactory();
+        $cacheRepository = $cacheRepositoryFactory->make($testSuiteConfig);
 
         $testRunnerFactory = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command);
         $testRunner = $testRunnerFactory->make($testSuiteConfig);
