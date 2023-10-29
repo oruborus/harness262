@@ -149,7 +149,8 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
         }, E_WARNING);
 
         try {
-            preg_match($pattern, 'a');
+            /** @psalm-suppress ArgumentTypeCoercion  The next line will warn about any issue with the provided arguments */
+            preg_match($pattern, '');
         } finally {
             restore_error_handler();
         }
