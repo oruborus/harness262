@@ -92,7 +92,7 @@ final readonly class Harness
 
         $printerConfigFactory   = new PrinterConfigFactory($argumentsParser);
         $printerConfig          = $printerConfigFactory->make();
-        $printer                = $printerFactory->make($printerConfig, $output, 0);
+        $printer                = $printerFactory->make($printerConfig, $output);
 
         // 1. Let testSuiteStartTime be the current system time in seconds.
         $testSuiteStartTime = time();

@@ -12,7 +12,7 @@ use Oru\Harness\Contracts\PrinterVerbosity;
 
 final readonly class GenericPrinterFactory implements PrinterFactory
 {
-    public function make(PrinterConfig $config, Output $output, int $plannedTests): Printer
+    public function make(PrinterConfig $config, Output $output): Printer
     {
         return match ($config->verbosity()) {
             PrinterVerbosity::Silent => new SilentPrinter(),
