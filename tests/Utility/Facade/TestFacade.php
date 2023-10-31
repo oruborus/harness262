@@ -20,7 +20,7 @@ final class TestFacade implements Facade
     {
     }
 
-    public static function path(): string
+    public function path(): string
     {
         return __DIR__ . DIRECTORY_SEPARATOR . 'create-test-facade.php';
     }

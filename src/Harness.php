@@ -47,7 +47,7 @@ final readonly class Harness
             static::TEMPLATE_PATH . '.php',
             str_replace(
                 '{{FACADE_PATH}}',
-                $this->facade::path(),
+                $this->facade->path(),
                 file_get_contents(realpath(static::TEMPLATE_PATH))
             )
         );

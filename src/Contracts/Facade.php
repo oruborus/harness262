@@ -8,7 +8,7 @@ interface Facade
 {
     public function initialize(): void;
 
-    public static function path(): string;
+    public function path(): string;
 
     public function completionGetValue(mixed $completion): mixed;
 
