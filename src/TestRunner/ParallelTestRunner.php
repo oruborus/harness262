@@ -73,7 +73,7 @@ final class ParallelTestRunner implements TestRunner
         fclose($pipes[2]);
 
         $exitCode = proc_close($process);
-        assert($exitCode === 0);
+        assert($exitCode === 0, $output);
 
         $result = unserialize($output);
 
