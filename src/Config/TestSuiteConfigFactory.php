@@ -13,6 +13,7 @@ use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\ConfigFactory;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Helpers\ErrorHandler;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
@@ -21,8 +22,6 @@ use function is_dir;
 use function is_file;
 use function preg_grep;
 use function preg_match;
-use function restore_error_handler;
-use function set_error_handler;
 use function strlen;
 use function substr;
 
@@ -149,15 +148,11 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
      */
     private function testRegularExpressionPattern(string $pattern): void
     {
-        set_error_handler(static function (int $_, string $message): never {
+        $_ = new ErrorHandler(static function (int $_, string $message): never {
             throw new MalformedRegularExpressionPatternException(substr($message, strlen(static::WARNING_PREFIX)));
         }, E_WARNING);
 
-        try {
-            /** @psalm-suppress ArgumentTypeCoercion  The next line will warn about any issue with the provided arguments */
-            preg_match($pattern, '');
-        } finally {
-            restore_error_handler();
-        }
+        /** @psalm-suppress ArgumentTypeCoercion  The next line will warn about any issue with the provided arguments */
+        preg_match($pattern, '');
     }
 }

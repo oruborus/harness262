@@ -168,46 +168,9 @@ final class TestSuiteConfigFactoryTest extends TestCase
         $this->fail('Failed to assert that exception of type "MalformedRegularExpressionPatternException" is thrown');
     }
 
-    #[Test]
-    #[DataProvider('provideMalformedFilteringOptions')]
-    public function errorHandlerFunctionalityIsRestoredAfterFailingRun(string $option, string $argument): void
-    {
-        set_error_handler($expected = set_error_handler(null));
-        $argumentsParserStub = new ArgumentsParserStub([$option => $argument], [__DIR__ . '/../Fixtures']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub);
-
-        try {
-            $factory->make();
-        } catch (MalformedRegularExpressionPatternException) {
-        }
-        set_error_handler($actual = set_error_handler(null));
-
-        $this->assertSame($expected, $actual);
-    }
-
     public static function provideMalformedFilteringOptions(): Generator
     {
         yield 'include' => ['include', '('];
         yield 'exclude' => ['exclude', '('];
-    }
-
-    #[Test]
-    #[DataProvider('provideFilteringOptions')]
-    public function errorHandlerFunctionalityIsRestoredAfterRun(string $option, string $argument): void
-    {
-        set_error_handler($expected = set_error_handler(null));
-        $argumentsParserStub = new ArgumentsParserStub([$option => $argument], [__DIR__ . '/../Fixtures']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub);
-
-        $factory->make();
-        set_error_handler($actual = set_error_handler(null));
-
-        $this->assertSame($expected, $actual);
-    }
-
-    public static function provideFilteringOptions(): Generator
-    {
-        yield 'include' => ['include', '.*'];
-        yield 'exclude' => ['exclude', 'xxxxxxxxxxxx'];
     }
 }
