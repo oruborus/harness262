@@ -38,13 +38,23 @@ use function unlink;
 
 final readonly class Harness
 {
-    private const TEMPLATE_PATH = __DIR__ . '/Template/ExecuteTest';
+    private const TEMPLATE_PATH     = __DIR__ . '/Template/ExecuteTest';
+    private const TARGET_PATH       = self::TEMPLATE_PATH . '.php';
+    private const TEST_STORAGE_PATH = '.';
+    private const CLI_OPTIONS       = [
+        'no-cache' => 'n',
+        'silent'   => 's',
+        'verbose'  => 'v',
+        'debug'    => null,
+        'include'  => ':',
+        'exclude'  => ':',
+    ];
 
     public function __construct(
         private Facade $facade
     ) {
         file_put_contents(
-            static::TEMPLATE_PATH . '.php',
+            static::TARGET_PATH,
             str_replace(
                 '{{FACADE_PATH}}',
                 $this->facade->path(),
@@ -55,7 +65,7 @@ final readonly class Harness
 
     public function __destruct()
     {
-        unlink(static::TEMPLATE_PATH . '.php');
+        unlink(static::TARGET_PATH);
     }
 
     /**
@@ -68,23 +78,13 @@ final readonly class Harness
     {
         array_shift($arguments);
 
-        $testStorage       = new FileStorage('.');
-        $argumentsParser   = new CliArgumentsParser(
-            $arguments,
-            [
-                'no-cache' => 'n',
-                'silent'   => 's',
-                'verbose'  => 'v',
-                'debug'    => null,
-                'include'  => ':',
-                'exclude'  => ':',
-            ]
-        );
+        $testStorage            = new FileStorage(static::TEST_STORAGE_PATH);
+        $argumentsParser        = new CliArgumentsParser($arguments, static::CLI_OPTIONS);
         $testConfigFactory      = new GenericTestConfigFactory($testStorage);
         $printerFactory         = new GenericPrinterFactory();
         $outputFactory          = new GenericOutputFactory();
         $assertionFactory       = new GenericAssertionFactory($this->facade);
-        $command                = new ClonedPhpCommand(realpath(static::TEMPLATE_PATH . '.php'));
+        $command                = new ClonedPhpCommand(realpath(static::TARGET_PATH));
 
         $outputConfigFactory    = new OutputConfigFactory($argumentsParser);
         $outputConfig           = $outputConfigFactory->make();
@@ -118,10 +118,10 @@ final readonly class Harness
         }
 
         $cacheRepositoryFactory = new GenericCacheRepositoryFactory();
-        $cacheRepository = $cacheRepositoryFactory->make($testSuiteConfig);
+        $cacheRepository       = $cacheRepositoryFactory->make($testSuiteConfig);
 
-        $testRunnerFactory = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command);
-        $testRunner = $testRunnerFactory->make($testSuiteConfig);
+        $testRunnerFactory     = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command);
+        $testRunner            = $testRunnerFactory->make($testSuiteConfig);
 
 
         // 3. Let **preparedTestConfigurations** be a new empty list.
