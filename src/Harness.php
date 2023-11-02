@@ -23,18 +23,14 @@ use Oru\Harness\Helpers\TemporaryFileHandler;
 use Oru\Harness\Output\GenericOutputFactory;
 use Oru\Harness\Printer\GenericPrinterFactory;
 use Oru\Harness\Storage\FileStorage;
-use Oru\Harness\TestRunner\GenericTestResult;
 use Oru\Harness\TestRunner\GenericTestRunnerFactory;
 
 use function array_shift;
 use function count;
 use function file_get_contents;
-use function file_put_contents;
-use function is_null;
 use function realpath;
 use function str_ends_with;
 use function time;
-use function unlink;
 
 final readonly class Harness
 {
@@ -147,47 +143,8 @@ final readonly class Harness
 
         // 7. For each **testConfig** of **preparedTestConfigurations**, do
         foreach ($preparedTestConfigurations as $testConfig) {
-            // a. Let **testStartTime** be the current system time in seconds.
-            $testStartTime = time();
-
-            // b. Let **cacheResult** be **cacheRepository**.get(**testConfig**).
-            $cacheResult = $cacheRepository->get($testConfig);
-
-            // c. If **cacheResult** is not `null`, then
-            if (!is_null($cacheResult)) {
-                // i. Let **testEndTime** be the current system time in seconds.
-                $testEndTime = time();
-
-                // ii. Let **cacheResult** be a new TestResult instance.
-                $cacheResult = new GenericTestResult(
-                    // iii. Set **cacheResult**.state to `cache`.
-                    state: TestResultState::Cache,
-
-                    // iv: Set **cacheResult**.path to **testConfig**.path()
-                    path: $testConfig->path(),
-
-                    // v. Set **cacheResult**.duration to **testEndTime** - **testStartTime**.
-                    duration: $testEndTime - $testStartTime,
-
-                    // vi. Set **cacheResult**.usedFiles to **cache**.usedFiles.
-                    usedFiles: $cacheResult->usedFiles()
-                );
-
-                // vii. Append **cacheResult** to **resultList**.
-                $resultList[] = $cacheResult;
-
-                // viii. Perform **printer**.step(cache).
-                $printer->step(TestResultState::Cache);
-
-                // ix. Continue.
-                continue;
-            }
-
-            // d. Perform runTest(**testConfig**).
+            // a. Perform runTest(**testConfig**).
             $testRunner->run($testConfig);
-
-            // e. Let **testEndTime** be the current system time in seconds.
-            $testEndTime = time();
         }
 
         // 8. Append the returned list of **testRunner.finalize()** to **resultList**.
