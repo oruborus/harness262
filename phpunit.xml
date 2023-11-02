@@ -16,7 +16,6 @@
     <testsuites>
         <testsuite name="default">
             <directory>tests</directory>
-            <directory>tests</directory>
             <exclude>tests/Utility</exclude>
         </testsuite>
     </testsuites>
