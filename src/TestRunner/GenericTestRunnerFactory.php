@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Oru\Harness\TestRunner;
 
 use Oru\Harness\Contracts\AssertionFactory;
+use Oru\Harness\Contracts\CacheRepository;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\Printer;
@@ -20,13 +21,14 @@ final class GenericTestRunnerFactory implements TestRunnerFactory
         private Facade $facade,
         private AssertionFactory $assertionFactory,
         private Printer $printer,
-        private Command $command
+        private Command $command,
+        private CacheRepository $cacheRepository
     ) {
     }
 
     public function make(TestSuiteConfig $config): TestRunner
     {
-        return match ($config->testRunnerMode()) {
+        $testRunner = match ($config->testRunnerMode()) {
             TestRunnerMode::Linear   => new LinearTestRunner($this->facade, $this->assertionFactory, $this->printer),
             TestRunnerMode::Parallel => new ParallelTestRunner($this->assertionFactory, $this->printer, $this->command),
             TestRunnerMode::Async    => new AsyncTestRunner(
@@ -34,5 +36,11 @@ final class GenericTestRunnerFactory implements TestRunnerFactory
                 new TaskLoop($config->concurrency())
             )
         };
+
+        if ($config->cache()) {
+            return new CacheTestRunner($this->cacheRepository, $testRunner);
+        }
+
+        return $testRunner;
     }
 }

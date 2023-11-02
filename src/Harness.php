@@ -115,7 +115,7 @@ final readonly class Harness
         $cacheRepositoryFactory = new GenericCacheRepositoryFactory();
         $cacheRepository       = $cacheRepositoryFactory->make($testSuiteConfig);
 
-        $testRunnerFactory     = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command);
+        $testRunnerFactory     = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command, $cacheRepository);
         $testRunner            = $testRunnerFactory->make($testSuiteConfig);
 
 
