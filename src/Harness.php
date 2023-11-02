@@ -19,7 +19,7 @@ use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\TestConfig;
-use Oru\Harness\Contracts\TestResultState;
+use Oru\Harness\Helpers\TemporaryFileHandler;
 use Oru\Harness\Output\GenericOutputFactory;
 use Oru\Harness\Printer\GenericPrinterFactory;
 use Oru\Harness\Storage\FileStorage;
@@ -50,22 +50,17 @@ final readonly class Harness
         'exclude'  => ':',
     ];
 
+    private TemporaryFileHandler $temporaryFileHandler;
+
     public function __construct(
         private Facade $facade
     ) {
-        file_put_contents(
-            static::TARGET_PATH,
-            str_replace(
-                '{{FACADE_PATH}}',
-                $this->facade->path(),
-                file_get_contents(realpath(static::TEMPLATE_PATH))
-            )
+        $contents = str_replace(
+            '{{FACADE_PATH}}',
+            $this->facade->path(),
+            file_get_contents(realpath(static::TEMPLATE_PATH))
         );
-    }
-
-    public function __destruct()
-    {
-        unlink(static::TARGET_PATH);
+        $this->temporaryFileHandler = new TemporaryFileHandler(static::TARGET_PATH, $contents);
     }
 
     /**
