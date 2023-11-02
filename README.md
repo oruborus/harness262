@@ -14,7 +14,8 @@ $ harness ./vendor/tc39/test262/test
 ### Command-line options
 
 #### `--debug`
-Runs the testsuite in sequence and allows for step-debugging using xdebug or similar solutions.
+Runs the testsuite in sequence and allows for step-debugging using xdebug or similar solutions.  
+Caching is disabled for this setting.
 
 #### `--no-cache`, `-n`
 Disables caching of test results.

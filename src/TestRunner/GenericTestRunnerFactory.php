@@ -37,10 +37,14 @@ final class GenericTestRunnerFactory implements TestRunnerFactory
             )
         };
 
-        if ($config->cache()) {
-            return new CacheTestRunner($this->cacheRepository, $testRunner);
+        if (!$config->cache()) {
+            return $testRunner;
         }
 
-        return $testRunner;
+        if ($config->testRunnerMode() === TestRunnerMode::Linear) {
+            return $testRunner;
+        }
+
+        return new CacheTestRunner($this->cacheRepository, $testRunner);
     }
 }

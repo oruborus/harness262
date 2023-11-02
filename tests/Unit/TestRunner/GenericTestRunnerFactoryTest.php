@@ -26,7 +26,8 @@ use PHPUnit\Framework\TestCase;
 final class GenericTestRunnerFactoryTest extends TestCase
 {
     #[Test]
-    #[DataProvider('provideTestRunnerMode')]
+    #[DataProvider('provideDebugTestRunnerMode')]
+    #[DataProvider('provideNonDebugTestRunnerMode')]
     public function createsTheCorrectTestRunnerBasedOnConfig(TestRunnerMode $mode, string $expected): void
     {
         $testSuiteConfigStub = $this->createConfiguredStub(TestSuiteConfig::class, [
@@ -46,16 +47,42 @@ final class GenericTestRunnerFactoryTest extends TestCase
         $this->assertInstanceOf($expected, $actual);
     }
 
-    public static function provideTestRunnerMode(): Generator
+    public static function provideDebugTestRunnerMode(): Generator
     {
         yield 'linear'   => [TestRunnerMode::Linear, LinearTestRunner::class];
+    }
+
+    public static function provideNonDebugTestRunnerMode(): Generator
+    {
         yield 'parallel' => [TestRunnerMode::Parallel, ParallelTestRunner::class];
         yield 'async'    => [TestRunnerMode::Async, AsyncTestRunner::class];
     }
 
     #[Test]
-    #[DataProvider('provideTestRunnerMode')]
-    public function createsCacheTestRunnerWhenCachingIsEnabled(TestRunnerMode $mode): void
+    #[DataProvider('provideDebugTestRunnerMode')]
+    public function doesNotCreateCacheTestRunnerWhenInDebugModeAndCachingIsEnabled(TestRunnerMode $mode, string $expected): void
+    {
+        $testSuiteConfigStub = $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testRunnerMode' => $mode,
+            'cache' => true
+        ]);
+        $factory = new GenericTestRunnerFactory(
+            $this->createStub(Facade::class),
+            $this->createStub(AssertionFactory::class),
+            $this->createStub(Printer::class),
+            $this->createStub(Command::class),
+            $this->createStub(CacheRepository::class)
+        );
+
+        $actual = $factory->make($testSuiteConfigStub);
+
+        $this->assertInstanceOf($expected, $actual);
+    }
+
+
+    #[Test]
+    #[DataProvider('provideNonDebugTestRunnerMode')]
+    public function createsCacheTestRunnerWhenCachingIsEnabledForNonDebugModes(TestRunnerMode $mode): void
     {
         $factory = new GenericTestRunnerFactory(
             $this->createStub(Facade::class),
