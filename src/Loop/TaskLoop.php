@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Oru\Harness\Loop;
 
+use Closure;
 use Oru\Harness\Contracts\Loop;
 use Oru\Harness\Contracts\Task;
 
@@ -15,6 +16,9 @@ final class TaskLoop implements Loop
     /** @var Task[] $tasks */
     private array $tasks = [];
 
+    /** @var Closure[] $callbacks */
+    private array $callbacks = [];
+
     public function __construct(
         private int $concurrency
     ) {
@@ -23,6 +27,11 @@ final class TaskLoop implements Loop
     public function add(Task $task): void
     {
         $this->tasks[] = $task;
+    }
+
+    public function then(Closure $callback): void
+    {
+        $this->callbacks[] = $callback;
     }
 
     public function run(): void
@@ -35,6 +44,10 @@ final class TaskLoop implements Loop
             if (!$current->done()) {
                 $stash[] = $current;
                 $count++;
+            } else {
+                foreach ($this->callbacks as $callback) {
+                    $callback($current->result());
+                }
             }
 
             if ($count === $this->concurrency || count($this->tasks) === 0) {
