@@ -31,4 +31,9 @@ final readonly class FiberTask implements Task
     {
         return $this->fiber->isTerminated();
     }
+
+    public function result(): mixed
+    {
+        return $this->fiber->getReturn();
+    }
 }

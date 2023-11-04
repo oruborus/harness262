@@ -9,4 +9,6 @@ interface Task
     public function continue(): void;
 
     public function done(): bool;
+
+    public function result(): mixed;
 }

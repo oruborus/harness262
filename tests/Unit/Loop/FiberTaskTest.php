@@ -71,4 +71,29 @@ final class FiberTaskTest extends TestCase
 
         $this->assertFalse($actual);
     }
+
+    #[Test]
+    public function resultWillContainTheReturnValueOfTheFiberWhenDone(): void
+    {
+        $expected = 'Correct value';
+        $task = new FiberTask(
+            new Fiber(
+                static function () use ($expected): string {
+                    Fiber::suspend('someValue1');
+                    Fiber::suspend('someValue2');
+                    Fiber::suspend('someValue3');
+                    Fiber::suspend('someValue4');
+                    return $expected;
+                }
+            )
+        );
+
+        while (!$task->done()) {
+            $task->continue();
+        }
+
+        $actual = $task->result();
+
+        $this->assertSame($expected, $actual);
+    }
 }
