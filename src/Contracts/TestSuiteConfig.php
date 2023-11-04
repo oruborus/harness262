@@ -16,4 +16,6 @@ interface TestSuiteConfig extends Config
     public function testRunnerMode(): TestRunnerMode;
 
     public function concurrency(): int;
+
+    public function stopOnCharacteristic(): StopOnCharacteristic;
 }

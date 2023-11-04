@@ -9,6 +9,7 @@ use Oru\Harness\Config\Exception\InvalidPathException;
 use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Config\TestSuiteConfigFactory;
+use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -172,5 +173,36 @@ final class TestSuiteConfigFactoryTest extends TestCase
     {
         yield 'include' => ['include', '('];
         yield 'exclude' => ['exclude', '('];
+    }
+
+    #[Test]
+    public function defaultStopOnCharacteristicIsNothing(): void
+    {
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
+
+        $actual = $factory->make();
+
+        $this->assertSame(StopOnCharacteristic::Nothing, $actual->stopOnCharacteristic());
+    }
+
+    #[Test]
+    #[DataProvider('provideStopOnOptions')]
+    public function stopOnCharacteristicCanBeChanged(array $options, StopOnCharacteristic $expected): void
+    {
+        $argumentsParserStub = new ArgumentsParserStub($options, [__DIR__ . '/../Fixtures']);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub);
+
+        $actual = $factory->make();
+
+        $this->assertSame($expected, $actual->stopOnCharacteristic());
+    }
+
+    public static function provideStopOnOptions(): Generator
+    {
+        yield 'stop on defect'             => [['stop-on-defect' => null], StopOnCharacteristic::Defect];
+        yield 'stop on error'              => [['stop-on-error' => null], StopOnCharacteristic::Error];
+        yield 'stop on failure'            => [['stop-on-failure' => null], StopOnCharacteristic::Failure];
+        yield 'stop on error and failure'  => [['stop-on-error' => null, 'stop-on-failure' => null], StopOnCharacteristic::Defect];
     }
 }

@@ -10,6 +10,7 @@ use Oru\Harness\Contracts\CacheRepository;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\Printer;
+use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use Oru\Harness\TestRunner\AsyncTestRunner;
@@ -32,7 +33,8 @@ final class GenericTestRunnerFactoryTest extends TestCase
     {
         $testSuiteConfigStub = $this->createConfiguredStub(TestSuiteConfig::class, [
             'testRunnerMode' => $mode,
-            'cache' => false
+            'cache' => false,
+            'stopOnCharacteristic' => StopOnCharacteristic::Nothing
         ]);
         $factory = new GenericTestRunnerFactory(
             $this->createStub(Facade::class),
@@ -64,7 +66,8 @@ final class GenericTestRunnerFactoryTest extends TestCase
     {
         $testSuiteConfigStub = $this->createConfiguredStub(TestSuiteConfig::class, [
             'testRunnerMode' => $mode,
-            'cache' => true
+            'cache' => true,
+            'stopOnCharacteristic' => StopOnCharacteristic::Nothing
         ]);
         $factory = new GenericTestRunnerFactory(
             $this->createStub(Facade::class),
@@ -93,11 +96,13 @@ final class GenericTestRunnerFactoryTest extends TestCase
         );
         $testSuiteConfigStub = $this->createConfiguredStub(TestSuiteConfig::class, [
             'testRunnerMode' => $mode,
-            'cache' => true
+            'cache' => true,
+            'stopOnCharacteristic' => StopOnCharacteristic::Nothing
         ]);
         $expectedTestSuiteConfigStub = $this->createConfiguredStub(TestSuiteConfig::class, [
             'testRunnerMode' => $mode,
-            'cache' => false
+            'cache' => false,
+            'stopOnCharacteristic' => StopOnCharacteristic::Nothing
         ]);
         $expected = new CacheTestRunner(
             $this->createStub(CacheRepository::class),

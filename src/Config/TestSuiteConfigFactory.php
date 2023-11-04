@@ -11,6 +11,7 @@ use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\ConfigFactory;
+use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use Oru\Harness\Helpers\ErrorHandler;
@@ -100,11 +101,26 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
             $testRunnerMode = TestRunnerMode::Linear;
         }
 
+        $stopOnCharacteristic = StopOnCharacteristic::Nothing;
+        if ($this->argumentsParser->hasOption('stop-on-error')) {
+            $stopOnCharacteristic = StopOnCharacteristic::Error;
+        }
+        if ($this->argumentsParser->hasOption('stop-on-failure')) {
+            $stopOnCharacteristic = StopOnCharacteristic::Failure;
+        }
+        if (
+            $this->argumentsParser->hasOption('stop-on-error') && $this->argumentsParser->hasOption('stop-on-failure')
+            || $this->argumentsParser->hasOption('stop-on-defect')
+        ) {
+            $stopOnCharacteristic = StopOnCharacteristic::Defect;
+        }
+
         return new GenericTestSuiteConfig(
             $paths,
             $cache,
             8,
             $testRunnerMode,
+            $stopOnCharacteristic
         );
     }
 
