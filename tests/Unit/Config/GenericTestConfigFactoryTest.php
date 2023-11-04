@@ -10,6 +10,7 @@ use Oru\Harness\Config\GenericTestConfig;
 use Oru\Harness\Config\GenericTestConfigFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\Storage;
+use Oru\Harness\Contracts\TestSuiteConfig;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -31,7 +32,10 @@ final class GenericTestConfigFactoryTest extends TestCase
         $path = 'xxx';
         $this->expectExceptionMessage("Could not open `{$path}`");
 
-        $factory = new GenericTestConfigFactory($this->createMock(Storage::class));
+        $factory = new GenericTestConfigFactory(
+            $this->createMock(Storage::class),
+            $this->createStub(TestSuiteConfig::class)
+        );
 
         $factory->make($path);
     }
@@ -41,7 +45,10 @@ final class GenericTestConfigFactoryTest extends TestCase
     {
         $this->expectExceptionObject(new MissingFrontmatterException('Provided test file does not contain a frontmatter section'));
 
-        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => '']));
+        $factory = new GenericTestConfigFactory(
+            $this->createConfiguredMock(Storage::class, ['get' => '']),
+            $this->createStub(TestSuiteConfig::class)
+        );
 
         $factory->make('content');
     }
@@ -51,7 +58,10 @@ final class GenericTestConfigFactoryTest extends TestCase
     public function createsNonStrictTestConfiguration(FrontmatterFlag $flag): void
     {
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
-        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => $expected]));
+        $factory = new GenericTestConfigFactory(
+            $this->createConfiguredMock(Storage::class, ['get' => $expected]),
+            $this->createStub(TestSuiteConfig::class)
+        );
 
         $actual = $factory->make('content');
 
@@ -74,7 +84,10 @@ final class GenericTestConfigFactoryTest extends TestCase
     public function createsStrictTestConfiguration(FrontmatterFlag $flag): void
     {
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
-        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => $expected]));
+        $factory = new GenericTestConfigFactory(
+            $this->createConfiguredMock(Storage::class, ['get' => $expected]),
+            $this->createStub(TestSuiteConfig::class)
+        );
 
         $actual = $factory->make('content');
 
@@ -95,7 +108,10 @@ final class GenericTestConfigFactoryTest extends TestCase
     public function createsStrictAndNonStrictTestConfigurations(FrontmatterFlag $flag): void
     {
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
-        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => $expected]));
+        $factory = new GenericTestConfigFactory(
+            $this->createConfiguredMock(Storage::class, ['get' => $expected]),
+            $this->createStub(TestSuiteConfig::class)
+        );
 
         $actual = $factory->make('content');
 
@@ -130,7 +146,10 @@ final class GenericTestConfigFactoryTest extends TestCase
     {
         $frontmatter = "description: required\nflags: [noStrict]\n\n\nincludes: [doneprintHandle.js]";
         $expected = "/*---\n{$frontmatter}\n---*/";
-        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => $expected]));
+        $factory = new GenericTestConfigFactory(
+            $this->createConfiguredMock(Storage::class, ['get' => $expected]),
+            $this->createStub(TestSuiteConfig::class)
+        );
 
         $actual = $factory->make('content');
 
@@ -142,7 +161,10 @@ final class GenericTestConfigFactoryTest extends TestCase
     public function indentationIsHandled(): void
     {
         $expected = "/*---\n   description: required\n   flags: [noStrict]\n   includes: [doneprintHandle.js]\n---*/";
-        $factory = new GenericTestConfigFactory($this->createConfiguredMock(Storage::class, ['get' => $expected]));
+        $factory = new GenericTestConfigFactory(
+            $this->createConfiguredMock(Storage::class, ['get' => $expected]),
+            $this->createStub(TestSuiteConfig::class)
+        );
 
         $actual = $factory->make('content');
 

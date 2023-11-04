@@ -7,12 +7,15 @@ namespace Tests\Unit\TestRunner;
 use ErrorException;
 use Fiber;
 use Oru\Harness\Config\GenericTestConfig;
+use Oru\Harness\Config\GenericTestSuiteConfig;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\Printer;
+use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
+use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
 use Oru\Harness\TestRunner\GenericTestResult;
 use Oru\Harness\TestRunner\ParallelTestRunner;
@@ -116,7 +119,12 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/FailsOnMissingInputTestCase.php')])
         );
 
-        $testConfigMock = new GenericTestConfig('', '', new GenericFrontmatter('description: x'));
+        $testConfigMock = new GenericTestConfig(
+            '',
+            '',
+            new GenericFrontmatter('description: x'),
+            new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing)
+        );
 
         $testRunner->run($testConfigMock);
     }

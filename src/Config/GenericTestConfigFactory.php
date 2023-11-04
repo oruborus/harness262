@@ -9,6 +9,7 @@ use Oru\Harness\Contracts\Storage;
 use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestConfigFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
+use Oru\Harness\Contracts\TestSuiteConfig;
 use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedKeyException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedNegativePhaseException;
@@ -31,7 +32,8 @@ use const PREG_SPLIT_NO_EMPTY;
 final readonly class GenericTestConfigFactory implements TestConfigFactory
 {
     public function __construct(
-        private Storage $storage
+        private Storage $storage,
+        private TestSuiteConfig $testSuiteConfig
     ) {
     }
 
@@ -78,16 +80,16 @@ final readonly class GenericTestConfigFactory implements TestConfigFactory
             || in_array(FrontmatterFlag::module, $frontmatter->flags(), true)
             || in_array(FrontmatterFlag::noStrict, $frontmatter->flags(), true)
         ) {
-            return [new GenericTestConfig($path, $content, $frontmatter)];
+            return [new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig)];
         }
 
         if (in_array(FrontmatterFlag::onlyStrict, $frontmatter->flags(), true)) {
-            return [new GenericTestConfig($path, "\"use strict\";\n{$content}", $frontmatter)];
+            return [new GenericTestConfig($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig)];
         }
 
         return [
-            new GenericTestConfig($path, $content, $frontmatter),
-            new GenericTestConfig($path, "\"use strict\";\n{$content}", $frontmatter)
+            new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig),
+            new GenericTestConfig($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig)
         ];
     }
 }

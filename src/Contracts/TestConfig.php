@@ -11,4 +11,6 @@ interface TestConfig extends Config
     public function content(): string;
 
     public function frontmatter(): Frontmatter;
+
+    public function testSuiteConfig(): TestSuiteConfig;
 }

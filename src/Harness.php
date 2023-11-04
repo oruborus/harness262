@@ -71,7 +71,6 @@ final readonly class Harness
 
         $testStorage            = new FileStorage(static::TEST_STORAGE_PATH);
         $argumentsParser        = new CliArgumentsParser($arguments, static::CLI_OPTIONS);
-        $testConfigFactory      = new GenericTestConfigFactory($testStorage);
         $printerFactory         = new GenericPrinterFactory();
         $outputFactory          = new GenericOutputFactory();
         $assertionFactory       = new GenericAssertionFactory($this->facade);
@@ -108,6 +107,7 @@ final readonly class Harness
             return 1;
         }
 
+        $testConfigFactory      = new GenericTestConfigFactory($testStorage, $testSuiteConfig);
         $cacheRepositoryFactory = new GenericCacheRepositoryFactory();
         $cacheRepository       = $cacheRepositoryFactory->make($testSuiteConfig);
 
