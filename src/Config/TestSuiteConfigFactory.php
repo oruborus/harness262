@@ -100,45 +100,12 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
             $testRunnerMode = TestRunnerMode::Linear;
         }
 
-        return new class(
+        return new GenericTestSuiteConfig(
             $paths,
             $cache,
-            $testRunnerMode
-        ) implements TestSuiteConfig
-        {
-            public function __construct(
-                /**
-                 * @var string[] $paths
-                 */
-                private array $paths,
-                private bool $cache,
-                private TestRunnerMode $testRunnerMode,
-            ) {
-            }
-
-            /**
-             * @return string[]
-             */
-            public function paths(): array
-            {
-                return $this->paths;
-            }
-
-            public function cache(): bool
-            {
-                return $this->cache;
-            }
-
-            public function testRunnerMode(): TestRunnerMode
-            {
-                return $this->testRunnerMode;
-            }
-
-            public function concurrency(): int
-            {
-                return 8;
-            }
-        };
+            8,
+            $testRunnerMode,
+        );
     }
 
     private const WARNING_PREFIX = 'preg_match(): ';
