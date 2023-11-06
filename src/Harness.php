@@ -140,14 +140,14 @@ final readonly class Harness
         // 6. For each **testConfig** of **preparedTestConfigurations**, do
         foreach ($preparedTestConfigurations as $testConfig) {
             // a. Perform runTest(**testConfig**).
-            $testRunner->run($testConfig);
+            $testRunner->add($testConfig);
         }
 
         // 7. Let **testSuiteEndTime** be the current system time in seconds.
         $testSuiteEndTime = time();
 
         // 8. Perform **printer**.end(**testRunner.finalize()**, **testSuiteEndTime** - **testSuiteStartTime**).
-        $printer->end($testRunner->finalize(), $testSuiteEndTime - $testSuiteStartTime);
+        $printer->end($testRunner->run(), $testSuiteEndTime - $testSuiteStartTime);
 
         return 0;
     }

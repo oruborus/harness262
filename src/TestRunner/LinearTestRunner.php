@@ -24,6 +24,11 @@ use function ob_start;
 final class LinearTestRunner implements TestRunner
 {
     /**
+     * @var TestConfig[] $configs
+     */
+    private array $configs = [];
+
+    /**
      * @var TestResult[] $results
      */
     private array $results = [];
@@ -35,47 +40,9 @@ final class LinearTestRunner implements TestRunner
     ) {
     }
 
-    public function run(TestConfig $config): void
+    public function add(TestConfig $config): void
     {
-        $differences = array_diff($config->frontmatter()->features(), $this->facade->engineSupportedFeatures());
-
-        if (count($differences) > 0) {
-            $this->addResult(new GenericTestResult(TestResultState::Skip, $config->path(), [], 0));
-            return;
-        }
-
-        $this->facade->initialize();
-
-        foreach ($config->frontmatter()->includes() as $include) {
-            $this->facade->engineAddFiles($include->value);
-        }
-
-        $this->facade->engineAddCode($config->content());
-
-        try {
-            /**
-             * @psalm-suppress MixedAssignment  Test outcomes intentionally return `mixed`
-             */
-            $actual = $this->runTest($config);
-        } catch (Throwable $throwable) {
-            $this->addResult(new GenericTestResult(TestResultState::Error, $config->path(), [], 0, $throwable));
-            return;
-        }
-
-        $assertion = $this->assertionFactory->make($config);
-
-        try {
-            $assertion->assert($actual);
-        } catch (AssertionFailedException $assertionFailedException) {
-            $this->addResult(new GenericTestResult(TestResultState::Fail, $config->path(), [], 0, $assertionFailedException));
-            return;
-        } catch (Throwable $throwable) {
-            $this->addResult(new GenericTestResult(TestResultState::Error, $config->path(), [], 0, $throwable));
-            return;
-        }
-
-        $this->addResult(new GenericTestResult(TestResultState::Success, $config->path(), [], 0));
-        return;
+        $this->configs[] = $config;
     }
 
     private function runTest(TestConfig $testConfig): mixed
@@ -105,8 +72,50 @@ final class LinearTestRunner implements TestRunner
     /**
      * @return TestResult[]
      */
-    public function finalize(): array
+    public function run(): array
     {
+        foreach ($this->configs as $config) {
+
+            $differences = array_diff($config->frontmatter()->features(), $this->facade->engineSupportedFeatures());
+
+            if (count($differences) > 0) {
+                $this->addResult(new GenericTestResult(TestResultState::Skip, $config->path(), [], 0));
+                continue;
+            }
+
+            $this->facade->initialize();
+
+            foreach ($config->frontmatter()->includes() as $include) {
+                $this->facade->engineAddFiles($include->value);
+            }
+
+            $this->facade->engineAddCode($config->content());
+
+            try {
+                /**
+                 * @psalm-suppress MixedAssignment  Test outcomes intentionally return `mixed`
+                 */
+                $actual = $this->runTest($config);
+            } catch (Throwable $throwable) {
+                $this->addResult(new GenericTestResult(TestResultState::Error, $config->path(), [], 0, $throwable));
+                continue;
+            }
+
+            $assertion = $this->assertionFactory->make($config);
+
+            try {
+                $assertion->assert($actual);
+            } catch (AssertionFailedException $assertionFailedException) {
+                $this->addResult(new GenericTestResult(TestResultState::Fail, $config->path(), [], 0, $assertionFailedException));
+                continue;
+            } catch (Throwable $throwable) {
+                $this->addResult(new GenericTestResult(TestResultState::Error, $config->path(), [], 0, $throwable));
+                continue;
+            }
+
+            $this->addResult(new GenericTestResult(TestResultState::Success, $config->path(), [], 0));
+        }
+
         return $this->results;
     }
 }

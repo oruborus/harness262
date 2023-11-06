@@ -25,6 +25,13 @@ use function unserialize;
 
 final class ParallelTestRunner implements TestRunner
 {
+    private bool $dirty = true;
+
+    /**
+     * @var TestConfig[] $configs
+     */
+    private array $configs = [];
+
     /**
      * @var TestResult[] $results
      */
@@ -41,59 +48,69 @@ final class ParallelTestRunner implements TestRunner
      * @throws Throwable
      * @throws RuntimeException
      */
-    public function run(TestConfig $config): void
+    public function add(TestConfig $config): void
     {
-        $serializedConfig = serialize($config);
-
-        $descriptorspec = [
-            0 => ["pipe", "r"],
-            1 => ["pipe", "w"],
-            2 => ["pipe", "w"]
-        ];
-
-        $cwd = '.';
-        $env = [];
-
-        $options = ['bypass_shell' => true];
-
-        $process = @proc_open((string) $this->command, $descriptorspec, $pipes, $cwd, $env, $options)
-            ?: throw new RuntimeException('Could not open process');
-
-        fwrite($pipes[0], $serializedConfig);
-        fclose($pipes[0]);
-
-        if (Fiber::getCurrent()) {
-            while (proc_get_status($process)['running']) {
-                Fiber::suspend();
-            }
-        }
-
-        $output = stream_get_contents($pipes[1]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-
-        $exitCode = proc_close($process);
-        assert($exitCode === 0, $output);
-
-        $result = unserialize($output);
-
-        if ($result instanceof Throwable) {
-            throw $result;
-        }
-
-        if (!$result instanceof TestResult) {
-            throw new RuntimeException("Subprocess did not return a `TestResult` - Returned: {$output}");
-        }
-
-        $this->printer->step($result->state());
-        $this->results[] = $result;
+        $this->dirty = true;
+        $this->configs[] = $config;
     }
 
     /**
      * @return TestResult[]
      */
-    public function finalize(): array
+    public function run(): array
     {
+        if (!$this->dirty) {
+            return $this->results;
+        }
+
+        foreach ($this->configs as $config) {
+            $this->dirty = false;
+            $serializedConfig = serialize($config);
+
+            $descriptorspec = [
+                0 => ["pipe", "r"],
+                1 => ["pipe", "w"],
+                2 => ["pipe", "w"]
+            ];
+
+            $cwd = '.';
+            $env = [];
+
+            $options = ['bypass_shell' => true];
+
+            $process = @proc_open((string) $this->command, $descriptorspec, $pipes, $cwd, $env, $options)
+                ?: throw new RuntimeException('Could not open process');
+
+            fwrite($pipes[0], $serializedConfig);
+            fclose($pipes[0]);
+
+            if (Fiber::getCurrent()) {
+                while (proc_get_status($process)['running']) {
+                    Fiber::suspend();
+                }
+            }
+
+            $output = stream_get_contents($pipes[1]);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+
+            $exitCode = proc_close($process);
+            assert($exitCode === 0, $output);
+
+            $result = unserialize($output);
+
+            if ($result instanceof Throwable) {
+                throw $result;
+            }
+
+            if (!$result instanceof TestResult) {
+                throw new RuntimeException("Subprocess did not return a `TestResult` - Returned: {$output}");
+            }
+
+            $this->printer->step($result->state());
+            $this->results[] = $result;
+        }
+
         return $this->results;
     }
 }

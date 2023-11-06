@@ -6,10 +6,10 @@ namespace Oru\Harness\Contracts;
 
 interface TestRunner
 {
-    public function run(TestConfig $config): void;
+    public function add(TestConfig $config): void;
 
     /**
      * @return TestResult[]
      */
-    public function finalize(): array;
+    public function run(): array;
 }

@@ -25,14 +25,14 @@ final class CacheTestRunnerTest extends TestCase
             'get' => $this->createStub(TestResult::class)
         ]);
         $testRunnerMock = $this->createMock(TestRunner::class);
-        $testRunnerMock->expects($this->never())->method('run');
+        $testRunnerMock->expects($this->never())->method('add');
         $testRunner = new CacheTestRunner($cacheRepositoryStub, $testRunnerMock);
 
         for ($i = 0; $i < $repetitions; $i++) {
-            $testRunner->run($this->createStub(TestConfig::class));
+            $testRunner->add($this->createStub(TestConfig::class));
         }
 
-        $actual = $testRunner->finalize();
+        $actual = $testRunner->run();
 
         $this->assertCount($repetitions, $actual);
         for ($i = 0; $i < $repetitions; $i++) {
@@ -42,15 +42,15 @@ final class CacheTestRunnerTest extends TestCase
     }
 
     #[Test]
-    public function usesSecondaryTestRunnerToRetrieveResultWhenNoCacheIsAvailable(): void
+    public function preparesSecondaryTestRunnerToRetrieveResultWhenNoCacheIsAvailable(): void
     {
         $cacheRepositoryStub = $this->createConfiguredStub(CacheRepository::class, [
             'get' => null
         ]);
         $testRunnerMock = $this->createMock(TestRunner::class);
-        $testRunnerMock->expects($this->once())->method('run');
+        $testRunnerMock->expects($this->once())->method('add');
         $testRunner = new CacheTestRunner($cacheRepositoryStub, $testRunnerMock);
 
-        $testRunner->run($this->createStub(TestConfig::class));
+        $testRunner->add($this->createStub(TestConfig::class));
     }
 }

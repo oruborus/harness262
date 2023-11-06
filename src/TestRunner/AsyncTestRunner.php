@@ -18,23 +18,23 @@ final readonly class AsyncTestRunner implements TestRunner
     ) {
     }
 
-    public function run(TestConfig $config): void
+    public function add(TestConfig $config): void
     {
         $this->loop->add(
             new FiberTask(
                 new Fiber(
                     function () use ($config): void {
-                        $this->runner->run($config);
+                        $this->runner->add($config);
                     }
                 )
             )
         );
     }
 
-    public function finalize(): array
+    public function run(): array
     {
         $this->loop->run();
 
-        return $this->runner->finalize();
+        return $this->runner->run();
     }
 }

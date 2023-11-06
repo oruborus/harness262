@@ -23,21 +23,21 @@ final class CacheTestRunner implements TestRunner
     ) {
     }
 
-    public function run(TestConfig $config): void
+    public function add(TestConfig $config): void
     {
         if ($testResult = $this->cacheRepository->get($config)) {
             $this->results[] = new GenericTestResult(TestResultState::Cache, $config->path(), $testResult->usedFiles(), 0);
             return;
         }
 
-        $this->testRunner->run($config);
+        $this->testRunner->add($config);
     }
 
     /**
      * @return TestResult[]
      */
-    public function finalize(): array
+    public function run(): array
     {
-        return [...$this->results, ...$this->testRunner->finalize()];
+        return [...$this->results, ...$this->testRunner->run()];
     }
 }

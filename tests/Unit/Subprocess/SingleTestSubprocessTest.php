@@ -21,8 +21,8 @@ final class SingleTestSubprocessTest extends TestCase
     {
         $expected = $this->createMock(TestResult::class);
         $testRunnerMock = $this->createMock(TestRunner::class);
-        $testRunnerMock->expects($this->once())->method('run');
-        $testRunnerMock->method('finalize')->willReturn([$expected]);
+        $testRunnerMock->expects($this->once())->method('add');
+        $testRunnerMock->method('run')->willReturn([$expected]);
         $testConfigMock = $this->createMock(TestConfig::class);
 
         $subprocess = new SingleTestSubprocess($testRunnerMock, $testConfigMock);
@@ -37,7 +37,7 @@ final class SingleTestSubprocessTest extends TestCase
         $this->expectExceptionObject(new InvalidReturnValueException('Test runner returned more than one test result'));
 
         $testRunnerMock = $this->createMock(TestRunner::class);
-        $testRunnerMock->method('finalize')->willReturn([$this->createMock(TestResult::class), $this->createMock(TestResult::class)]);
+        $testRunnerMock->method('run')->willReturn([$this->createMock(TestResult::class), $this->createMock(TestResult::class)]);
         $testConfigMock = $this->createMock(TestConfig::class);
 
         (new SingleTestSubprocess($testRunnerMock, $testConfigMock))->run();
@@ -49,7 +49,7 @@ final class SingleTestSubprocessTest extends TestCase
         $this->expectExceptionObject(new InvalidReturnValueException('Test runner returned no test result'));
 
         $testRunnerMock = $this->createMock(TestRunner::class);
-        $testRunnerMock->method('finalize')->willReturn([]);
+        $testRunnerMock->method('run')->willReturn([]);
         $testConfigMock = $this->createMock(TestConfig::class);
 
         (new SingleTestSubprocess($testRunnerMock, $testConfigMock))->run();

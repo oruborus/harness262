@@ -29,9 +29,9 @@ final class SingleTestSubprocess implements Subprocess
      */
     public function run(): TestResult
     {
-        $this->testRunner->run($this->testConfig);
+        $this->testRunner->add($this->testConfig);
 
-        $result = $this->testRunner->finalize();
+        $result = $this->testRunner->run();
 
         $resultCount = count($result);
 

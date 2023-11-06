@@ -28,7 +28,7 @@ final class AsyncTestRunnerTest extends TestCase
         $testConfigMock = $this->createMock(TestConfig::class);
 
         $testRunner = new AsyncTestRunner($testRunnerMock, $loopMock);
-        $testRunner->run($testConfigMock);
+        $testRunner->add($testConfigMock);
     }
 
     #[Test]
@@ -42,14 +42,14 @@ final class AsyncTestRunnerTest extends TestCase
 
         $loopMock = new SimpleLoop();
         $testRunnerMock = $this->createMock(TestRunner::class);
-        $testRunnerMock->expects($this->exactly($expectedCount))->method('run');
+        $testRunnerMock->expects($this->exactly($expectedCount))->method('add');
 
         $testRunner = new AsyncTestRunner($testRunnerMock, $loopMock);
         foreach ($testConfigMocks as $testConfigMock) {
-            $testRunner->run($testConfigMock);
+            $testRunner->add($testConfigMock);
         }
 
 
-        $testRunner->finalize();
+        $testRunner->run();
     }
 }

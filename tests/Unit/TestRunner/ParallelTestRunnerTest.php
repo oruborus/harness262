@@ -44,7 +44,8 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'Ê↕'])
         );
 
-        $testRunner->run($this->createMock(TestConfig::class));
+        $testRunner->add($this->createMock(TestConfig::class));
+        $testRunner->run();
     }
 
     #[Test]
@@ -58,7 +59,8 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/FailingTestCase.php')])
         );
 
-        $testRunner->run($this->createMock(TestConfig::class));
+        $testRunner->add($this->createMock(TestConfig::class));
+        $testRunner->run();
     }
 
     #[Test]
@@ -72,7 +74,8 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/NonTestResultReturningTestCase.php')])
         );
 
-        $testRunner->run($this->createMock(TestConfig::class));
+        $testRunner->add($this->createMock(TestConfig::class));
+        $testRunner->run();
     }
 
     #[Test]
@@ -84,9 +87,9 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/SuccessfulTestCase.php')])
         );
 
-        $testRunner->run($this->createMock(TestConfig::class));
-        $testRunner->run($this->createMock(TestConfig::class));
-        $actual = $testRunner->finalize();
+        $testRunner->add($this->createMock(TestConfig::class));
+        $testRunner->add($this->createMock(TestConfig::class));
+        $actual = $testRunner->run();
 
         $this->assertContainsOnlyInstancesOf(TestResult::class, $actual);
         $this->assertCount(2, $actual);
@@ -104,8 +107,9 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/SuccessfulTestCase.php')])
         );
 
-        $testRunner->run($this->createMock(TestConfig::class));
-        $testRunner->run($this->createMock(TestConfig::class));
+        $testRunner->add($this->createMock(TestConfig::class));
+        $testRunner->add($this->createMock(TestConfig::class));
+        $testRunner->run();
     }
 
     #[Test]
@@ -126,11 +130,12 @@ final class ParallelTestRunnerTest extends TestCase
             new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing)
         );
 
-        $testRunner->run($testConfigMock);
+        $testRunner->add($testConfigMock);
+        $testRunner->run();
     }
 
     #[Test]
-    public function willBeSupendedWhenRunningInAFiber(): void
+    public function willBeSuspendedWhenRunningInAFiber(): void
     {
         $testRunner = new ParallelTestRunner(
             $this->createMock(AssertionFactory::class),
@@ -138,17 +143,19 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/DelayedTestCase.php')])
         );
 
-        $fiber = new Fiber(fn () => $testRunner->run($this->createMock(TestConfig::class)));
+        $fiber = new Fiber(function () use ($testRunner) {
+            $testRunner->add($this->createMock(TestConfig::class));
+            $testRunner->run();
+        });
         $fiber->start();
 
         $count = 0;
         while ($fiber->isSuspended()) {
             $count++;
-            $this->assertSame([], $testRunner->finalize());
             $fiber->resume();
         }
 
-        $actual = $testRunner->finalize();
+        $actual = $testRunner->run();
 
         $this->assertGreaterThan(0, $count);
         $this->assertContainsOnlyInstancesOf(TestResult::class, $actual);
