@@ -35,4 +35,14 @@ final class TemporaryFileHandlerTest extends TestCase
 
         $this->assertStringEqualsFile(static::TEMPORARY_FILE_PATH, $expected);
     }
+
+    #[Test]
+    public function holdsOntoTemporaryFilePath(): void
+    {
+        $handler = new TemporaryFileHandler(static::TEMPORARY_FILE_PATH, '');
+
+        $actual = $handler->path();
+
+        $this->assertSame(static::TEMPORARY_FILE_PATH, $actual);
+    }
 }

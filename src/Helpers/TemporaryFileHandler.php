@@ -20,4 +20,9 @@ final class TemporaryFileHandler
     {
         unlink($this->path);
     }
+
+    public function path(): string
+    {
+        return $this->path;
+    }
 }
