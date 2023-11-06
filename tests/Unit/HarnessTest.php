@@ -87,16 +87,16 @@ final class HarnessTest extends TestCase
     public function runsAllProvidedTestPathsAndIgnoresFixtures(): void
     {
         $this->expectOutputRegex('/Duration: \d\d:\d\d/');
-        $this->expectOutputRegex('/4 \/ 4 \(100%\)/');
+        $this->expectOutputRegex('/6 \/ 6 \(100%\)/');
         $harness = new Harness(new TestFacade());
 
         $actual = $harness->run([
             'harness.php',
             './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty-splitting.js',
             './tests/EndToEnd/Fixtures/empty_FIXTURE.js',
+            './tests/EndToEnd/Fixtures/empty-splitting.js',
             './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js'
         ]);
 
         $this->assertSame(0, $actual);

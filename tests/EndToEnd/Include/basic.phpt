@@ -26,7 +26,7 @@ $_SERVER['argv'][] = 'e(?:mpty)|(?:rror).*\.js';
 
 EcmaScript Test Harness
 
-.E                                                              2 / 2 (100%)
+...E                                                            4 / 4 (100%)
 
 Duration: %d:%d
 
