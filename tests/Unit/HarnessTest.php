@@ -14,26 +14,12 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Tests\Utility\Facade\TestFacade;
 
-use function file_get_contents;
-use function realpath;
-
 use const PHP_EOL;
 
 #[CoversClass(Harness::class)]
 final class HarnessTest extends TestCase
 {
     const TEMPLATE_PATH = __DIR__ . '/../../src/Template/ExecuteTest.php';
-
-    #[Test]
-    public function createsATemporaryPhpFileFromAGivenTemplate(): void
-    {
-        $_ = new Harness($this->createConfiguredStub(Facade::class, ['path' => '%%TEST_STRING%%']));
-
-        $actual = file_get_contents(realpath(static::TEMPLATE_PATH));
-
-        $this->assertStringContainsString('%%TEST_STRING%%', $actual);
-        $this->assertStringNotContainsString('{{FACADE_PATH}}', $actual);
-    }
 
     #[Test]
     #[DataProvider('provideInvalidOptions')]

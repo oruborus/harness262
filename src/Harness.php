@@ -26,8 +26,10 @@ use Oru\Harness\Storage\FileStorage;
 use Oru\Harness\TestRunner\GenericTestRunnerFactory;
 
 use function array_shift;
+use function bin2hex;
 use function count;
 use function file_get_contents;
+use function random_bytes;
 use function realpath;
 use function str_ends_with;
 use function time;
@@ -35,7 +37,6 @@ use function time;
 final readonly class Harness
 {
     private const TEMPLATE_PATH     = __DIR__ . '/Template/ExecuteTest';
-    private const TARGET_PATH       = self::TEMPLATE_PATH . '.php';
     private const TEST_STORAGE_PATH = '.';
     private const CLI_OPTIONS       = [
         'no-cache' => 'n',
@@ -56,7 +57,7 @@ final readonly class Harness
             $this->facade->path(),
             file_get_contents(realpath(static::TEMPLATE_PATH))
         );
-        $this->temporaryFileHandler = new TemporaryFileHandler(static::TARGET_PATH, $contents);
+        $this->temporaryFileHandler = new TemporaryFileHandler(static::TEMPLATE_PATH . bin2hex(random_bytes(16)), $contents);
     }
 
     /**
@@ -74,7 +75,7 @@ final readonly class Harness
         $printerFactory         = new GenericPrinterFactory();
         $outputFactory          = new GenericOutputFactory();
         $assertionFactory       = new GenericAssertionFactory($this->facade);
-        $command                = new ClonedPhpCommand(realpath(static::TARGET_PATH));
+        $command                = new ClonedPhpCommand(realpath($this->temporaryFileHandler->path()));
 
         $outputConfigFactory    = new OutputConfigFactory($argumentsParser);
         $outputConfig           = $outputConfigFactory->make();
