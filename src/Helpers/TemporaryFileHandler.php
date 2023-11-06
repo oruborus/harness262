@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace Oru\Harness\Helpers;
 
 use function file_put_contents;
+use function sys_get_temp_dir;
+use function tempnam;
 use function unlink;
 
 final class TemporaryFileHandler
 {
+    private string $path;
+
     public function __construct(
-        private string $path,
         string $contents
     ) {
+        $this->path = tempnam(sys_get_temp_dir(), '');
         file_put_contents($this->path, $contents);
     }
 

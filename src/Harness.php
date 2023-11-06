@@ -26,10 +26,8 @@ use Oru\Harness\Storage\FileStorage;
 use Oru\Harness\TestRunner\GenericTestRunnerFactory;
 
 use function array_shift;
-use function bin2hex;
 use function count;
 use function file_get_contents;
-use function random_bytes;
 use function realpath;
 use function str_ends_with;
 use function time;
@@ -57,7 +55,7 @@ final readonly class Harness
             $this->facade->path(),
             file_get_contents(realpath(static::TEMPLATE_PATH))
         );
-        $this->temporaryFileHandler = new TemporaryFileHandler(static::TEMPLATE_PATH . bin2hex(random_bytes(16)), $contents);
+        $this->temporaryFileHandler = new TemporaryFileHandler($contents);
     }
 
     /**

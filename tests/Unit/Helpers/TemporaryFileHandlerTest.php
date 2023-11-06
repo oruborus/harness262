@@ -12,18 +12,17 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(TemporaryFileHandler::class)]
 final class TemporaryFileHandlerTest extends TestCase
 {
-    const TEMPORARY_FILE_PATH = __DIR__ . '/test';
-
     #[Test]
     public function createsAndDeletesTestTemplateWithConstruction(): void
     {
-        $temporaryFileHandler = new TemporaryFileHandler(static::TEMPORARY_FILE_PATH, '');
+        $handler = new TemporaryFileHandler('');
+        $path = $handler->path();
 
-        $this->assertFileExists(static::TEMPORARY_FILE_PATH);
+        $this->assertFileExists($path);
 
-        unset($temporaryFileHandler);
+        unset($handler);
 
-        $this->assertFileDoesNotExist(static::TEMPORARY_FILE_PATH);
+        $this->assertFileDoesNotExist($path);
     }
 
     #[Test]
@@ -31,18 +30,8 @@ final class TemporaryFileHandlerTest extends TestCase
     {
         $expected = 'Expected content';
 
-        $_ = new TemporaryFileHandler(static::TEMPORARY_FILE_PATH, $expected);
+        $handler = new TemporaryFileHandler($expected);
 
-        $this->assertStringEqualsFile(static::TEMPORARY_FILE_PATH, $expected);
-    }
-
-    #[Test]
-    public function holdsOntoTemporaryFilePath(): void
-    {
-        $handler = new TemporaryFileHandler(static::TEMPORARY_FILE_PATH, '');
-
-        $actual = $handler->path();
-
-        $this->assertSame(static::TEMPORARY_FILE_PATH, $actual);
+        $this->assertStringEqualsFile($handler->path(), $expected);
     }
 }
