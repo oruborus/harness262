@@ -84,7 +84,7 @@ final class HarnessTest extends TestCase
     }
 
     #[Test]
-    public function runsAllProvidedTestPathsANdIgnoresFixtures(): void
+    public function runsAllProvidedTestPathsAndIgnoresFixtures(): void
     {
         $this->expectOutputRegex('/Duration: \d\d:\d\d/');
         $this->expectOutputRegex('/4 \/ 4 \(100%\)/');
