@@ -137,23 +137,17 @@ final readonly class Harness
         // 5. Perform **printer**.setStepCount(count(**preparedTestConfigurations**)).
         $printer->setStepCount(count($preparedTestConfigurations));
 
-        // 6. Let **resultList** be a new empty list.
-        $resultList = [];
-
-        // 7. For each **testConfig** of **preparedTestConfigurations**, do
+        // 6. For each **testConfig** of **preparedTestConfigurations**, do
         foreach ($preparedTestConfigurations as $testConfig) {
             // a. Perform runTest(**testConfig**).
             $testRunner->run($testConfig);
         }
 
-        // 8. Append the returned list of **testRunner.finalize()** to **resultList**.
-        $resultList = [...$resultList, ...$testRunner->finalize()];
-
-        // 9. Let **testSuiteEndTime** be the current system time in seconds.
+        // 7. Let **testSuiteEndTime** be the current system time in seconds.
         $testSuiteEndTime = time();
 
-        // 10. Perform **printer**.end(**resultList**, **testSuiteEndTime** - **testSuiteStartTime**).
-        $printer->end($resultList, $testSuiteEndTime - $testSuiteStartTime);
+        // 8. Perform **printer**.end(**testRunner.finalize()**, **testSuiteEndTime** - **testSuiteStartTime**).
+        $printer->end($testRunner->finalize(), $testSuiteEndTime - $testSuiteStartTime);
 
         return 0;
     }
