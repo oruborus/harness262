@@ -7,6 +7,7 @@ namespace Oru\Harness\Loop;
 use Closure;
 use Oru\Harness\Contracts\Loop;
 use Oru\Harness\Contracts\Task;
+use Throwable;
 
 use function array_shift;
 use function count;
@@ -16,7 +17,7 @@ final class TaskLoop implements Loop
     /** @var Task[] $tasks */
     private array $tasks = [];
 
-    /** @var Closure[] $callbacks */
+    /** @var array{onSuccess: Closure, onException: Closure}[] $callbacks */
     private array $callbacks = [];
 
     public function __construct(
@@ -29,9 +30,9 @@ final class TaskLoop implements Loop
         $this->tasks[] = $task;
     }
 
-    public function then(Closure $callback): void
+    public function then(Closure $onSuccess, Closure $onException): void
     {
-        $this->callbacks[] = $callback;
+        $this->callbacks[] = ['onSuccess' => $onSuccess, 'onException' => $onException];
     }
 
     public function run(): void
@@ -39,13 +40,19 @@ final class TaskLoop implements Loop
         $count = 0;
         $stash = [];
         while ($current = array_shift($this->tasks)) {
-            $current->continue();
+            try {
+                $current->continue();
+            } catch (Throwable $throwable) {
+                foreach ($this->callbacks as ['onException' => $callback]) {
+                    $callback($throwable);
+                }
+            }
 
             if (!$current->done()) {
                 $stash[] = $current;
                 $count++;
             } else {
-                foreach ($this->callbacks as $callback) {
+                foreach ($this->callbacks as ['onSuccess' => $callback]) {
                     $callback($current->result());
                 }
             }

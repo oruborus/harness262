@@ -10,7 +10,7 @@ interface Loop
 {
     public function add(Task $task): void;
 
-    public function then(Closure $callback): void;
+    public function then(Closure $onSuccess, Closure $onException): void;
 
     public function run(): void;
 }

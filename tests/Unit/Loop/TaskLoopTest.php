@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Throwable;
 
 use function array_fill;
 use function chr;
@@ -75,7 +76,7 @@ final class TaskLoopTest extends TestCase
      */
     #[Test]
     #[DataProvider('provideConcurrency')]
-    public function callsAProvidedCallbackAfterEachCompletedTask(int $concurrency, array $counts, string $_, string $expected)
+    public function callsOnSuccessCallbackWhenTaskCompletes(int $concurrency, array $counts, string $_, string $expected)
     {
         $actual = '';
         $loop = new TaskLoop($concurrency);
@@ -107,15 +108,35 @@ final class TaskLoopTest extends TestCase
 
         $loop->then(static function (mixed $result) use (&$actual) {
             $actual .= chr($result + 0x30);
-        });
+        }, fn () => null);
         $loop->then(static function (mixed $result) use (&$actual) {
             $actual .= chr($result + 0x41);
-        });
+        }, fn () => null);
         $loop->then(static function (mixed $result) use (&$actual) {
             $actual .= chr($result + 0x61);
-        });
+        }, fn () => null);
         $loop->run();
 
         $this->assertSame($expected, $actual);
+    }
+
+    #[Test]
+    public function callsOnExceptionCallbackWhenTaskThrows(): void
+    {
+        $actual = false;
+        $loop = new TaskLoop(8);
+        $loop->then(static fn () => null, static function () use (&$actual): void {
+            $actual = true;
+        });
+        $taskStub = $this->createStub(Task::class);
+        $taskStub->method('continue')->willReturnCallback(function (): never {
+            throw $this->createStub(Throwable::class);
+        });
+        $taskStub->method('done')->willReturn(true);
+        $loop->add($taskStub);
+
+        $loop->run();
+
+        $this->assertTrue($actual);
     }
 }

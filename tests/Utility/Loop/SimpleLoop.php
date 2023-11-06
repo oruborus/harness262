@@ -20,7 +20,7 @@ final class SimpleLoop implements Loop
         $this->tasks[] = $task;
     }
 
-    public function then(Closure $_): void
+    public function then(Closure $_, Closure $__): void
     {
     }
 
