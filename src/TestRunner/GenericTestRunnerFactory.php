@@ -31,10 +31,7 @@ final class GenericTestRunnerFactory implements TestRunnerFactory
         $testRunner = match ($config->testRunnerMode()) {
             TestRunnerMode::Linear   => new LinearTestRunner($this->facade, $this->assertionFactory, $this->printer),
             TestRunnerMode::Parallel => new ParallelTestRunner($this->assertionFactory, $this->printer, $this->command),
-            TestRunnerMode::Async    => new AsyncTestRunner(
-                new ParallelTestRunner($this->assertionFactory, $this->printer, $this->command),
-                new TaskLoop($config->concurrency())
-            )
+            TestRunnerMode::Async    => new AsyncTestRunner($this->printer, $this->command, new TaskLoop($config->concurrency()))
         };
 
         if (!$config->cache()) {
