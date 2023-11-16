@@ -147,6 +147,7 @@ final readonly class Harness
         $testSuiteEndTime = time();
 
         // 8. Perform **printer**.end(**testRunner**.run(), **testSuiteEndTime** - **testSuiteStartTime**).
+        $printer->end($testRunner->run(), $testSuiteEndTime - $testSuiteStartTime);
 
         return 0;
     }
