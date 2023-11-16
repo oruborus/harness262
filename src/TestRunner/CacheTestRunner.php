@@ -40,4 +40,12 @@ final class CacheTestRunner implements TestRunner
     {
         return [...$this->results, ...$this->testRunner->run()];
     }
+
+    /**
+     * @return TestResult[]
+     */
+    public function results(): array
+    {
+        return $this->results;
+    }
 }

@@ -12,4 +12,9 @@ interface TestRunner
      * @return TestResult[]
      */
     public function run(): array;
+
+    /**
+     * @return TestResult[]
+     */
+    public function results(): array;
 }

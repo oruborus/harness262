@@ -56,6 +56,14 @@ final class AsyncTestRunner implements TestRunner
     }
 
     /**
+     * @return TestResult[]
+     */
+    public function results(): array
+    {
+        return $this->results;
+    }
+
+    /**
      * @throws RuntimeException
      * @throws Throwable
      */

@@ -113,4 +113,12 @@ final class ParallelTestRunner implements TestRunner
 
         return $this->results;
     }
+
+    /**
+     * @return TestResult[]
+     */
+    public function results(): array
+    {
+        return $this->results;
+    }
 }
