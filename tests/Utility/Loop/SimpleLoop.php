@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Utility\Loop;
 
-use Closure;
 use Oru\Harness\Contracts\Loop;
 use Oru\Harness\Contracts\Task;
+use Throwable;
 
 final class SimpleLoop implements Loop
 {
@@ -20,14 +20,18 @@ final class SimpleLoop implements Loop
         $this->tasks[] = $task;
     }
 
-    public function then(Closure $_, Closure $__): void
-    {
-    }
-
     public function run(): void
     {
         foreach ($this->tasks as $task) {
-            $task->continue();
+            try {
+                while (!$task->done()) {
+                    $task->continue();
+                }
+            } catch (Throwable $throwable) {
+                $task->onFailure($throwable);
+                continue;
+            }
+            $task->onSuccess($task->result());
         }
     }
 }

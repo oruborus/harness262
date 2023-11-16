@@ -17,9 +17,6 @@ final class TaskLoop implements Loop
     /** @var Task[] $tasks */
     private array $tasks = [];
 
-    /** @var array{onSuccess: Closure, onException: Closure}[] $callbacks */
-    private array $callbacks = [];
-
     public function __construct(
         private int $concurrency
     ) {
@@ -30,11 +27,6 @@ final class TaskLoop implements Loop
         $this->tasks[] = $task;
     }
 
-    public function then(Closure $onSuccess, Closure $onException): void
-    {
-        $this->callbacks[] = ['onSuccess' => $onSuccess, 'onException' => $onException];
-    }
-
     public function run(): void
     {
         $count = 0;
@@ -43,18 +35,15 @@ final class TaskLoop implements Loop
             try {
                 $current->continue();
             } catch (Throwable $throwable) {
-                foreach ($this->callbacks as ['onException' => $callback]) {
-                    $callback($throwable);
-                }
+                $current->onFailure($throwable);
+                continue;
             }
 
             if (!$current->done()) {
                 $stash[] = $current;
                 $count++;
             } else {
-                foreach ($this->callbacks as ['onSuccess' => $callback]) {
-                    $callback($current->result());
-                }
+                $current->onSuccess($current->result());
             }
 
             if ($count === $this->concurrency || count($this->tasks) === 0) {

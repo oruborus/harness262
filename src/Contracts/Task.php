@@ -11,4 +11,8 @@ interface Task
     public function done(): bool;
 
     public function result(): mixed;
+
+    public function onSuccess(mixed ...$arguments): mixed;
+
+    public function onFailure(mixed ...$arguments): mixed;
 }

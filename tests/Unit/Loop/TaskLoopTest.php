@@ -6,6 +6,7 @@ namespace Tests\Unit\Loop;
 
 use Generator;
 use Oru\Harness\Contracts\Task;
+use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Loop\TaskLoop;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -14,7 +15,6 @@ use PHPUnit\Framework\TestCase;
 use Throwable;
 
 use function array_fill;
-use function chr;
 use function count;
 
 #[CoversClass(TaskLoop::class)]
@@ -71,72 +71,36 @@ final class TaskLoopTest extends TestCase
         yield '3 different counts' => [3, [5, 2, 3, 2], '012012302300', '1Bb2Cc3Dd0Aa'];
     }
 
-    /**
-     * @param int[] $counts 
-     */
     #[Test]
-    #[DataProvider('provideConcurrency')]
-    public function callsOnSuccessCallbackWhenTaskCompletes(int $concurrency, array $counts, string $_, string $expected)
+    public function callsOnSuccessCallbacksOfTask(): void
     {
-        $actual = '';
-        $loop = new TaskLoop($concurrency);
-        $currents = array_fill(0, count($counts), 0);
-
-        for ($i = 0; $i < count($counts); $i++) {
-            $current = &$currents[$i];
-            $count   = $counts[$i];
-
+        $loop = new TaskLoop(3);
+        for ($i = 0; $i < 5; $i++) {
+            $testResultStub = $this->createStub(TestResult::class);
             $task = $this->createMock(Task::class);
-            $task->method('continue')->willReturnCallback(
-                static function () use (&$current) {
-                    $current++;
-                }
-            );
-            $task->method('done')->willReturnCallback(
-                static function () use ($count, &$current) {
-                    return $current >= $count;
-                }
-            );
-            $task->method('result')->willReturnCallback(
-                static function () use ($i) {
-                    return $i;
-                }
-            );
-
+            $task->expects($this->once())->method('onSuccess')->with($testResultStub);
+            $task->expects($this->never())->method('onFailure');
+            $task->method('done')->willReturn(true);
+            $task->method('result')->willReturn($testResultStub);
             $loop->add($task);
         }
 
-        $loop->then(static function (mixed $result) use (&$actual) {
-            $actual .= chr($result + 0x30);
-        }, fn () => null);
-        $loop->then(static function (mixed $result) use (&$actual) {
-            $actual .= chr($result + 0x41);
-        }, fn () => null);
-        $loop->then(static function (mixed $result) use (&$actual) {
-            $actual .= chr($result + 0x61);
-        }, fn () => null);
         $loop->run();
-
-        $this->assertSame($expected, $actual);
     }
 
     #[Test]
-    public function callsOnExceptionCallbackWhenTaskThrows(): void
+    public function callsOnFailureCallbacksOfTask(): void
     {
-        $actual = false;
-        $loop = new TaskLoop(8);
-        $loop->then(static fn () => null, static function () use (&$actual): void {
-            $actual = true;
-        });
-        $taskStub = $this->createStub(Task::class);
-        $taskStub->method('continue')->willReturnCallback(function (): never {
-            throw $this->createStub(Throwable::class);
-        });
-        $taskStub->method('done')->willReturn(true);
-        $loop->add($taskStub);
+        $loop = new TaskLoop(3);
+        for ($i = 0; $i < 5; $i++) {
+            $throwableStub = $this->createStub(Throwable::class);
+            $task = $this->createMock(Task::class);
+            $task->expects($this->never())->method('onSuccess');
+            $task->expects($this->once())->method('onFailure')->with($throwableStub);
+            $task->method('continue')->willThrowException($throwableStub);
+            $loop->add($task);
+        }
 
         $loop->run();
-
-        $this->assertTrue($actual);
     }
 }
