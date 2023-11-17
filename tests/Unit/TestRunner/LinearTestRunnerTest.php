@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\TestRunner;
 
 use Exception;
+use Generator;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
+use Oru\Harness\Assertion\Exception\EngineException;
 use Oru\Harness\Contracts\Assertion;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\Facade;
@@ -15,16 +17,21 @@ use Oru\Harness\Contracts\FrontmatterInclude;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\TestRunner\Exception\StopOnCharacteristicMetException;
 use Oru\Harness\TestRunner\GenericTestResult;
 use Oru\Harness\TestRunner\LinearTestRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Throwable;
+
+use function array_map;
 
 #[CoversClass(LinearTestRunner::class)]
 #[UsesClass(GenericTestResult::class)]
@@ -320,5 +327,98 @@ final class LinearTestRunnerTest extends TestCase
 
         $testRunner->add($config);
         $testRunner->run();
+    }
+
+    #[Test]
+    #[DataProvider('provideStopOnCharacteristicForEngineDefects')]
+    public function stopsTestExecutionWhenEngineThrowsAndAccordingStopOnCharacteristicIsSet(StopOnCharacteristic $stopOnCharacteristic, array $expected): void
+    {
+        $facadeStub = $this->createStub(Facade::class);
+        $facadeStub->method('engineRun')->willReturnCallback(function (): void {
+            static $callCount = 0;
+            $callCount++;
+
+            if ($callCount === 2) {
+                throw $this->createStub(Throwable::class);
+            }
+        });
+        $testConfigStub = $this->createConfiguredStub(TestConfig::class, [
+            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+                'stopOnCharacteristic' => $stopOnCharacteristic
+            ])
+        ]);
+        $testRunner = new LinearTestRunner(
+            $facadeStub,
+            $this->createStub(AssertionFactory::class),
+            $this->createStub(Printer::class),
+            $stopOnCharacteristic
+        );
+        $testRunner->add($testConfigStub);
+        $testRunner->add($testConfigStub);
+        $testRunner->add($testConfigStub);
+
+        try {
+            $testRunner->run();
+        } catch (StopOnCharacteristicMetException) {
+        }
+
+        $actual = array_map(static fn (TestResult $result): TestResultState => $result->state(), $testRunner->results());
+
+        $this->assertSame($expected, $actual);
+    }
+
+    public static function provideStopOnCharacteristicForEngineDefects(): Generator
+    {
+        yield 'stop on defect'  => [StopOnCharacteristic::Defect, [TestResultState::Success, TestResultState::Error]];
+        yield 'stop on error'   => [StopOnCharacteristic::Error,  [TestResultState::Success, TestResultState::Error]];
+        yield 'stop on nothing' => [StopOnCharacteristic::Nothing, [TestResultState::Success, TestResultState::Error, TestResultState::Success]];
+    }
+
+    #[Test]
+    #[DataProvider('provideStopOnCharacteristicForTestCaseDefects')]
+    public function willPerformTestsAccordingToProvidedStopOnCharacteristic(StopOnCharacteristic $stopOnCharacteristic, array $order, array $expected): void
+    {
+        $assertionStub = $this->createStub(Assertion::class);
+        $assertionStub->method('assert')->willReturnCallback(function () use ($order): void {
+            static $callCount = 0;
+            match (++$callCount) {
+                $order[0] => throw new AssertionFailedException(),
+                $order[1] => throw new EngineException(),
+                default => null
+            };
+        });
+        $testConfigStub = $this->createConfiguredStub(TestConfig::class, [
+            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+                'stopOnCharacteristic' => $stopOnCharacteristic
+            ])
+        ]);
+        $testRunner = new LinearTestRunner(
+            $this->createStub(Facade::class),
+            $this->createConfiguredStub(AssertionFactory::class, ['make' => $assertionStub]),
+            $this->createStub(Printer::class),
+            $stopOnCharacteristic
+        );
+        $testRunner->add($testConfigStub);
+        $testRunner->add($testConfigStub);
+        $testRunner->add($testConfigStub);
+        $testRunner->add($testConfigStub);
+
+        try {
+            $testRunner->run();
+        } catch (StopOnCharacteristicMetException) {
+        }
+
+        $actual = array_map(static fn (TestResult $result): TestResultState => $result->state(), $testRunner->results());
+
+        $this->assertSame($expected, $actual);
+    }
+
+    public static function provideStopOnCharacteristicForTestCaseDefects(): Generator
+    {
+        yield 'stop on defect 1'  => [StopOnCharacteristic::Defect, [2, 3], [TestResultState::Success, TestResultState::Fail]];
+        yield 'stop on defect 2'  => [StopOnCharacteristic::Defect, [3, 2], [TestResultState::Success, TestResultState::Error]];
+        yield 'stop on error'   => [StopOnCharacteristic::Error, [2, 3], [TestResultState::Success, TestResultState::Fail, TestResultState::Error]];
+        yield 'stop on failure' => [StopOnCharacteristic::Failure, [2, 3], [TestResultState::Success, TestResultState::Fail]];
+        yield 'stop on nothing' => [StopOnCharacteristic::Nothing, [2, 3], [TestResultState::Success, TestResultState::Fail, TestResultState::Error, TestResultState::Success]];
     }
 }

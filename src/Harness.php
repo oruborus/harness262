@@ -37,12 +37,15 @@ final readonly class Harness
     private const TEMPLATE_PATH     = __DIR__ . '/Template/ExecuteTest';
     private const TEST_STORAGE_PATH = '.';
     private const CLI_OPTIONS       = [
-        'no-cache' => 'n',
-        'silent'   => 's',
-        'verbose'  => 'v',
-        'debug'    => null,
-        'include'  => ':',
-        'exclude'  => ':',
+        'no-cache'        => 'n',
+        'silent'          => 's',
+        'verbose'         => 'v',
+        'debug'           => null,
+        'include'         => ':',
+        'exclude'         => ':',
+        'stop-on-defect'  => null,
+        'stop-on-error'   => null,
+        'stop-on-failure' => null,
     ];
 
     private TemporaryFileHandler $temporaryFileHandler;

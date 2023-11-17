@@ -9,6 +9,7 @@ use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\Printer;
+use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
@@ -98,18 +99,39 @@ final class LinearTestRunner implements TestRunner
                 $actual = $this->runTest($config);
             } catch (Throwable $throwable) {
                 $this->addResult(new GenericTestResult(TestResultState::Error, $config->path(), [], 0, $throwable));
+                if (
+                    $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
+                    || $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
+                ) {
+                    break;
+                }
                 continue;
             }
 
             $assertion = $this->assertionFactory->make($config);
 
             try {
+                /** 
+                 * @psalm-suppress PossiblyUndefinedVariable  `$actual` is never undefined as the previous catch-block either continues or breaks
+                 */
                 $assertion->assert($actual);
             } catch (AssertionFailedException $assertionFailedException) {
                 $this->addResult(new GenericTestResult(TestResultState::Fail, $config->path(), [], 0, $assertionFailedException));
+                if (
+                    $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Failure
+                    || $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
+                ) {
+                    break;
+                }
                 continue;
             } catch (Throwable $throwable) {
                 $this->addResult(new GenericTestResult(TestResultState::Error, $config->path(), [], 0, $throwable));
+                if (
+                    $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
+                    || $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
+                ) {
+                    break;
+                }
                 continue;
             }
 

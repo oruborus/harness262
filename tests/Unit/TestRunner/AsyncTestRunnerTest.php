@@ -6,6 +6,7 @@ namespace Tests\Unit\TestRunner;
 
 use Closure;
 use ErrorException;
+use Generator;
 use Oru\Harness\Config\GenericTestConfig;
 use Oru\Harness\Config\GenericTestSuiteConfig;
 use Oru\Harness\Contracts\Command;
@@ -20,6 +21,7 @@ use Oru\Harness\Frontmatter\GenericFrontmatter;
 use Oru\Harness\Loop\FiberTask;
 use Oru\Harness\TestRunner\AsyncTestRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -184,5 +186,44 @@ final class AsyncTestRunnerTest extends TestCase
 
         $testRunner->add($testConfigStub);
         $testRunner->run();
+    }
+
+    #[Test]
+    #[DataProvider('provideContents')]
+    public function stopsExecutionWhenStopOnCharacteristicIsMet(StopOnCharacteristic $stopOnCharacteristic, array $contents, int $expectedCount): void
+    {
+        $commandStub = $this->createConfiguredStub(Command::class, [
+            '__toString' => 'php tests/Utility/Template/BasedOnContentTestCase.php',
+        ]);
+        $configs = array_map(
+            static fn (string $content): TestConfig => new GenericTestConfig(
+                '',
+                $content,
+                new GenericFrontmatter('description: x'),
+                new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, $stopOnCharacteristic)
+            ),
+            $contents
+        );
+        $testRunner = new AsyncTestRunner(
+            $this->createMock(Printer::class),
+            $commandStub,
+            new SimpleLoop(),
+        );
+        foreach ($configs as $config) {
+            $testRunner->add($config);
+        }
+
+        $actual = $testRunner->run();
+
+        $this->assertCount($expectedCount, $actual);
+    }
+
+    public static function provideContents(): Generator
+    {
+        yield 'nothing'  => [StopOnCharacteristic::Nothing, ['success', 'success', 'failure', 'error', 'success', 'success'], 6];
+        yield 'error'    => [StopOnCharacteristic::Error, ['success', 'success', 'failure', 'error', 'success', 'success'], 4];
+        yield 'failure'  => [StopOnCharacteristic::Failure, ['success', 'success', 'failure', 'error', 'success', 'success'], 3];
+        yield 'defect 1' => [StopOnCharacteristic::Defect, ['success', 'success', 'failure', 'error', 'success', 'success'], 3];
+        yield 'defect 2' => [StopOnCharacteristic::Defect, ['success', 'success', 'error', 'failure', 'success', 'success'], 3];
     }
 }

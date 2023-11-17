@@ -101,4 +101,38 @@ final class HarnessTest extends TestCase
 
         $this->assertSame(0, $actual);
     }
+
+    // #[Test]
+    public function doesNotExecuteAllTestsWhenStopOnCharacteristicIsMet(): void
+    {
+        $harness = new Harness(new TestFacade());
+
+        \ob_start();
+        $harness->run([
+            'harness.php',
+            './tests/EndToEnd/Fixtures/fail.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            './tests/EndToEnd/Fixtures/empty.js',
+            '--stop-on-failure',
+            '--debug'
+        ]);
+        $output = \ob_get_clean();
+
+        $this->assertStringNotContainsString('........', $output);
+        $this->assertMatchesRegularExpression('/Duration: \d\d:\d\d/', $output);
+    }
 }

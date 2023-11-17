@@ -8,10 +8,13 @@ use Fiber;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\Loop;
 use Oru\Harness\Contracts\Printer;
+use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestResult;
+use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunner;
 use Oru\Harness\Loop\FiberTask;
+use Oru\Harness\TestRunner\Exception\StopOnCharacteristicMetException;
 use RuntimeException;
 use Throwable;
 
@@ -33,9 +36,23 @@ final class AsyncTestRunner implements TestRunner
     {
         $task = new FiberTask(
             new Fiber(fn (): TestResult => $this->runTest($config)),
-            function (TestResult $testResult): void {
+            function (TestResult $testResult) use ($config): void {
                 $this->results[] = $testResult;
                 $this->printer->step($testResult->state());
+                if (
+                    $testResult->state() === TestResultState::Error
+                    && ($config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
+                        || $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect)
+                ) {
+                    throw new StopOnCharacteristicMetException();
+                }
+                if (
+                    $testResult->state() === TestResultState::Fail
+                    && ($config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Failure
+                        || $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect)
+                ) {
+                    throw new StopOnCharacteristicMetException();
+                }
             },
             static function (Throwable $throwable): never {
                 throw $throwable;
@@ -50,7 +67,10 @@ final class AsyncTestRunner implements TestRunner
      */
     public function run(): array
     {
-        $this->loop->run();
+        try {
+            $this->loop->run();
+        } catch (StopOnCharacteristicMetException) {
+        }
 
         return $this->results;
     }
