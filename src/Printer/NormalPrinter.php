@@ -30,8 +30,7 @@ final class NormalPrinter implements Printer
 
     public function __construct(
         private Output $output
-    ) {
-    }
+    ) {}
 
     public function setStepCount(int $stepCount): void
     {
@@ -94,8 +93,8 @@ final class NormalPrinter implements Printer
         $this->printLastStep();
         $this->printDuration($duration);
 
-        $failures = array_filter($testResults, static fn (TestResult $r): bool => $r->state() === TestResultState::Fail);
-        $errors   = array_filter($testResults, static fn (TestResult $r): bool => $r->state() === TestResultState::Error);
+        $failures = array_filter($testResults, static fn(TestResult $r): bool => $r->state() === TestResultState::Fail);
+        $errors   = array_filter($testResults, static fn(TestResult $r): bool => $r->state() === TestResultState::Error);
 
         if (count($failures) === 0 && count($errors) === 0) {
             return;

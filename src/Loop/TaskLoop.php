@@ -19,8 +19,7 @@ final class TaskLoop implements Loop
 
     public function __construct(
         private int $concurrency
-    ) {
-    }
+    ) {}
 
     public function add(Task $task): void
     {

@@ -20,8 +20,7 @@ final class CacheTestRunner implements TestRunner
     public function __construct(
         private CacheRepository $cacheRepository,
         private TestRunner $testRunner
-    ) {
-    }
+    ) {}
 
     public function add(TestConfig $config): void
     {

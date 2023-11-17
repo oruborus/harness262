@@ -19,8 +19,7 @@ final class GenericTestSuiteConfig implements TestSuiteConfig
         private int $concurrency,
         private TestRunnerMode $testRunnerMode,
         private StopOnCharacteristic $stopOnCharacteristic,
-    ) {
-    }
+    ) {}
 
     /**
      * @return string[]

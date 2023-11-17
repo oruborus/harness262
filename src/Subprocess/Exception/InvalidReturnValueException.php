@@ -6,6 +6,4 @@ namespace Oru\Harness\Subprocess\Exception;
 
 use RuntimeException;
 
-final class InvalidReturnValueException extends RuntimeException
-{
-}
+final class InvalidReturnValueException extends RuntimeException {}

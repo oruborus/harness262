@@ -13,13 +13,11 @@ final readonly class OutputConfigFactory implements ConfigFactory
 {
     public function __construct(
         private ArgumentsParser $argumentsParser
-    ) {
-    }
+    ) {}
 
     public function make(): OutputConfig
     {
-        return new class() implements OutputConfig
-        {
+        return new class () implements OutputConfig {
             /**
              * @return OutputType[]
              */

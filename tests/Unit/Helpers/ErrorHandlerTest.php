@@ -24,7 +24,7 @@ final class ErrorHandlerTest extends TestCase
         $this->expectExceptionObject($expectedException);
         $level = E_USER_WARNING;
 
-        $_ = new ErrorHandler(fn () => throw $expectedException, $level);
+        $_ = new ErrorHandler(fn() => throw $expectedException, $level);
 
         trigger_error('not used', $level);
     }

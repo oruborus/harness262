@@ -49,8 +49,7 @@ final class FiberTaskTest extends TestCase
     public function isDoneWhenContainedFiberIsTerminated(): void
     {
         $fiber = new Fiber(
-            static function (): void {
-            }
+            static function (): void {}
         );
         $fiber->start();
 
@@ -63,8 +62,7 @@ final class FiberTaskTest extends TestCase
     public function isNotDoneWhenContainedFiberIsNotTerminated(): void
     {
         $fiber = new Fiber(
-            static function (): void {
-            }
+            static function (): void {}
         );
 
         $actual = (new FiberTask($fiber))->done();

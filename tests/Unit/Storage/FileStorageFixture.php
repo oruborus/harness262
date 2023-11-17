@@ -8,6 +8,5 @@ class FileStorageFixture
 {
     public function __construct(
         private string|FileStorageFixture $fixture
-    ) {
-    }
+    ) {}
 }

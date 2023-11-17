@@ -6,6 +6,4 @@ namespace Oru\Harness\Config\Exception;
 
 use RuntimeException;
 
-final class InvalidPathException extends RuntimeException
-{
-}
+final class InvalidPathException extends RuntimeException {}

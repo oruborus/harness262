@@ -34,15 +34,14 @@ final readonly class GenericTestConfigFactory implements TestConfigFactory
     public function __construct(
         private Storage $storage,
         private TestSuiteConfig $testSuiteConfig
-    ) {
-    }
+    ) {}
 
     /**
      * @return TestConfig[]
-     * 
+     *
      * @throws MissingFrontmatterException
-     * @throws MissingRequiredKeyException 
-     * @throws UnrecognizedKeyException 
+     * @throws MissingRequiredKeyException
+     * @throws UnrecognizedKeyException
      * @throws UnrecognizedNegativePhaseException
      * @throws ParseException
      */
@@ -69,7 +68,7 @@ final readonly class GenericTestConfigFactory implements TestConfigFactory
         if ($line = reset($meta)) {
             $identSize = strlen($line) - strlen(ltrim($line));
 
-            $meta = array_map(static fn (string $line): string => substr($line, $identSize), $meta);
+            $meta = array_map(static fn(string $line): string => substr($line, $identSize), $meta);
             $rawFrontmatter = implode(PHP_EOL, $meta);
         }
 

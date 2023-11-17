@@ -15,8 +15,7 @@ final readonly class GenericTestConfig implements TestConfig
         private string $content,
         private Frontmatter $frontmatter,
         private TestSuiteConfig $testSuiteConfig
-    ) {
-    }
+    ) {}
 
     public function path(): string
     {

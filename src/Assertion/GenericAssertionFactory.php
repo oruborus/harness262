@@ -16,8 +16,7 @@ final readonly class GenericAssertionFactory implements AssertionFactory
 {
     public function __construct(
         private Facade $facade
-    ) {
-    }
+    ) {}
 
     public function make(TestConfig $config): Assertion
     {

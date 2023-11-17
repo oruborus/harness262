@@ -31,7 +31,7 @@ final class CliArgumentsParser implements ArgumentsParser
     /**
      * @param list<string> $arguments
      * @param array<string, ?string> $configuration
-     * 
+     *
      * @throws InvalidOptionException
      * @throws UnknownOptionException
      */

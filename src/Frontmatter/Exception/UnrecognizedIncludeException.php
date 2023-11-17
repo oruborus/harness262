@@ -6,6 +6,4 @@ namespace Oru\Harness\Frontmatter\Exception;
 
 use RuntimeException;
 
-final class UnrecognizedIncludeException extends RuntimeException
-{
-}
+final class UnrecognizedIncludeException extends RuntimeException {}

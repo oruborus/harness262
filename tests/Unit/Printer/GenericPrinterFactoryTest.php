@@ -69,12 +69,10 @@ final class GenericPrinterFactoryTest extends TestCase
 
     private static function createPrinterConfig(PrinterVerbosity $printerVerbosity): PrinterConfig
     {
-        return new class($printerVerbosity) implements PrinterConfig
-        {
+        return new class ($printerVerbosity) implements PrinterConfig {
             public function __construct(
                 private PrinterVerbosity $printerVerbosity
-            ) {
-            }
+            ) {}
 
             public function verbosity(): PrinterVerbosity
             {

@@ -19,7 +19,7 @@ use const PHP_EOL;
 #[CoversClass(Harness::class)]
 final class HarnessTest extends TestCase
 {
-    const TEMPLATE_PATH = __DIR__ . '/../../src/Template/ExecuteTest.php';
+    public const TEMPLATE_PATH = __DIR__ . '/../../src/Template/ExecuteTest.php';
 
     #[Test]
     #[DataProvider('provideInvalidOptions')]

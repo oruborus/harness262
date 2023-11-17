@@ -15,7 +15,5 @@ final readonly class NoCacheRepository implements CacheRepository
         return null;
     }
 
-    public function set(TestConfig $config, TestResult $result): void
-    {
-    }
+    public function set(TestConfig $config, TestResult $result): void {}
 }

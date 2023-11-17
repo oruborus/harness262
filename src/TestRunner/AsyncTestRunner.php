@@ -29,13 +29,12 @@ final class AsyncTestRunner implements TestRunner
         private readonly Printer $printer,
         private readonly Command $command,
         private readonly Loop $loop
-    ) {
-    }
+    ) {}
 
     public function add(TestConfig $config): void
     {
         $task = new FiberTask(
-            new Fiber(fn (): TestResult => $this->runTest($config)),
+            new Fiber(fn(): TestResult => $this->runTest($config)),
             function (TestResult $testResult) use ($config): void {
                 $this->results[] = $testResult;
                 $this->printer->step($testResult->state());

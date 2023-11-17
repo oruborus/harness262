@@ -23,8 +23,7 @@ final class GenericTestRunnerFactory implements TestRunnerFactory
         private Printer $printer,
         private Command $command,
         private CacheRepository $cacheRepository
-    ) {
-    }
+    ) {}
 
     public function make(TestSuiteConfig $config): TestRunner
     {

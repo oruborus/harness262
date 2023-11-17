@@ -14,7 +14,7 @@ final readonly class GenericFrontmatterNegative implements FrontmatterNegative
 
     private string $type;
 
-    /** 
+    /**
      * @param array {
      *     phase: string,
      *     type: string

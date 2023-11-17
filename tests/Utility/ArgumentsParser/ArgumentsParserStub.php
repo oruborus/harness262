@@ -17,8 +17,7 @@ final class ArgumentsParserStub implements ArgumentsParser
     public function __construct(
         private array $options = [],
         private array $rest = []
-    ) {
-    }
+    ) {}
 
     public function hasOption(string $option): bool
     {

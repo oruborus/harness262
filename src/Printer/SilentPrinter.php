@@ -9,23 +9,13 @@ use Oru\Harness\Contracts\TestResultState;
 
 final class SilentPrinter implements Printer
 {
-    public function setStepCount(int $stepCount): void
-    {
-    }
+    public function setStepCount(int $stepCount): void {}
 
-    public function writeLn(string $line): void
-    {
-    }
+    public function writeLn(string $line): void {}
 
-    public function start(): void
-    {
-    }
+    public function start(): void {}
 
-    public function step(TestResultState $state): void
-    {
-    }
+    public function step(TestResultState $state): void {}
 
-    public function end(array $testResults, int $duration): void
-    {
-    }
+    public function end(array $testResults, int $duration): void {}
 }

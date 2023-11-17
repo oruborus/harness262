@@ -32,13 +32,13 @@ final readonly class GenericFrontmatter implements Frontmatter
 
     private const VALID_KEYS    = ['description', 'esid', 'info', 'negative', 'includes', 'author', 'flags', 'features', 'locale', 'es5id', 'es6id'];
 
-    /** 
+    /**
      * @var array {
      *     description: string,
      *     esid: ?string,
      *     es5id: ?string,
      *     es6id: ?string,
-     *     info: ?string, 
+     *     info: ?string,
      *     negative: ?FrontmatterNegative,
      *     includes: FrontmatterInclude[],
      *     author: ?string,
@@ -63,7 +63,7 @@ final readonly class GenericFrontmatter implements Frontmatter
          *     esid: ?string,
          *     es5id: ?string,
          *     es6id: ?string,
-         *     info: ?string, 
+         *     info: ?string,
          *     includes: ?string[],
          *     negative: array {
          *         phase: string,
@@ -73,7 +73,7 @@ final readonly class GenericFrontmatter implements Frontmatter
          *     flags: ?string[],
          *     features: ?string[],
          *     locale: ?string[],
-         * } $data 
+         * } $data
          */
         $data = Yaml::parse($rawFrontmatter);
         $keys = array_keys($data);

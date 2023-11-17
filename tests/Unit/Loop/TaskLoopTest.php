@@ -21,7 +21,7 @@ use function count;
 final class TaskLoopTest extends TestCase
 {
     /**
-     * @param int[] $counts 
+     * @param int[] $counts
      */
     #[Test]
     #[DataProvider('provideConcurrency')]

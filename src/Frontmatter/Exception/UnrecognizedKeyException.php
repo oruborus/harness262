@@ -6,6 +6,4 @@ namespace Oru\Harness\Frontmatter\Exception;
 
 use RuntimeException;
 
-final class UnrecognizedKeyException extends RuntimeException
-{
-}
+final class UnrecognizedKeyException extends RuntimeException {}

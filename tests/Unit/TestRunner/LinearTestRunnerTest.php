@@ -362,7 +362,7 @@ final class LinearTestRunnerTest extends TestCase
         } catch (StopOnCharacteristicMetException) {
         }
 
-        $actual = array_map(static fn (TestResult $result): TestResultState => $result->state(), $testRunner->results());
+        $actual = array_map(static fn(TestResult $result): TestResultState => $result->state(), $testRunner->results());
 
         $this->assertSame($expected, $actual);
     }
@@ -408,7 +408,7 @@ final class LinearTestRunnerTest extends TestCase
         } catch (StopOnCharacteristicMetException) {
         }
 
-        $actual = array_map(static fn (TestResult $result): TestResultState => $result->state(), $testRunner->results());
+        $actual = array_map(static fn(TestResult $result): TestResultState => $result->state(), $testRunner->results());
 
         $this->assertSame($expected, $actual);
     }

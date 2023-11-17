@@ -16,11 +16,9 @@ final class TestStreamWrapper
 
     private static int $position = 0;
 
-    public function  stream_close(): void
-    {
-    }
+    public function stream_close(): void {}
 
-    public function  stream_eof(): bool
+    public function stream_eof(): bool
     {
         return static::$position >= strlen(static::$content);
     }

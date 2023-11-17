@@ -16,8 +16,7 @@ final readonly class AssertIsNormal implements Assertion
 {
     public function __construct(
         private Facade $facade
-    ) {
-    }
+    ) {}
 
     /**
      * @throws AssertionFailedException

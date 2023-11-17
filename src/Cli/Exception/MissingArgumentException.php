@@ -6,6 +6,4 @@ namespace Oru\Harness\Cli\Exception;
 
 use RuntimeException;
 
-final class MissingArgumentException extends RuntimeException
-{
-}
+final class MissingArgumentException extends RuntimeException {}

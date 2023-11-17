@@ -7,4 +7,4 @@ use Tests\Utility\Facade\TestFacade;
 
 require './vendor/autoload.php';
 
-return static fn (): Facade => new TestFacade();
+return static fn(): Facade => new TestFacade();

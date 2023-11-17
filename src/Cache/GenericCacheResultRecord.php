@@ -16,8 +16,7 @@ final readonly class GenericCacheResultRecord implements CacheResultRecord
         private string $hash,
         private array $usedFiles,
         private TestResult $result
-    ) {
-    }
+    ) {}
 
     public function hash(): string
     {

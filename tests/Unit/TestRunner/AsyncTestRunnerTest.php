@@ -157,12 +157,10 @@ final class AsyncTestRunnerTest extends TestCase
         $testRunner = new AsyncTestRunner(
             $this->createMock(Printer::class),
             $commandStub,
-            new class($this->assertFalse(...)) implements Loop
-            {
+            new class ($this->assertFalse(...)) implements Loop {
                 public function __construct(
                     private Closure $assertFalse
-                ) {
-                }
+                ) {}
 
                 /**
                  * @var Task[] $tasks
@@ -196,7 +194,7 @@ final class AsyncTestRunnerTest extends TestCase
             '__toString' => 'php tests/Utility/Template/BasedOnContentTestCase.php',
         ]);
         $configs = array_map(
-            static fn (string $content): TestConfig => new GenericTestConfig(
+            static fn(string $content): TestConfig => new GenericTestConfig(
                 '',
                 $content,
                 new GenericFrontmatter('description: x'),

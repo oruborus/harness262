@@ -46,15 +46,13 @@ final class GenericOutputFactoryTest extends TestCase
      */
     private static function createOutputConfig(array $outputTypes): OutputConfig
     {
-        return new class($outputTypes) implements OutputConfig
-        {
+        return new class ($outputTypes) implements OutputConfig {
             /**
              * @param OutputType[] $outputTypes
              */
             public function __construct(
                 private array $outputTypes
-            ) {
-            }
+            ) {}
 
             /**
              * @return OutputType[]

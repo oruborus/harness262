@@ -6,6 +6,4 @@ namespace Oru\Harness\TestRunner\Exception;
 
 use RuntimeException;
 
-final class StopOnCharacteristicMetException extends RuntimeException
-{
-}
+final class StopOnCharacteristicMetException extends RuntimeException {}

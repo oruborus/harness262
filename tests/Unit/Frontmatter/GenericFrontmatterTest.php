@@ -148,8 +148,7 @@ final class GenericFrontmatterTest extends TestCase
     #[Test]
     public function returnsFrontmatterNegativeWhenProvided(): void
     {
-        $expected = new class implements FrontmatterNegative
-        {
+        $expected = new class () implements FrontmatterNegative {
             public function phase(): FrontmatterNegativePhase
             {
                 return FrontmatterNegativePhase::resolution;
@@ -267,7 +266,7 @@ final class GenericFrontmatterTest extends TestCase
     #[Test]
     public function handlesAllPossibleIncludes(): void
     {
-        $includes = implode(', ', array_map(static fn (FrontmatterInclude $i): string => basename($i->value), FrontmatterInclude::cases()));
+        $includes = implode(', ', array_map(static fn(FrontmatterInclude $i): string => basename($i->value), FrontmatterInclude::cases()));
 
         $expected = count(FrontmatterInclude::cases());
 

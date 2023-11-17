@@ -6,6 +6,4 @@ namespace Oru\Harness\Config\Exception;
 
 use RuntimeException;
 
-final class ReinitializedLoopException extends RuntimeException
-{
-}
+final class ReinitializedLoopException extends RuntimeException {}

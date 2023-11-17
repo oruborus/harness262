@@ -33,8 +33,7 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
 {
     public function __construct(
         private ArgumentsParser $argumentsParser
-    ) {
-    }
+    ) {}
 
     /**
      * @throws InvalidPathException

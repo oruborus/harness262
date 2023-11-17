@@ -38,8 +38,7 @@ final class LinearTestRunner implements TestRunner
         private readonly Facade $facade,
         private readonly AssertionFactory $assertionFactory,
         private readonly Printer $printer
-    ) {
-    }
+    ) {}
 
     public function add(TestConfig $config): void
     {
@@ -111,7 +110,7 @@ final class LinearTestRunner implements TestRunner
             $assertion = $this->assertionFactory->make($config);
 
             try {
-                /** 
+                /**
                  * @psalm-suppress PossiblyUndefinedVariable  `$actual` is never undefined as the previous catch-block either continues or breaks
                  */
                 $assertion->assert($actual);

@@ -13,8 +13,7 @@ final readonly class PrinterConfigFactory implements ConfigFactory
 {
     public function __construct(
         private ArgumentsParser $argumentsParser
-    ) {
-    }
+    ) {}
 
     public function make(): PrinterConfig
     {
@@ -32,14 +31,12 @@ final readonly class PrinterConfigFactory implements ConfigFactory
             $verbosity = PrinterVerbosity::Silent;
         }
 
-        return new class(
+        return new class (
             $verbosity
-        ) implements PrinterConfig
-        {
+        ) implements PrinterConfig {
             public function __construct(
                 private PrinterVerbosity $printerVerbosity
-            ) {
-            }
+            ) {}
 
             public function verbosity(): PrinterVerbosity
             {

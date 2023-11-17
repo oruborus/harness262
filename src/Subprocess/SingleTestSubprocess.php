@@ -21,8 +21,7 @@ final class SingleTestSubprocess implements Subprocess
     public function __construct(
         private TestRunner $testRunner,
         private TestConfig $testConfig
-    ) {
-    }
+    ) {}
 
     /**
      * @throws InvalidReturnValueException

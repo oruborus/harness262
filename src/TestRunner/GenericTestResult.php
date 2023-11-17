@@ -19,8 +19,7 @@ final readonly class GenericTestResult implements TestResult
         private array $usedFiles,
         private int $duration,
         private ?Throwable $throwable = null,
-    ) {
-    }
+    ) {}
 
     public function state(): TestResultState
     {

@@ -16,7 +16,7 @@ final class GenericCacheRepositoryFactory implements CacheRepositoryFactory
 {
     public function make(TestSuiteConfig $config): CacheRepository
     {
-        /** 
+        /**
          * @var Storage<CacheResultRecord> $storage
          */
         $storage = new SerializingFileStorage('./.harness/cache');
@@ -24,8 +24,8 @@ final class GenericCacheRepositoryFactory implements CacheRepositoryFactory
         return $config->cache() ?
             new GenericCacheRepository(
                 $storage,
-                static fn (TestConfig $i): string => md5(serialize($i)),
-                static fn (string $i): string => hash_file('haval160,4', $i)
+                static fn(TestConfig $i): string => md5(serialize($i)),
+                static fn(string $i): string => hash_file('haval160,4', $i)
             ) :
             new NoCacheRepository();
     }

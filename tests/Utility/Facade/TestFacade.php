@@ -16,9 +16,7 @@ final class TestFacade implements Facade
 
     private bool $errors = false;
 
-    public function initialize(): void
-    {
-    }
+    public function initialize(): void {}
 
     public function path(): string
     {
@@ -72,8 +70,8 @@ final class TestFacade implements Facade
 
     public function engineAddFiles(string ...$paths): void
     {
-        $this->fails = !array_filter($paths, static fn (string $path): bool => strpos($path, 'fail') !== false);
-        $this->errors = !array_filter($paths, static fn (string $path): bool => strpos($path, 'error') !== false);
+        $this->fails = !array_filter($paths, static fn(string $path): bool => strpos($path, 'fail') !== false);
+        $this->errors = !array_filter($paths, static fn(string $path): bool => strpos($path, 'error') !== false);
     }
 
     public function engineAddCode(string $source, ?string $file = null, bool $isModuleCode = false): void

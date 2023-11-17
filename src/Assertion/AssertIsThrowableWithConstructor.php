@@ -16,8 +16,7 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
     public function __construct(
         private Facade $facade,
         private FrontmatterNegative $negative
-    ) {
-    }
+    ) {}
 
     /**
      * @throws AssertionFailedException

@@ -6,6 +6,4 @@ namespace Oru\Harness\Cli\Exception;
 
 use RuntimeException;
 
-final class InvalidOptionException extends RuntimeException
-{
-}
+final class InvalidOptionException extends RuntimeException {}

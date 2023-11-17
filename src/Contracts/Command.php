@@ -6,6 +6,4 @@ namespace Oru\Harness\Contracts;
 
 use Stringable;
 
-interface Command extends Stringable
-{
-}
+interface Command extends Stringable {}

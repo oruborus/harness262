@@ -26,8 +26,7 @@ final readonly class GenericCacheRepository implements CacheRepository
         private Storage $storage,
         private mixed $keyHashFunction,
         private mixed $fileHashFunction
-    ) {
-    }
+    ) {}
 
     public function get(TestConfig $config): ?TestResult
     {

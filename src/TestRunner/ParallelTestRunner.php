@@ -41,8 +41,7 @@ final class ParallelTestRunner implements TestRunner
         private readonly AssertionFactory $assertionFactory,
         private readonly Printer $printer,
         private readonly Command $command
-    ) {
-    }
+    ) {}
 
     /**
      * @throws Throwable

@@ -14,8 +14,7 @@ final readonly class FiberTask implements Task
         private Fiber $fiber,
         private ?Closure $onSuccess = null,
         private ?Closure $onFailure = null
-    ) {
-    }
+    ) {}
 
     public function continue(): void
     {

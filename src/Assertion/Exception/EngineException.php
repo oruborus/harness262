@@ -6,6 +6,4 @@ namespace Oru\Harness\Assertion\Exception;
 
 use RuntimeException;
 
-final class EngineException extends RuntimeException
-{
-}
+final class EngineException extends RuntimeException {}

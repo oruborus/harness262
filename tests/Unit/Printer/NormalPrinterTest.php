@@ -23,8 +23,7 @@ final class NormalPrinterTest extends TestCase
 {
     private function createOutput(): Output&Stringable
     {
-        return new class implements Output, Stringable
-        {
+        return new class () implements Output, Stringable {
             private string $storage = '';
 
             public function write(string $content): void
