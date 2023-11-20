@@ -30,6 +30,7 @@ use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Helpers\LogicalCoreCounter;
 use Oru\Harness\Helpers\TemporaryFileHandler;
 use Oru\Harness\Output\GenericOutputFactory;
 use Oru\Harness\Printer\GenericPrinterFactory;
@@ -97,6 +98,8 @@ final readonly class Harness
         $printerConfig          = $printerConfigFactory->make();
         $printer                = $printerFactory->make($printerConfig, $output);
 
+        $coreCounter            = new LogicalCoreCounter();
+
         // 1. Let testSuiteStartTime be the current system time in seconds.
         $testSuiteStartTime = time();
 
@@ -104,7 +107,7 @@ final readonly class Harness
         $printer->start();
 
         try {
-            $testSuiteConfigFactory = new TestSuiteConfigFactory($argumentsParser);
+            $testSuiteConfigFactory = new TestSuiteConfigFactory($argumentsParser, $coreCounter);
             $testSuiteConfig        = $testSuiteConfigFactory->make();
         } catch (MalformedRegularExpressionPatternException $exception) {
             $printer->writeLn('The provided regular expression pattern is malformed.');

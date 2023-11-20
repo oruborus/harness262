@@ -22,6 +22,7 @@ use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\ConfigFactory;
+use Oru\Harness\Contracts\CoreCounter;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
@@ -43,7 +44,8 @@ use const PREG_GREP_INVERT;
 final readonly class TestSuiteConfigFactory implements ConfigFactory
 {
     public function __construct(
-        private ArgumentsParser $argumentsParser
+        private ArgumentsParser $argumentsParser,
+        private CoreCounter $coreCounter,
     ) {}
 
     /**
@@ -125,10 +127,12 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
             $stopOnCharacteristic = StopOnCharacteristic::Defect;
         }
 
+        $concurrency = $this->coreCounter->count();
+
         return new GenericTestSuiteConfig(
             $paths,
             $cache,
-            8,
+            $concurrency,
             $testRunnerMode,
             $stopOnCharacteristic
         );
