@@ -128,6 +128,9 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
         }
 
         $concurrency = $this->coreCounter->count();
+        if ($this->argumentsParser->hasOption('concurrency')) {
+            $concurrency = max(1, min((int) $this->argumentsParser->getOption('concurrency'), $concurrency));
+        }
 
         return new GenericTestSuiteConfig(
             $paths,

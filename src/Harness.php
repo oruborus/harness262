@@ -58,6 +58,7 @@ final readonly class Harness
         'stop-on-defect'  => null,
         'stop-on-error'   => null,
         'stop-on-failure' => null,
+        'concurrency'     => 'c:',
     ];
 
     private TemporaryFileHandler $temporaryFileHandler;

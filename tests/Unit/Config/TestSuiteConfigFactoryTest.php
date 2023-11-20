@@ -91,6 +91,26 @@ final class TestSuiteConfigFactoryTest extends TestCase
     }
 
     #[Test]
+    #[DataProvider('provideConcurrency')]
+    public function concurrencyCanBeConfiguredAndIsClampedBetween1AndLogicalCpuCount(int $input, int $expected): void
+    {
+        $argumentsParserStub = new ArgumentsParserStub(['concurrency' => "{$input}"], [__DIR__ . '/../Fixtures']);
+        $coreCounterStub = $this->createConfiguredStub(CoreCounter::class, ['count' => 500]);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub, $coreCounterStub);
+
+        $actual = $factory->make();
+
+        $this->assertSame($expected, $actual->concurrency());
+    }
+
+    public static function provideConcurrency(): Generator
+    {
+        yield 'within bounds' => [10, 10];
+        yield 'below bounds'  => [-10, 1];
+        yield 'above bounds'  => [1000, 500];
+    }
+
+    #[Test]
     public function cachingCanBeDisabled(): void
     {
         $argumentsParserStub = new ArgumentsParserStub(['no-cache' => null], [__DIR__ . '/../Fixtures']);
