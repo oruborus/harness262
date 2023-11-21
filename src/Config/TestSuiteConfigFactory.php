@@ -33,6 +33,8 @@ use RecursiveIteratorIterator;
 use function file_exists;
 use function is_dir;
 use function is_file;
+use function max;
+use function min;
 use function preg_grep;
 use function preg_match;
 use function strlen;
