@@ -22,11 +22,11 @@ use Oru\Harness\Contracts\TestConfigFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
+use Oru\Harness\Frontmatter\Exception\ParseException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedKeyException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedNegativePhaseException;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
 use RuntimeException;
-use Symfony\Component\Yaml\Exception\ParseException;
 
 use function array_map;
 use function implode;

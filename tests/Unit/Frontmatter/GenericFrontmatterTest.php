@@ -22,6 +22,7 @@ use Oru\Harness\Contracts\FrontmatterInclude;
 use Oru\Harness\Contracts\FrontmatterNegative;
 use Oru\Harness\Contracts\FrontmatterNegativePhase;
 use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
+use Oru\Harness\Frontmatter\Exception\ParseException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedFlagException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedIncludeException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedKeyException;
@@ -37,6 +38,14 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(GenericFrontmatterNegative::class)]
 final class GenericFrontmatterTest extends TestCase
 {
+    #[Test]
+    public function failsWhenProvidedContentCouldNotBeParsed(): void
+    {
+        $this->expectException(ParseException::class);
+
+        new GenericFrontmatter("   invalid     content\n555abcde:");
+    }
+
     #[Test]
     public function failsIfDescriptionFieldIsMissing(): void
     {

@@ -20,11 +20,12 @@ use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\FrontmatterInclude;
 use Oru\Harness\Contracts\FrontmatterNegative;
 use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
+use Oru\Harness\Frontmatter\Exception\ParseException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedFlagException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedIncludeException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedKeyException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedNegativePhaseException;
-use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Exception\ParseException as YamlParseException;
 use Symfony\Component\Yaml\Yaml;
 
 use function array_diff;
@@ -68,25 +69,30 @@ final readonly class GenericFrontmatter implements Frontmatter
      */
     public function __construct(string $rawFrontmatter)
     {
-        /**
-         * @var array {
-         *     description: string,
-         *     esid: ?string,
-         *     es5id: ?string,
-         *     es6id: ?string,
-         *     info: ?string,
-         *     includes: ?string[],
-         *     negative: array {
-         *         phase: string,
-         *         type: string
-         *     },
-         *     author: ?string,
-         *     flags: ?string[],
-         *     features: ?string[],
-         *     locale: ?string[],
-         * } $data
-         */
-        $data = Yaml::parse($rawFrontmatter);
+        try {
+            /**
+             * @var array {
+             *     description: string,
+             *     esid: ?string,
+             *     es5id: ?string,
+             *     es6id: ?string,
+             *     info: ?string,
+             *     includes: ?string[],
+             *     negative: array {
+             *         phase: string,
+             *         type: string
+             *     },
+             *     author: ?string,
+             *     flags: ?string[],
+             *     features: ?string[],
+             *     locale: ?string[],
+             * } $data
+             */
+            $data = Yaml::parse($rawFrontmatter);
+        } catch (YamlParseException $e) {
+            throw new ParseException(previous: $e);
+        }
+
         $keys = array_keys($data);
         $data['flags'] ??= [];
         $data['includes'] ??= [];
