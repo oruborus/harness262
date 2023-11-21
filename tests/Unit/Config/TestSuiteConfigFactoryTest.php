@@ -36,7 +36,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function createsConfigForTestSuite(): void
     {
-        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
@@ -47,7 +47,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function interpretsAllNonPrefixedArgumentsAsPaths(): void
     {
-        $expected = [__DIR__ . '/../Fixtures/PATH0', __DIR__ . '/../Fixtures/PATH1', __DIR__ . '/../Fixtures/PATH2'];
+        $expected = [__DIR__ . '/../Fixtures/Basic/PATH0', __DIR__ . '/../Fixtures/Basic/PATH1', __DIR__ . '/../Fixtures/Basic/PATH2'];
         $argumentsParserStub = new ArgumentsParserStub([], $expected);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
@@ -69,7 +69,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForCachingIsTrue(): void
     {
-        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
@@ -81,7 +81,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     public function defaultConcurrencyIsEqualToTheLogicalCoreCountOfTheMachine(): void
     {
         $expected = 123456;
-        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
         $coreCounterStub = $this->createConfiguredStub(CoreCounter::class, ['count' => $expected]);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $coreCounterStub);
 
@@ -94,7 +94,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[DataProvider('provideConcurrency')]
     public function concurrencyCanBeConfiguredAndIsClampedBetween1AndLogicalCpuCount(int $input, int $expected): void
     {
-        $argumentsParserStub = new ArgumentsParserStub(['concurrency' => "{$input}"], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub(['concurrency' => "{$input}"], [__DIR__ . '/../Fixtures/Basic']);
         $coreCounterStub = $this->createConfiguredStub(CoreCounter::class, ['count' => 500]);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $coreCounterStub);
 
@@ -113,7 +113,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function cachingCanBeDisabled(): void
     {
-        $argumentsParserStub = new ArgumentsParserStub(['no-cache' => null], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub(['no-cache' => null], [__DIR__ . '/../Fixtures/Basic']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
@@ -124,7 +124,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function defaultConfigForRunnerModeIsAsync(): void
     {
-        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make([]);
@@ -135,7 +135,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function configForRunnerModeCanBeSetToLinear(): void
     {
-        $argumentsParserStub = new ArgumentsParserStub(['debug' => null], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub(['debug' => null], [__DIR__ . '/../Fixtures/Basic']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
@@ -156,7 +156,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function addsValidDirectoryContentsRecursivelyToPaths(): void
     {
-        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
@@ -167,7 +167,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function includesProvidedPathsWithRegularExpressions(): void
     {
-        $argumentsParserStub = new ArgumentsParserStub(['include' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub(['include' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures/Basic']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
@@ -178,7 +178,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function excludesItemsFromProvidedPathsWithRegularExpressions(): void
     {
-        $argumentsParserStub = new ArgumentsParserStub(['exclude' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub(['exclude' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures/Basic']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
@@ -190,7 +190,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[DataProvider('provideMalformedFilteringOptions')]
     public function failsWhenProvidedRegularExpressionPatternIsMalformed(string $option, string $argument): void
     {
-        $argumentsParserStub = new ArgumentsParserStub([$option => $argument], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([$option => $argument], [__DIR__ . '/../Fixtures/Basic']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         try {
@@ -212,7 +212,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[Test]
     public function defaultStopOnCharacteristicIsNothing(): void
     {
-        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
@@ -224,7 +224,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     #[DataProvider('provideStopOnOptions')]
     public function stopOnCharacteristicCanBeChanged(array $options, StopOnCharacteristic $expected): void
     {
-        $argumentsParserStub = new ArgumentsParserStub($options, [__DIR__ . '/../Fixtures']);
+        $argumentsParserStub = new ArgumentsParserStub($options, [__DIR__ . '/../Fixtures/Basic']);
         $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
