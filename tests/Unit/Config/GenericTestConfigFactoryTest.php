@@ -182,4 +182,18 @@ final class GenericTestConfigFactoryTest extends TestCase
         $this->assertCount(1, $actual);
         $this->assertSame($expected, array_shift($actual)->content());
     }
+
+    #[Test]
+    public function canHandleMultipleInputPaths(): void
+    {
+        $factory = new GenericTestConfigFactory(
+            $this->createConfiguredMock(Storage::class, [
+                'get' => "/*---\ndescription: required\nflags: [raw]\n---*/\n// CONTENT"]),
+            $this->createStub(TestSuiteConfig::class)
+        );
+
+        $actual = $factory->make('path1', 'path2', 'path3');
+
+        $this->assertCount(3, $actual);
+    }
 }

@@ -56,7 +56,26 @@ final readonly class GenericTestConfigFactory implements TestConfigFactory
      * @throws UnrecognizedNegativePhaseException
      * @throws ParseException
      */
-    public function make(string $path): array
+    public function make(string ...$paths): array
+    {
+        $testConfigs = [];
+        foreach($paths as $path) {
+            $testConfigs = [...$testConfigs, ...$this->makeFromSinglePath($path)];
+        }
+
+        return $testConfigs;
+    }
+
+    /**
+     * @return TestConfig[]
+     *
+     * @throws MissingFrontmatterException
+     * @throws MissingRequiredKeyException
+     * @throws UnrecognizedKeyException
+     * @throws UnrecognizedNegativePhaseException
+     * @throws ParseException
+     */
+    private function makeFromSinglePath(string $path): array
     {
         /**
          * @var string $content

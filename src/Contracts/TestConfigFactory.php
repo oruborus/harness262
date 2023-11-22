@@ -20,5 +20,5 @@ interface TestConfigFactory
     /**
      * @return TestConfig[]
      */
-    public function make(string $path): array;
+    public function make(string ...$paths): array;
 }
