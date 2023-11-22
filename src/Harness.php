@@ -43,10 +43,11 @@ use Oru\Harness\TestRunner\GenericTestRunnerFactory;
 
 use function array_filter;
 use function array_shift;
+use function basename;
 use function count;
 use function file_get_contents;
 use function realpath;
-use function str_ends_with;
+use function str_contains;
 use function time;
 
 final readonly class Harness
@@ -142,7 +143,7 @@ final readonly class Harness
         $testRunner             = $testRunnerFactory->make($testSuiteConfig);
 
         // 3. Let **paths** be the list of all elements of **testSuiteConfig**.[[paths]] that do not end in '_FIXTURE.js'.
-        $paths = array_filter($testSuiteConfig->paths(), static fn(string $path): bool => !str_ends_with($path, '_FIXTURE.js'));
+        $paths = array_filter($testSuiteConfig->paths(), static fn(string $path): bool => !str_contains(basename($path), '_FIXTURE'));
 
         // 4. Let **preparedTestConfigurations** be the result of **testCOnfigFactory**.make() for every element of **paths**.
         $preparedTestConfigurations = $testConfigFactory->make(...$paths);
