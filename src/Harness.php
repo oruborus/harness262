@@ -23,13 +23,17 @@ use Oru\Harness\Cli\Exception\UnknownOptionException;
 use Oru\Harness\Command\ClonedPhpCommand;
 use Oru\Harness\Config\Exception\InvalidPathException;
 use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
+use Oru\Harness\Config\Exception\MissingFrontmatterException;
 use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Config\GenericTestConfigFactory;
 use Oru\Harness\Config\TestSuiteConfigFactory;
 use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
 use Oru\Harness\Contracts\Facade;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
+use Oru\Harness\Frontmatter\Exception\ParseException;
+use Oru\Harness\Frontmatter\Exception\UnrecognizedKeyException;
+use Oru\Harness\Frontmatter\Exception\UnrecognizedNegativePhaseException;
 use Oru\Harness\Helpers\LogicalCoreCounter;
 use Oru\Harness\Helpers\TemporaryFileHandler;
 use Oru\Harness\Output\GenericOutputFactory;
@@ -37,6 +41,7 @@ use Oru\Harness\Printer\GenericPrinterFactory;
 use Oru\Harness\Storage\FileStorage;
 use Oru\Harness\TestRunner\GenericTestRunnerFactory;
 
+use function array_filter;
 use function array_shift;
 use function count;
 use function file_get_contents;
@@ -79,6 +84,11 @@ final readonly class Harness
      *
      * @throws InvalidOptionException
      * @throws UnknownOptionException
+     * @throws MissingFrontmatterException
+     * @throws MissingRequiredKeyException
+     * @throws UnrecognizedKeyException
+     * @throws UnrecognizedNegativePhaseException
+     * @throws ParseException
      */
     public function run(array $arguments): int
     {
@@ -126,31 +136,16 @@ final readonly class Harness
 
         $testConfigFactory      = new GenericTestConfigFactory($testStorage, $testSuiteConfig);
         $cacheRepositoryFactory = new GenericCacheRepositoryFactory();
-        $cacheRepository       = $cacheRepositoryFactory->make($testSuiteConfig);
+        $cacheRepository        = $cacheRepositoryFactory->make($testSuiteConfig);
 
-        $testRunnerFactory     = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command, $cacheRepository);
-        $testRunner            = $testRunnerFactory->make($testSuiteConfig);
+        $testRunnerFactory      = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command, $cacheRepository);
+        $testRunner             = $testRunnerFactory->make($testSuiteConfig);
 
+        // 3. Let **paths** be the list of all elements of **testSuiteConfig**.[[paths]] that do not end in '_FIXTURE.js'.
+        $paths = array_filter($testSuiteConfig->paths(), static fn(string $path): bool => !str_ends_with($path, '_FIXTURE.js'));
 
-        // 3. Let **preparedTestConfigurations** be a new empty list.
-        /**
-         * @var TestConfig[] $preparedTestConfigurations
-         */
-        $preparedTestConfigurations = [];
-
-        // 4. For each **providedPath** of **config**.[[Paths]], do
-        foreach ($testSuiteConfig->paths() as $providedPath) {
-            // FIXME: a. If file is not a valid ECMAScript file, then skip.
-            if (str_ends_with($providedPath, '_FIXTURE.js')) {
-                continue;
-            }
-
-            // b. Let **testConfigs** the frontmatter configurations of the file stored at **providedPath**.
-            $testConfigs = $testConfigFactory->make($providedPath);
-
-            // iii. Append **testConfig** to **preparedTestConfigurations**.
-            $preparedTestConfigurations = [...$preparedTestConfigurations, ...$testConfigs];
-        }
+        // 4. Let **preparedTestConfigurations** be the result of **testCOnfigFactory**.make() for every element of **paths**.
+        $preparedTestConfigurations = $testConfigFactory->make(...$paths);
 
         // 5. Perform **printer**.setStepCount(count(**preparedTestConfigurations**)).
         $printer->setStepCount(count($preparedTestConfigurations));
