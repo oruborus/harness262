@@ -57,6 +57,31 @@ final class TestSuiteConfigFactoryTest extends TestCase
     }
 
     #[Test]
+    public function runsAllProvidedTestPathsAndIgnoresFixtures(): void
+    {
+        $expected = [
+            './tests/Unit/Fixtures/TestCase/async.js',
+            './tests/Unit/Fixtures/TestCase/basic.js',
+            './tests/Unit/Fixtures/TestCase/module.js',
+            './tests/Unit/Fixtures/TestCase/noStrict.js',
+            './tests/Unit/Fixtures/TestCase/onlyStrict.js',
+            './tests/Unit/Fixtures/TestCase/raw.js',
+            './tests/Unit/Fixtures/TestCase/raw.js',
+        ];
+        $paths = [
+            './tests/Unit/Fixtures/TestCase',
+            './tests/Unit/Fixtures/TestCase/raw.js',
+            './tests/Unit/Fixtures/TestCase/test_FIXTURE.js',
+        ];
+        $argumentsParserStub = new ArgumentsParserStub([], $paths);
+        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
+
+        $actual = $factory->make();
+
+        $this->assertEqualsCanonicalizing($expected, $actual->paths());
+    }
+
+    #[Test]
     public function failsWhenPathsIsEmpty(): void
     {
         $this->expectExceptionObject(new MissingPathException('No test path specified. Aborting.'));

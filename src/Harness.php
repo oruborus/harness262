@@ -41,13 +41,10 @@ use Oru\Harness\Printer\GenericPrinterFactory;
 use Oru\Harness\Storage\FileStorage;
 use Oru\Harness\TestRunner\GenericTestRunnerFactory;
 
-use function array_filter;
 use function array_shift;
-use function basename;
 use function count;
 use function file_get_contents;
 use function realpath;
-use function str_contains;
 use function time;
 
 final readonly class Harness
@@ -142,25 +139,22 @@ final readonly class Harness
         $testRunnerFactory      = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command, $cacheRepository);
         $testRunner             = $testRunnerFactory->make($testSuiteConfig);
 
-        // 3. Let **paths** be the list of all elements of **testSuiteConfig**.[[paths]] that do not end in '_FIXTURE.js'.
-        $paths = array_filter($testSuiteConfig->paths(), static fn(string $path): bool => !str_contains(basename($path), '_FIXTURE'));
+        // 3. Let **preparedTestConfigurations** be the result of **testConfigFactory**.make() for every element of **testSuiteConfig**.[[paths]].
+        $preparedTestConfigurations = $testConfigFactory->make(...$testSuiteConfig->paths());
 
-        // 4. Let **preparedTestConfigurations** be the result of **testCOnfigFactory**.make() for every element of **paths**.
-        $preparedTestConfigurations = $testConfigFactory->make(...$paths);
-
-        // 5. Perform **printer**.setStepCount(count(**preparedTestConfigurations**)).
+        // 4. Perform **printer**.setStepCount(count(**preparedTestConfigurations**)).
         $printer->setStepCount(count($preparedTestConfigurations));
 
-        // 6. For each **testConfig** of **preparedTestConfigurations**, do
+        // 5. For each **testConfig** of **preparedTestConfigurations**, do
         foreach ($preparedTestConfigurations as $testConfig) {
             // a. Perform **testRunner**.add(**testConfig**).
             $testRunner->add($testConfig);
         }
 
-        // 7. Let **testSuiteEndTime** be the current system time in seconds.
+        // 6. Let **testSuiteEndTime** be the current system time in seconds.
         $testSuiteEndTime = time();
 
-        // 8. Perform **printer**.end(**testRunner**.run(), **testSuiteEndTime** - **testSuiteStartTime**).
+        // 7. Perform **printer**.end(**testRunner**.run(), **testSuiteEndTime** - **testSuiteStartTime**).
         $printer->end($testRunner->run(), $testSuiteEndTime - $testSuiteStartTime);
 
         return 0;

@@ -65,24 +65,29 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
             }
 
             if (is_file($providedPath)) {
-                $paths[] = $providedPath;
+                if (!str_contains(basename($providedPath), '_FIXTURE')) {
+                    $paths[] = $providedPath;
+                }
+                continue;
             }
 
             if (is_dir($providedPath)) {
                 /**
-                 * @var Iterator<string> $it
+                 * @var Iterator<string, string> $it
                  */
                 $it = new RecursiveIteratorIterator(
                     new RecursiveDirectoryIterator(
                         $providedPath,
                         RecursiveDirectoryIterator::SKIP_DOTS
-                            | FilesystemIterator::KEY_AS_PATHNAME
+                            | FilesystemIterator::KEY_AS_FILENAME
                             | FilesystemIterator::CURRENT_AS_PATHNAME
                             | FilesystemIterator::UNIX_PATHS
                     ),
                 );
-                foreach ($it as $file) {
-                    $paths[] = $file;
+                foreach ($it as $filename => $path) {
+                    if (!str_contains($filename, '_FIXTURE')) {
+                        $paths[] = $path;
+                    }
                 }
             }
         }
