@@ -26,6 +26,10 @@ Runs the testsuite without output.
 #### `--verbose`, `-v`
 Runs the testsuite with extended output.
 
+#### `--concurrency <number of concurrent tests>`, `-c <number of concurrent tests>`
+Sets the desired number of concurrent test cases to be run. The set value is clamped between one and the number of available logical cores on the host machine. 
+This option has no effect if the `--debug` option is set.
+
 #### `--include <pattern>`
 Includes matching paths from the provided paths using the regular expression `<pattern>`.
 
