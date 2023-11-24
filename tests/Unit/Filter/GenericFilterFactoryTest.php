@@ -15,13 +15,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Filter;
 
+use Generator;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Filter\CompositeFilter;
 use Oru\Harness\Filter\FileNameDoesNotMatchRegExpFilter;
 use Oru\Harness\Filter\FileNameMatchesRegExpFilter;
+use Oru\Harness\Filter\FrontmatterFlagFilter;
 use Oru\Harness\Filter\GenericFilterFactory;
 use Oru\Harness\Filter\PassthroughFilter;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -43,7 +46,7 @@ final class GenericFilterFactoryTest extends TestCase
     public function createsFileNameDoesNotMatchRegExpFilterWhenIncludeOptionIsProvided(): void
     {
         $argumentsParserStub = $this->createStub(ArgumentsParser::class);
-        $argumentsParserStub->method('hasOption')->willReturnMap([['include', true], ['exclude', false]]);
+        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn(string $option): bool => $option === 'include');
 
         $factory = new GenericFilterFactory($argumentsParserStub);
         $actual = $factory->make();
@@ -55,7 +58,7 @@ final class GenericFilterFactoryTest extends TestCase
     public function createsFileNameMatchesRegExpFilterWhenExcludeOptionIsProvided(): void
     {
         $argumentsParserStub = $this->createStub(ArgumentsParser::class);
-        $argumentsParserStub->method('hasOption')->willReturnMap([['include', false], ['exclude', true]]);
+        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn(string $option): bool => $option === 'exclude');
 
         $factory = new GenericFilterFactory($argumentsParserStub);
         $actual = $factory->make();
@@ -64,10 +67,32 @@ final class GenericFilterFactoryTest extends TestCase
     }
 
     #[Test]
+    #[DataProvider('provideFrontmatterOption')]
+    public function createsFrontmatterFlagFilterWhenFrontmatterOptionIsProvided(string $input): void
+    {
+        $argumentsParserStub = $this->createStub(ArgumentsParser::class);
+        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn(string $option): bool => $option === $input);
+
+        $factory = new GenericFilterFactory($argumentsParserStub);
+        $actual = $factory->make();
+
+        $this->assertInstanceOf(FrontmatterFlagFilter::class, $actual);
+    }
+
+    public static function provideFrontmatterOption(): Generator
+    {
+        yield 'only-strict' => ['only-strict'];
+        yield 'no-strict'   => ['no-strict'];
+        yield 'module'      => ['module'];
+        yield 'async'       => ['async'];
+        yield 'raw'         => ['raw'];
+    }
+
+    #[Test]
     public function createsCompositeFilterWhenMultipleOptionsAreProvided(): void
     {
         $argumentsParserStub = $this->createStub(ArgumentsParser::class);
-        $argumentsParserStub->method('hasOption')->willReturnMap([['include', true], ['exclude', true]]);
+        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn(): bool => true);
 
         $factory = new GenericFilterFactory($argumentsParserStub);
         $actual = $factory->make();

@@ -63,6 +63,11 @@ final readonly class Harness
         'stop-on-error'   => null,
         'stop-on-failure' => null,
         'concurrency'     => 'c:',
+        'only-strict'     => null,
+        'no-strict'       => null,
+        'module'          => null,
+        'async'           => null,
+        'raw'             => null,
     ];
 
     private TemporaryFileHandler $temporaryFileHandler;
