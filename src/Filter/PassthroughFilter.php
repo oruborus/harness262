@@ -29,5 +29,4 @@ final readonly class PassthroughFilter implements Filter
     {
         return $testConfigs;
     }
-
 }
