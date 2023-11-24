@@ -32,6 +32,15 @@ Includes matching paths from the provided paths using the regular expression `<p
 #### `--exclude <pattern>`
 Excludes matching paths from the provided paths using the regular expression `<pattern>`.
 
+#### `--stop-on-error`
+Stops the execution of the test suite after the first occurring error.
+
+#### `--stop-on-failure`
+Stops the execution of the test suite after the first occurring failure.
+
+#### `--stop-on-defect`
+Stops the execution of the test suite after the first occurring error or failure.
+
 ### Testing
 
 ```bash
