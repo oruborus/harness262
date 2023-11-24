@@ -18,7 +18,6 @@ namespace Oru\Harness\Config;
 use FilesystemIterator;
 use Iterator;
 use Oru\Harness\Config\Exception\InvalidPathException;
-use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\ConfigFactory;
@@ -26,7 +25,6 @@ use Oru\Harness\Contracts\CoreCounter;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuiteConfig;
-use Oru\Harness\Helpers\ErrorHandler;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
@@ -35,13 +33,6 @@ use function is_dir;
 use function is_file;
 use function max;
 use function min;
-use function preg_grep;
-use function preg_match;
-use function strlen;
-use function substr;
-
-use const E_WARNING;
-use const PREG_GREP_INVERT;
 
 final readonly class TestSuiteConfigFactory implements ConfigFactory
 {
@@ -52,7 +43,6 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
 
     /**
      * @throws InvalidPathException
-     * @throws MalformedRegularExpressionPatternException
      * @throws MissingPathException
      */
     public function make(): TestSuiteConfig
@@ -90,22 +80,6 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
                     }
                 }
             }
-        }
-
-        if ($this->argumentsParser->hasOption('include')) {
-            $pattern = "/{$this->argumentsParser->getOption('include')}/";
-
-            $this->testRegularExpressionPattern($pattern);
-
-            $paths = preg_grep($pattern, $paths);
-        }
-
-        if ($this->argumentsParser->hasOption('exclude')) {
-            $pattern = "/{$this->argumentsParser->getOption('exclude')}/";
-
-            $this->testRegularExpressionPattern($pattern);
-
-            $paths = preg_grep($pattern, $paths, PREG_GREP_INVERT);
         }
 
         if ($paths === []) {
@@ -146,20 +120,5 @@ final readonly class TestSuiteConfigFactory implements ConfigFactory
             $testRunnerMode,
             $stopOnCharacteristic
         );
-    }
-
-    private const WARNING_PREFIX = 'preg_match(): ';
-
-    /**
-     * @throws MalformedRegularExpressionPatternException
-     */
-    private function testRegularExpressionPattern(string $pattern): void
-    {
-        $_ = new ErrorHandler(static function (int $_, string $message): never {
-            throw new MalformedRegularExpressionPatternException(substr($message, strlen(static::WARNING_PREFIX)));
-        }, E_WARNING);
-
-        /** @psalm-suppress ArgumentTypeCoercion  The next line will warn about any issue with the provided arguments */
-        preg_match($pattern, '');
     }
 }

@@ -60,7 +60,7 @@ final class HarnessTest extends TestCase
         );
         $harness = new Harness($this->createStub(Facade::class));
 
-        $actual = $harness->run(['harness.php', '--include', '(']);
+        $actual = $harness->run(['harness.php', './tests/Unit/Fixtures/TestCase/basic.js', '--include', '(']);
 
         $this->assertSame(1, $actual);
     }

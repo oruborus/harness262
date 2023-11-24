@@ -22,7 +22,6 @@ use Oru\Harness\Cli\Exception\InvalidOptionException;
 use Oru\Harness\Cli\Exception\UnknownOptionException;
 use Oru\Harness\Command\ClonedPhpCommand;
 use Oru\Harness\Config\Exception\InvalidPathException;
-use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Config\Exception\MissingFrontmatterException;
 use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Config\GenericTestConfigFactory;
@@ -30,6 +29,8 @@ use Oru\Harness\Config\TestSuiteConfigFactory;
 use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
 use Oru\Harness\Contracts\Facade;
+use Oru\Harness\Filter\Exception\MalformedRegularExpressionPatternException;
+use Oru\Harness\Filter\GenericFilterFactory;
 use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
 use Oru\Harness\Frontmatter\Exception\ParseException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedKeyException;
@@ -118,11 +119,6 @@ final readonly class Harness
         try {
             $testSuiteConfigFactory = new TestSuiteConfigFactory($argumentsParser, $coreCounter);
             $testSuiteConfig        = $testSuiteConfigFactory->make();
-        } catch (MalformedRegularExpressionPatternException $exception) {
-            $printer->writeLn('The provided regular expression pattern is malformed.');
-            $printer->writeLn('The following warning was issued:');
-            $printer->writeLn("\"{$exception->getMessage()}\"");
-            return 1;
         } catch (InvalidPathException $exception) {
             $printer->writeLn($exception->getMessage());
             return 1;
@@ -139,22 +135,35 @@ final readonly class Harness
         $testRunnerFactory      = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command, $cacheRepository);
         $testRunner             = $testRunnerFactory->make($testSuiteConfig);
 
+        try {
+            $filterFactory      = new GenericFilterFactory($argumentsParser);
+            $filter             = $filterFactory->make();
+        } catch (MalformedRegularExpressionPatternException $exception) {
+            $printer->writeLn('The provided regular expression pattern is malformed.');
+            $printer->writeLn('The following warning was issued:');
+            $printer->writeLn("\"{$exception->getMessage()}\"");
+            return 1;
+        }
+
         // 3. Let **preparedTestConfigurations** be the result of **testConfigFactory**.make() for every element of **testSuiteConfig**.[[paths]].
         $preparedTestConfigurations = $testConfigFactory->make(...$testSuiteConfig->paths());
 
-        // 4. Perform **printer**.setStepCount(count(**preparedTestConfigurations**)).
-        $printer->setStepCount(count($preparedTestConfigurations));
+        // 4. Let **filteredTestConfigurations** be the result of **filter**.apply() for every element of **preparedTestConfigurations**.
+        $filteredTestConfigurations = $filter->apply(...$preparedTestConfigurations);
 
-        // 5. For each **testConfig** of **preparedTestConfigurations**, do
-        foreach ($preparedTestConfigurations as $testConfig) {
+        // 5. Perform **printer**.setStepCount(count(**preparedTestConfigurations**)).
+        $printer->setStepCount(count($filteredTestConfigurations));
+
+        // 6. For each **testConfig** of **filteredTestConfigurations**, do
+        foreach ($filteredTestConfigurations as $testConfig) {
             // a. Perform **testRunner**.add(**testConfig**).
             $testRunner->add($testConfig);
         }
 
-        // 6. Let **testSuiteEndTime** be the current system time in seconds.
+        // 7. Let **testSuiteEndTime** be the current system time in seconds.
         $testSuiteEndTime = time();
 
-        // 7. Perform **printer**.end(**testRunner**.run(), **testSuiteEndTime** - **testSuiteStartTime**).
+        // 8. Perform **printer**.end(**testRunner**.run(), **testSuiteEndTime** - **testSuiteStartTime**).
         $printer->end($testRunner->run(), $testSuiteEndTime - $testSuiteStartTime);
 
         return 0;

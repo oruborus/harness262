@@ -17,7 +17,6 @@ namespace Tests\Unit\Config;
 
 use Generator;
 use Oru\Harness\Config\Exception\InvalidPathException;
-use Oru\Harness\Config\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Config\TestSuiteConfigFactory;
 use Oru\Harness\Contracts\CoreCounter;
@@ -187,51 +186,6 @@ final class TestSuiteConfigFactoryTest extends TestCase
         $actual = $factory->make();
 
         $this->assertCount(6, $actual->paths());
-    }
-
-    #[Test]
-    public function includesProvidedPathsWithRegularExpressions(): void
-    {
-        $argumentsParserStub = new ArgumentsParserStub(['include' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures/Basic']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
-
-        $actual = $factory->make();
-
-        $this->assertCount(4, $actual->paths());
-    }
-
-    #[Test]
-    public function excludesItemsFromProvidedPathsWithRegularExpressions(): void
-    {
-        $argumentsParserStub = new ArgumentsParserStub(['exclude' => '.*PATH[12].*'], [__DIR__ . '/../Fixtures/Basic']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
-
-        $actual = $factory->make();
-
-        $this->assertCount(2, $actual->paths());
-    }
-
-    #[Test]
-    #[DataProvider('provideMalformedFilteringOptions')]
-    public function failsWhenProvidedRegularExpressionPatternIsMalformed(string $option, string $argument): void
-    {
-        $argumentsParserStub = new ArgumentsParserStub([$option => $argument], [__DIR__ . '/../Fixtures/Basic']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
-
-        try {
-            $factory->make();
-        } catch (MalformedRegularExpressionPatternException $expectedException) {
-            $this->assertSame('Compilation failed: missing closing parenthesis at offset 1', $expectedException->getMessage());
-            return;
-        }
-
-        $this->fail('Failed to assert that exception of type "MalformedRegularExpressionPatternException" is thrown');
-    }
-
-    public static function provideMalformedFilteringOptions(): Generator
-    {
-        yield 'include' => ['include', '('];
-        yield 'exclude' => ['exclude', '('];
     }
 
     #[Test]
