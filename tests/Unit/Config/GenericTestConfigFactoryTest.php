@@ -20,6 +20,7 @@ use Oru\Harness\Config\Exception\MissingFrontmatterException;
 use Oru\Harness\Config\GenericTestConfig;
 use Oru\Harness\Config\GenericTestConfigFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
+use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\Storage;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
@@ -127,8 +128,11 @@ final class GenericTestConfigFactoryTest extends TestCase
         $actual = $factory->make('content');
 
         $this->assertCount(2, $actual);
-        $this->assertSame($expected, array_shift($actual)->content());
-        $this->assertSame("\"use strict\";\n" . $expected, array_shift($actual)->content());
+        [$first, $second] = $actual;
+        $this->assertSame($expected, $first->content());
+        $this->assertSame($first->implicitStrictness(), ImplicitStrictness::Loose);
+        $this->assertSame("\"use strict\";\n" . $expected, $second->content());
+        $this->assertSame($second->implicitStrictness(), ImplicitStrictness::Strict);
     }
 
     /**

@@ -24,4 +24,6 @@ interface TestConfig extends Config
     public function frontmatter(): Frontmatter;
 
     public function testSuiteConfig(): TestSuiteConfig;
+
+    public function implicitStrictness(): ImplicitStrictness;
 }

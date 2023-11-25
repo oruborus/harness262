@@ -16,6 +16,7 @@ declare(strict_types=1);
 namespace Oru\Harness\Config;
 
 use Oru\Harness\Contracts\Frontmatter;
+use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestSuiteConfig;
 
@@ -25,7 +26,8 @@ final readonly class GenericTestConfig implements TestConfig
         private string $path,
         private string $content,
         private Frontmatter $frontmatter,
-        private TestSuiteConfig $testSuiteConfig
+        private TestSuiteConfig $testSuiteConfig,
+        private ImplicitStrictness $implicitStrictness,
     ) {}
 
     public function path(): string
@@ -46,5 +48,10 @@ final readonly class GenericTestConfig implements TestConfig
     public function testSuiteConfig(): TestSuiteConfig
     {
         return $this->testSuiteConfig;
+    }
+
+    public function implicitStrictness(): ImplicitStrictness
+    {
+        return $this->implicitStrictness;
     }
 }

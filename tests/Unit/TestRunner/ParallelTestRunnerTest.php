@@ -21,6 +21,7 @@ use Oru\Harness\Config\GenericTestConfig;
 use Oru\Harness\Config\GenericTestSuiteConfig;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\Command;
+use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestConfig;
@@ -138,7 +139,8 @@ final class ParallelTestRunnerTest extends TestCase
             '',
             '',
             new GenericFrontmatter('description: x'),
-            new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing)
+            new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing),
+            ImplicitStrictness::Unknown,
         );
 
         $testRunner->add($testConfigMock);

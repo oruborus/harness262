@@ -20,6 +20,7 @@ use Oru\Harness\Contracts\Storage;
 use Oru\Harness\Contracts\TestConfig;
 use Oru\Harness\Contracts\TestConfigFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
+use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\TestSuiteConfig;
 use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
 use Oru\Harness\Frontmatter\Exception\ParseException;
@@ -104,21 +105,25 @@ final readonly class GenericTestConfigFactory implements TestConfigFactory
 
         $frontmatter = new GenericFrontmatter($rawFrontmatter);
 
-        if (
-            in_array(FrontmatterFlag::raw, $frontmatter->flags(), true)
-            || in_array(FrontmatterFlag::module, $frontmatter->flags(), true)
-            || in_array(FrontmatterFlag::noStrict, $frontmatter->flags(), true)
-        ) {
-            return [new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig)];
+        if (in_array(FrontmatterFlag::raw, $frontmatter->flags(), true)) {
+            return [new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Unknown)];
+        }
+
+        if (in_array(FrontmatterFlag::module, $frontmatter->flags(), true)) {
+            return [new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)];
+        }
+
+        if (in_array(FrontmatterFlag::noStrict, $frontmatter->flags(), true)) {
+            return [new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Loose)];
         }
 
         if (in_array(FrontmatterFlag::onlyStrict, $frontmatter->flags(), true)) {
-            return [new GenericTestConfig($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig)];
+            return [new GenericTestConfig($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)];
         }
 
         return [
-            new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig),
-            new GenericTestConfig($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig)
+            new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Loose),
+            new GenericTestConfig($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)
         ];
     }
 }

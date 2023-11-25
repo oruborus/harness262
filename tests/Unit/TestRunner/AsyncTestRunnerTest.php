@@ -21,6 +21,7 @@ use Generator;
 use Oru\Harness\Config\GenericTestConfig;
 use Oru\Harness\Config\GenericTestSuiteConfig;
 use Oru\Harness\Contracts\Command;
+use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\Loop;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
@@ -146,7 +147,8 @@ final class AsyncTestRunnerTest extends TestCase
             '',
             '',
             new GenericFrontmatter('description: x'),
-            new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing)
+            new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing),
+            ImplicitStrictness::Unknown,
         );
         $testRunner = new AsyncTestRunner(
             $this->createMock(Printer::class),
@@ -209,7 +211,8 @@ final class AsyncTestRunnerTest extends TestCase
                 '',
                 $content,
                 new GenericFrontmatter('description: x'),
-                new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, $stopOnCharacteristic)
+                new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, $stopOnCharacteristic),
+                ImplicitStrictness::Unknown,
             ),
             $contents
         );
