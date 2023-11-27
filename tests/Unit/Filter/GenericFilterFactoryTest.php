@@ -22,6 +22,7 @@ use Oru\Harness\Filter\FileNameDoesNotMatchRegExpFilter;
 use Oru\Harness\Filter\FileNameMatchesRegExpFilter;
 use Oru\Harness\Filter\FrontmatterFlagFilter;
 use Oru\Harness\Filter\GenericFilterFactory;
+use Oru\Harness\Filter\ImplicitStrictFilter;
 use Oru\Harness\Filter\PassthroughFilter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -86,6 +87,25 @@ final class GenericFilterFactoryTest extends TestCase
         yield 'module'      => ['module'];
         yield 'async'       => ['async'];
         yield 'raw'         => ['raw'];
+    }
+
+    #[Test]
+    #[DataProvider('provideStrictnessOption')]
+    public function createsImplicitStrictFilterWhenStrictnessOptionIsProvided(string $input): void
+    {
+        $argumentsParserStub = $this->createStub(ArgumentsParser::class);
+        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn(string $option): bool => $option === $input);
+
+        $factory = new GenericFilterFactory($argumentsParserStub);
+        $actual = $factory->make();
+
+        $this->assertInstanceOf(ImplicitStrictFilter::class, $actual);
+    }
+
+    public static function provideStrictnessOption(): Generator
+    {
+        yield 'strict' => ['strict'];
+        yield 'loose'  => ['loose'];
     }
 
     #[Test]

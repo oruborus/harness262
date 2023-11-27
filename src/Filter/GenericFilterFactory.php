@@ -19,6 +19,7 @@ use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\Filter;
 use Oru\Harness\Contracts\FilterFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
+use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Filter\Exception\MalformedRegularExpressionPatternException;
 
 use function count;
@@ -46,6 +47,14 @@ final readonly class GenericFilterFactory implements FilterFactory
 
         if ($this->argumentsParser->hasOption('only-strict')) {
             $filters[] = new FrontmatterFlagFilter(FrontmatterFlag::onlyStrict);
+        }
+
+        if ($this->argumentsParser->hasOption('strict')) {
+            $filters[] = new ImplicitStrictFilter(ImplicitStrictness::Strict);
+        }
+
+        if ($this->argumentsParser->hasOption('loose')) {
+            $filters[] = new ImplicitStrictFilter(ImplicitStrictness::Loose);
         }
 
         if ($this->argumentsParser->hasOption('no-strict')) {
