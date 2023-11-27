@@ -63,6 +63,8 @@ final readonly class Harness
         'stop-on-error'   => null,
         'stop-on-failure' => null,
         'concurrency'     => 'c:',
+        'strict'          => null,
+        'loose'           => null,
         'only-strict'     => null,
         'no-strict'       => null,
         'module'          => null,

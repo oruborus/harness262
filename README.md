@@ -30,6 +30,12 @@ Runs the testsuite with extended output.
 Sets the desired number of concurrent test cases to be run. The set value is clamped between one and the number of available logical cores on the host machine. 
 This option has no effect if the `--debug` option is set.
 
+#### `--strict`
+Execute only tests that are implicitly strict.
+
+#### `--loose`
+Execute only tests that are implicitly non-strict.
+
 #### `--include <pattern>`
 Includes matching paths from the provided paths using the regular expression `<pattern>`.
 
