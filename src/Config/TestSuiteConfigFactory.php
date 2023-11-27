@@ -20,7 +20,6 @@ use Iterator;
 use Oru\Harness\Config\Exception\InvalidPathException;
 use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Contracts\ArgumentsParser;
-use Oru\Harness\Contracts\ConfigFactory;
 use Oru\Harness\Contracts\CoreCounter;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
@@ -34,7 +33,7 @@ use function is_file;
 use function max;
 use function min;
 
-final readonly class TestSuiteConfigFactory implements ConfigFactory
+final readonly class TestSuiteConfigFactory
 {
     public function __construct(
         private ArgumentsParser $argumentsParser,
