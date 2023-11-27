@@ -15,7 +15,7 @@ declare(strict_types=1);
 
 use Oru\Harness\Box\TestCaseFromStdinBox;
 use Oru\Harness\Contracts\TestResultState;
-use Oru\Harness\TestRunner\GenericTestResult;
+use Oru\Harness\TestResult\GenericTestResult;
 
 require './vendor/autoload.php';
 

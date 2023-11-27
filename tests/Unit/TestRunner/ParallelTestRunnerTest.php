@@ -28,7 +28,7 @@ use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
 use Oru\Harness\TestCase\GenericTestCase;
-use Oru\Harness\TestRunner\GenericTestResult;
+use Oru\Harness\TestResult\GenericTestResult;
 use Oru\Harness\TestRunner\ParallelTestRunner;
 use Oru\Harness\TestSuite\GenericTestSuite;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -61,7 +61,7 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
     }
 
     #[Test]
-    public function fowardsExceptionThrownInTest(): void
+    public function forwardsExceptionThrownInTest(): void
     {
         $this->expectExceptionObject(new ErrorException('THROWN IN TEST'));
 
