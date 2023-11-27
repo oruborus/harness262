@@ -17,9 +17,9 @@ namespace Oru\Harness\Config;
 
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
-use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Contracts\TestSuite;
 
-final class GenericTestSuiteConfig implements TestSuiteConfig
+final class GenericTestSuite implements TestSuite
 {
     public function __construct(
         /**

@@ -23,7 +23,7 @@ use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
-use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\TestRunner\AsyncTestRunner;
 use Oru\Harness\TestRunner\CacheTestRunner;
 use Oru\Harness\TestRunner\GenericTestRunnerFactory;
@@ -42,7 +42,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
     #[DataProvider('provideNonDebugTestRunnerMode')]
     public function createsTheCorrectTestRunnerBasedOnConfig(TestRunnerMode $mode, string $expected): void
     {
-        $testSuiteConfigStub = $this->createConfiguredStub(TestSuiteConfig::class, [
+        $testSuiteStub = $this->createConfiguredStub(TestSuite::class, [
             'testRunnerMode' => $mode,
             'cache' => false,
             'stopOnCharacteristic' => StopOnCharacteristic::Nothing
@@ -55,7 +55,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
             $this->createStub(CacheRepository::class)
         );
 
-        $actual = $factory->make($testSuiteConfigStub);
+        $actual = $factory->make($testSuiteStub);
 
         $this->assertInstanceOf($expected, $actual);
     }
@@ -75,7 +75,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
     #[DataProvider('provideDebugTestRunnerMode')]
     public function doesNotCreateCacheTestRunnerWhenInDebugModeAndCachingIsEnabled(TestRunnerMode $mode, string $expected): void
     {
-        $testSuiteConfigStub = $this->createConfiguredStub(TestSuiteConfig::class, [
+        $testSuiteStub = $this->createConfiguredStub(TestSuite::class, [
             'testRunnerMode' => $mode,
             'cache' => true,
             'stopOnCharacteristic' => StopOnCharacteristic::Nothing
@@ -88,7 +88,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
             $this->createStub(CacheRepository::class)
         );
 
-        $actual = $factory->make($testSuiteConfigStub);
+        $actual = $factory->make($testSuiteStub);
 
         $this->assertInstanceOf($expected, $actual);
     }
@@ -105,22 +105,22 @@ final class GenericTestRunnerFactoryTest extends TestCase
             $this->createStub(Command::class),
             $this->createStub(CacheRepository::class),
         );
-        $testSuiteConfigStub = $this->createConfiguredStub(TestSuiteConfig::class, [
+        $testSuiteStub = $this->createConfiguredStub(TestSuite::class, [
             'testRunnerMode' => $mode,
             'cache' => true,
             'stopOnCharacteristic' => StopOnCharacteristic::Nothing
         ]);
-        $expectedTestSuiteConfigStub = $this->createConfiguredStub(TestSuiteConfig::class, [
+        $expectedTestSuiteStub = $this->createConfiguredStub(TestSuite::class, [
             'testRunnerMode' => $mode,
             'cache' => false,
             'stopOnCharacteristic' => StopOnCharacteristic::Nothing
         ]);
         $expected = new CacheTestRunner(
             $this->createStub(CacheRepository::class),
-            $factory->make($expectedTestSuiteConfigStub)
+            $factory->make($expectedTestSuiteStub)
         );
 
-        $actual = $factory->make($testSuiteConfigStub);
+        $actual = $factory->make($testSuiteStub);
 
         $this->assertEquals($expected, $actual);
     }

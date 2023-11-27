@@ -22,7 +22,7 @@ use Oru\Harness\Config\GenericTestCaseFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\Storage;
-use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -46,7 +46,7 @@ final class GenericTestCaseFactoryTest extends TestCase
 
         $factory = new GenericTestCaseFactory(
             $this->createMock(Storage::class),
-            $this->createStub(TestSuiteConfig::class)
+            $this->createStub(TestSuite::class)
         );
 
         $factory->make($path);
@@ -59,7 +59,7 @@ final class GenericTestCaseFactoryTest extends TestCase
 
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => '']),
-            $this->createStub(TestSuiteConfig::class)
+            $this->createStub(TestSuite::class)
         );
 
         $factory->make('content');
@@ -72,7 +72,7 @@ final class GenericTestCaseFactoryTest extends TestCase
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
-            $this->createStub(TestSuiteConfig::class)
+            $this->createStub(TestSuite::class)
         );
 
         $actual = $factory->make('content');
@@ -98,7 +98,7 @@ final class GenericTestCaseFactoryTest extends TestCase
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
-            $this->createStub(TestSuiteConfig::class)
+            $this->createStub(TestSuite::class)
         );
 
         $actual = $factory->make('content');
@@ -122,7 +122,7 @@ final class GenericTestCaseFactoryTest extends TestCase
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
-            $this->createStub(TestSuiteConfig::class)
+            $this->createStub(TestSuite::class)
         );
 
         $actual = $factory->make('content');
@@ -163,7 +163,7 @@ final class GenericTestCaseFactoryTest extends TestCase
         $expected = "/*---\n{$frontmatter}\n---*/";
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
-            $this->createStub(TestSuiteConfig::class)
+            $this->createStub(TestSuite::class)
         );
 
         $actual = $factory->make('content');
@@ -178,7 +178,7 @@ final class GenericTestCaseFactoryTest extends TestCase
         $expected = "/*---\n   description: required\n   flags: [noStrict]\n   includes: [doneprintHandle.js]\n---*/";
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
-            $this->createStub(TestSuiteConfig::class)
+            $this->createStub(TestSuite::class)
         );
 
         $actual = $factory->make('content');
@@ -193,7 +193,7 @@ final class GenericTestCaseFactoryTest extends TestCase
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, [
                 'get' => "/*---\ndescription: required\nflags: [raw]\n---*/\n// CONTENT"]),
-            $this->createStub(TestSuiteConfig::class)
+            $this->createStub(TestSuite::class)
         );
 
         $actual = $factory->make('path1', 'path2', 'path3');

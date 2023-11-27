@@ -23,7 +23,7 @@ interface TestCase
 
     public function frontmatter(): Frontmatter;
 
-    public function testSuiteConfig(): TestSuiteConfig;
+    public function testSuite(): TestSuite;
 
     public function implicitStrictness(): ImplicitStrictness;
 }

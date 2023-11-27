@@ -15,15 +15,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Config;
 
-use Oru\Harness\Config\GenericTestSuiteConfig;
+use Oru\Harness\Config\GenericTestSuite;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(GenericTestSuiteConfig::class)]
-final class GenericTestSuiteConfigTest extends TestCase
+#[CoversClass(GenericTestSuite::class)]
+final class GenericTestSuiteTest extends TestCase
 {
     #[Test]
     public function actsAsValueObject(): void
@@ -34,7 +34,7 @@ final class GenericTestSuiteConfigTest extends TestCase
         $expectedTestRunnerMode = TestRunnerMode::Linear;
         $expectedStopOnCharacteristic = StopOnCharacteristic::Defect;
 
-        $actual = new GenericTestSuiteConfig(
+        $actual = new GenericTestSuite(
             $expectedPaths,
             $expectedCache,
             $expectedConcurrency,

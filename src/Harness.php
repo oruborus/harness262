@@ -25,7 +25,7 @@ use Oru\Harness\Config\Exception\InvalidPathException;
 use Oru\Harness\Config\Exception\MissingFrontmatterException;
 use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Config\GenericTestCaseFactory;
-use Oru\Harness\Config\TestSuiteConfigFactory;
+use Oru\Harness\Config\TestSuiteFactory;
 use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
 use Oru\Harness\Contracts\Facade;
@@ -124,8 +124,8 @@ final readonly class Harness
         $printer->start();
 
         try {
-            $testSuiteConfigFactory = new TestSuiteConfigFactory($argumentsParser, $coreCounter);
-            $testSuiteConfig        = $testSuiteConfigFactory->make();
+            $testSuiteFactory = new TestSuiteFactory($argumentsParser, $coreCounter);
+            $testSuite        = $testSuiteFactory->make();
         } catch (InvalidPathException $exception) {
             $printer->writeLn($exception->getMessage());
             return 1;
@@ -135,12 +135,12 @@ final readonly class Harness
             return 1;
         }
 
-        $testCaseFactory        = new GenericTestCaseFactory($testStorage, $testSuiteConfig);
+        $testCaseFactory        = new GenericTestCaseFactory($testStorage, $testSuite);
         $cacheRepositoryFactory = new GenericCacheRepositoryFactory();
-        $cacheRepository        = $cacheRepositoryFactory->make($testSuiteConfig);
+        $cacheRepository        = $cacheRepositoryFactory->make($testSuite);
 
         $testRunnerFactory      = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command, $cacheRepository);
-        $testRunner             = $testRunnerFactory->make($testSuiteConfig);
+        $testRunner             = $testRunnerFactory->make($testSuite);
 
         try {
             $filterFactory      = new GenericFilterFactory($argumentsParser);
@@ -152,8 +152,8 @@ final readonly class Harness
             return 1;
         }
 
-        // 3. Let **preparedTestCases** be the result of **testCaseFactory**.make() for every element of **testSuiteConfig**.[[paths]].
-        $preparedTestCases = $testCaseFactory->make(...$testSuiteConfig->paths());
+        // 3. Let **preparedTestCases** be the result of **testCaseFactory**.make() for every element of **testSuite**.[[paths]].
+        $preparedTestCases = $testCaseFactory->make(...$testSuite->paths());
 
         // 4. Let **filteredTestCases** be the result of **filter**.apply() for every element of **preparedTestCases**.
         $filteredTestCases = $filter->apply(...$preparedTestCases);

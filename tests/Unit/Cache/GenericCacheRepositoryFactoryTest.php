@@ -19,7 +19,7 @@ use Generator;
 use Oru\Harness\Cache\GenericCacheRepository;
 use Oru\Harness\Cache\GenericCacheRepositoryFactory;
 use Oru\Harness\Cache\NoCacheRepository;
-use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Contracts\TestSuite;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -32,12 +32,12 @@ final class GenericCacheRepositoryFactoryTest extends TestCase
     #[DataProvider('provideCacheConfiguration')]
     public function createsTheCorrectCacheRepositoryBasedOnConfig(bool $cache, string $expected): void
     {
-        $testSuiteConfigStub = $this->createConfiguredStub(TestSuiteConfig::class, [
+        $testSuiteStub = $this->createConfiguredStub(TestSuite::class, [
             'cache' => $cache
         ]);
         $factory = new GenericCacheRepositoryFactory();
 
-        $actual = $factory->make($testSuiteConfigStub);
+        $actual = $factory->make($testSuiteStub);
 
         $this->assertInstanceOf($expected, $actual);
     }

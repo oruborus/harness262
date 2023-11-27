@@ -15,7 +15,7 @@ declare(strict_types=1);
 
 namespace Oru\Harness\Contracts;
 
-interface TestSuiteConfig
+interface TestSuite
 {
     /**
      * @return string[]

@@ -18,7 +18,7 @@ namespace Tests\Unit\TestRunner;
 use ErrorException;
 use Fiber;
 use Oru\Harness\Config\GenericTestCase;
-use Oru\Harness\Config\GenericTestSuiteConfig;
+use Oru\Harness\Config\GenericTestSuite;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\ImplicitStrictness;
@@ -139,7 +139,7 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
             '',
             '',
             new GenericFrontmatter('description: x'),
-            new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing),
+            new GenericTestSuite([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing),
             ImplicitStrictness::Unknown,
         );
 

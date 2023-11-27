@@ -110,8 +110,8 @@ final class LinearTestRunner implements TestRunner
             } catch (Throwable $throwable) {
                 $this->addResult(new GenericTestResult(TestResultState::Error, $testCase->path(), [], 0, $throwable));
                 if (
-                    $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
-                    || $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
+                    $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Error
+                    || $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Defect
                 ) {
                     break;
                 }
@@ -128,8 +128,8 @@ final class LinearTestRunner implements TestRunner
             } catch (AssertionFailedException $assertionFailedException) {
                 $this->addResult(new GenericTestResult(TestResultState::Fail, $testCase->path(), [], 0, $assertionFailedException));
                 if (
-                    $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Failure
-                    || $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
+                    $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Failure
+                    || $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Defect
                 ) {
                     break;
                 }
@@ -137,8 +137,8 @@ final class LinearTestRunner implements TestRunner
             } catch (Throwable $throwable) {
                 $this->addResult(new GenericTestResult(TestResultState::Error, $testCase->path(), [], 0, $throwable));
                 if (
-                    $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
-                    || $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
+                    $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Error
+                    || $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Defect
                 ) {
                     break;
                 }

@@ -18,29 +18,29 @@ namespace Tests\Unit\Config;
 use Generator;
 use Oru\Harness\Config\Exception\InvalidPathException;
 use Oru\Harness\Config\Exception\MissingPathException;
-use Oru\Harness\Config\TestSuiteConfigFactory;
+use Oru\Harness\Config\TestSuiteFactory;
 use Oru\Harness\Contracts\CoreCounter;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
-use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Contracts\TestSuite;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Tests\Utility\ArgumentsParser\ArgumentsParserStub;
 
-#[CoversClass(TestSuiteConfigFactory::class)]
-final class TestSuiteConfigFactoryTest extends TestCase
+#[CoversClass(TestSuiteFactory::class)]
+final class TestSuiteFactoryTest extends TestCase
 {
     #[Test]
     public function createsConfigForTestSuite(): void
     {
         $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
 
-        $this->assertInstanceOf(TestSuiteConfig::class, $actual);
+        $this->assertInstanceOf(TestSuite::class, $actual);
     }
 
     #[Test]
@@ -48,7 +48,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     {
         $expected = [__DIR__ . '/../Fixtures/Basic/PATH0', __DIR__ . '/../Fixtures/Basic/PATH1', __DIR__ . '/../Fixtures/Basic/PATH2'];
         $argumentsParserStub = new ArgumentsParserStub([], $expected);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
 
@@ -73,7 +73,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
             './tests/Unit/Fixtures/TestCase/test_FIXTURE.js',
         ];
         $argumentsParserStub = new ArgumentsParserStub([], $paths);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
 
@@ -85,7 +85,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     {
         $this->expectExceptionObject(new MissingPathException('No test path specified. Aborting.'));
 
-        $factory = new TestSuiteConfigFactory(new ArgumentsParserStub(), $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory(new ArgumentsParserStub(), $this->createStub(CoreCounter::class));
 
         $factory->make();
     }
@@ -94,7 +94,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     public function defaultConfigForCachingIsTrue(): void
     {
         $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
 
@@ -107,7 +107,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
         $expected = 123456;
         $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
         $coreCounterStub = $this->createConfiguredStub(CoreCounter::class, ['count' => $expected]);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $coreCounterStub);
+        $factory = new TestSuiteFactory($argumentsParserStub, $coreCounterStub);
 
         $actual = $factory->make();
 
@@ -120,7 +120,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     {
         $argumentsParserStub = new ArgumentsParserStub(['concurrency' => "{$input}"], [__DIR__ . '/../Fixtures/Basic']);
         $coreCounterStub = $this->createConfiguredStub(CoreCounter::class, ['count' => 500]);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $coreCounterStub);
+        $factory = new TestSuiteFactory($argumentsParserStub, $coreCounterStub);
 
         $actual = $factory->make();
 
@@ -138,7 +138,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     public function cachingCanBeDisabled(): void
     {
         $argumentsParserStub = new ArgumentsParserStub(['no-cache' => null], [__DIR__ . '/../Fixtures/Basic']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
 
@@ -149,7 +149,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     public function defaultConfigForRunnerModeIsAsync(): void
     {
         $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make([]);
 
@@ -160,7 +160,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     public function configForRunnerModeCanBeSetToLinear(): void
     {
         $argumentsParserStub = new ArgumentsParserStub(['debug' => null], [__DIR__ . '/../Fixtures/Basic']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
 
@@ -172,7 +172,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     {
         $this->expectExceptionObject(new InvalidPathException("Provided path `AAA` does not exist"));
 
-        $factory = new TestSuiteConfigFactory(new ArgumentsParserStub([], ['AAA']), $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory(new ArgumentsParserStub([], ['AAA']), $this->createStub(CoreCounter::class));
 
         $factory->make();
     }
@@ -181,7 +181,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     public function addsValidDirectoryContentsRecursivelyToPaths(): void
     {
         $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
 
@@ -192,7 +192,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     public function defaultStopOnCharacteristicIsNothing(): void
     {
         $argumentsParserStub = new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
 
@@ -204,7 +204,7 @@ final class TestSuiteConfigFactoryTest extends TestCase
     public function stopOnCharacteristicCanBeChanged(array $options, StopOnCharacteristic $expected): void
     {
         $argumentsParserStub = new ArgumentsParserStub($options, [__DIR__ . '/../Fixtures/Basic']);
-        $factory = new TestSuiteConfigFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
+        $factory = new TestSuiteFactory($argumentsParserStub, $this->createStub(CoreCounter::class));
 
         $actual = $factory->make();
 

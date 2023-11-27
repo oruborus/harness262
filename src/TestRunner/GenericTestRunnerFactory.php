@@ -23,7 +23,7 @@ use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\TestRunner;
 use Oru\Harness\Contracts\TestRunnerFactory;
 use Oru\Harness\Contracts\TestRunnerMode;
-use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\Loop\TaskLoop;
 
 final class GenericTestRunnerFactory implements TestRunnerFactory
@@ -36,19 +36,19 @@ final class GenericTestRunnerFactory implements TestRunnerFactory
         private CacheRepository $cacheRepository
     ) {}
 
-    public function make(TestSuiteConfig $testSuiteConfig): TestRunner
+    public function make(TestSuite $testSuite): TestRunner
     {
-        $testRunner = match ($testSuiteConfig->testRunnerMode()) {
+        $testRunner = match ($testSuite->testRunnerMode()) {
             TestRunnerMode::Linear   => new LinearTestRunner($this->facade, $this->assertionFactory, $this->printer),
             TestRunnerMode::Parallel => new ParallelTestRunner($this->assertionFactory, $this->printer, $this->command),
-            TestRunnerMode::Async    => new AsyncTestRunner($this->printer, $this->command, new TaskLoop($testSuiteConfig->concurrency()))
+            TestRunnerMode::Async    => new AsyncTestRunner($this->printer, $this->command, new TaskLoop($testSuite->concurrency()))
         };
 
-        if (!$testSuiteConfig->cache()) {
+        if (!$testSuite->cache()) {
             return $testRunner;
         }
 
-        if ($testSuiteConfig->testRunnerMode() === TestRunnerMode::Linear) {
+        if ($testSuite->testRunnerMode() === TestRunnerMode::Linear) {
             return $testRunner;
         }
 

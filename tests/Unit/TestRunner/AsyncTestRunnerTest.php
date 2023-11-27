@@ -19,7 +19,7 @@ use Closure;
 use ErrorException;
 use Generator;
 use Oru\Harness\Config\GenericTestCase;
-use Oru\Harness\Config\GenericTestSuiteConfig;
+use Oru\Harness\Config\GenericTestSuite;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\Loop;
@@ -147,7 +147,7 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
             '',
             '',
             new GenericFrontmatter('description: x'),
-            new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing),
+            new GenericTestSuite([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing),
             ImplicitStrictness::Unknown,
         );
         $testRunner = new AsyncTestRunner(
@@ -211,7 +211,7 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
                 '',
                 $content,
                 new GenericFrontmatter('description: x'),
-                new GenericTestSuiteConfig([], false, 4, TestRunnerMode::Async, $stopOnCharacteristic),
+                new GenericTestSuite([], false, 4, TestRunnerMode::Async, $stopOnCharacteristic),
                 ImplicitStrictness::Unknown,
             ),
             $contents

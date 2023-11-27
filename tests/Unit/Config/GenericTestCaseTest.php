@@ -18,7 +18,7 @@ namespace Tests\Unit\Config;
 use Oru\Harness\Config\GenericTestCase;
 use Oru\Harness\Contracts\Frontmatter;
 use Oru\Harness\Contracts\ImplicitStrictness;
-use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Contracts\TestSuite;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -32,21 +32,21 @@ final class GenericTestCaseTest extends TestCase
         $expectedPath               = 'path/to/file';
         $expectedContent            = 'CONTENT';
         $expectedFrontmatter        = $this->createMock(Frontmatter::class);
-        $expectedTestSuiteConfig    = $this->createMock(TestSuiteConfig::class);
+        $expectedTestSuiteMock      = $this->createMock(TestSuite::class);
         $expectedImplicitStrictness = ImplicitStrictness::Unknown;
 
         $actual = new GenericTestCase(
             $expectedPath,
             $expectedContent,
             $expectedFrontmatter,
-            $expectedTestSuiteConfig,
+            $expectedTestSuiteMock,
             $expectedImplicitStrictness,
         );
 
         $this->assertSame($expectedPath, $actual->path());
         $this->assertSame($expectedContent, $actual->content());
         $this->assertSame($expectedFrontmatter, $actual->frontmatter());
-        $this->assertSame($expectedTestSuiteConfig, $actual->testSuiteConfig());
+        $this->assertSame($expectedTestSuiteMock, $actual->testSuite());
         $this->assertSame($expectedImplicitStrictness, $actual->implicitStrictness());
     }
 }

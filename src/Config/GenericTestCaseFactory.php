@@ -21,7 +21,7 @@ use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestCaseFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\ImplicitStrictness;
-use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
 use Oru\Harness\Frontmatter\Exception\ParseException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedKeyException;
@@ -45,7 +45,7 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
 {
     public function __construct(
         private Storage $storage,
-        private TestSuiteConfig $testSuiteConfig
+        private TestSuite $testSuite
     ) {}
 
     /**
@@ -106,24 +106,24 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
         $frontmatter = new GenericFrontmatter($rawFrontmatter);
 
         if (in_array(FrontmatterFlag::raw, $frontmatter->flags(), true)) {
-            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Unknown)];
+            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuite, ImplicitStrictness::Unknown)];
         }
 
         if (in_array(FrontmatterFlag::module, $frontmatter->flags(), true)) {
-            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)];
+            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuite, ImplicitStrictness::Strict)];
         }
 
         if (in_array(FrontmatterFlag::noStrict, $frontmatter->flags(), true)) {
-            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Loose)];
+            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuite, ImplicitStrictness::Loose)];
         }
 
         if (in_array(FrontmatterFlag::onlyStrict, $frontmatter->flags(), true)) {
-            return [new GenericTestCase($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)];
+            return [new GenericTestCase($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuite, ImplicitStrictness::Strict)];
         }
 
         return [
-            new GenericTestCase($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Loose),
-            new GenericTestCase($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)
+            new GenericTestCase($path, $content, $frontmatter, $this->testSuite, ImplicitStrictness::Loose),
+            new GenericTestCase($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuite, ImplicitStrictness::Strict)
         ];
     }
 }

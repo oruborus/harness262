@@ -30,7 +30,7 @@ use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
-use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\TestRunner\Exception\StopOnCharacteristicMetException;
 use Oru\Harness\TestRunner\GenericTestResult;
 use Oru\Harness\TestRunner\LinearTestRunner;
@@ -67,7 +67,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
                 'features' => ['missingFeature', 'supportedFeature1']
             ]),
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
@@ -97,7 +97,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
                 'features' => ['supportedFeature1', 'supportedFeature2']
             ]),
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
@@ -119,7 +119,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             $this->createMock(Printer::class)
         );
         $testCaseMock = $this->createConfiguredStub(TestCase::class, [
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
@@ -148,7 +148,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
                 'includes' => [FrontmatterInclude::assert, FrontmatterInclude::sta]
             ]),
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
@@ -172,7 +172,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         );
         $testCaseMock = $this->createConfiguredMock(TestCase::class, [
             'content' => 'CODE',
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
@@ -197,7 +197,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             $printerMock
         );
         $testCaseStub = $this->createConfiguredStub(TestCase::class, [
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
@@ -232,7 +232,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             $printerMock
         );
         $testCaseStub = $this->createConfiguredStub(TestCase::class, [
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
@@ -267,7 +267,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             $printerMock
         );
         $testCaseStub = $this->createConfiguredStub(TestCase::class, [
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
@@ -295,7 +295,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             $printerMock
         );
         $testCaseStub = $this->createConfiguredStub(TestCase::class, [
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
@@ -331,7 +331,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
                 'flags' => [FrontmatterFlag::async]
             ]),
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
@@ -354,7 +354,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             }
         });
         $testCaseStub = $this->createConfiguredStub(TestCase::class, [
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => $stopOnCharacteristic
             ])
         ]);
@@ -399,7 +399,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             };
         });
         $testCaseStub = $this->createConfiguredStub(TestCase::class, [
-            'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
                 'stopOnCharacteristic' => $stopOnCharacteristic
             ])
         ]);

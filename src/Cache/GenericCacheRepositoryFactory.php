@@ -20,19 +20,19 @@ use Oru\Harness\Contracts\CacheRepositoryFactory;
 use Oru\Harness\Contracts\CacheResultRecord;
 use Oru\Harness\Contracts\Storage;
 use Oru\Harness\Contracts\TestCase;
-use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\Storage\SerializingFileStorage;
 
 final class GenericCacheRepositoryFactory implements CacheRepositoryFactory
 {
-    public function make(TestSuiteConfig $testSuiteConfig): CacheRepository
+    public function make(TestSuite $testSuite): CacheRepository
     {
         /**
          * @var Storage<CacheResultRecord> $storage
          */
         $storage = new SerializingFileStorage('./.harness/cache');
 
-        return $testSuiteConfig->cache() ?
+        return $testSuite->cache() ?
             new GenericCacheRepository(
                 $storage,
                 static fn(TestCase $i): string => md5(serialize($i)),

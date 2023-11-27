@@ -23,7 +23,7 @@ use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\CoreCounter;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
-use Oru\Harness\Contracts\TestSuiteConfig;
+use Oru\Harness\Contracts\TestSuite;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
@@ -33,7 +33,7 @@ use function is_file;
 use function max;
 use function min;
 
-final readonly class TestSuiteConfigFactory
+final readonly class TestSuiteFactory
 {
     public function __construct(
         private ArgumentsParser $argumentsParser,
@@ -44,7 +44,7 @@ final readonly class TestSuiteConfigFactory
      * @throws InvalidPathException
      * @throws MissingPathException
      */
-    public function make(): TestSuiteConfig
+    public function make(): TestSuite
     {
         $paths = $this->argumentsParser->rest();
         $paths = [];
@@ -112,7 +112,7 @@ final readonly class TestSuiteConfigFactory
             $concurrency = max(1, min((int) $this->argumentsParser->getOption('concurrency'), $concurrency));
         }
 
-        return new GenericTestSuiteConfig(
+        return new GenericTestSuite(
             $paths,
             $cache,
             $concurrency,

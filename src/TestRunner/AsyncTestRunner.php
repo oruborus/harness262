@@ -51,15 +51,15 @@ final class AsyncTestRunner implements TestRunner
                 $this->printer->step($testResult->state());
                 if (
                     $testResult->state() === TestResultState::Error
-                    && ($testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
-                        || $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect)
+                    && ($testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Error
+                        || $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Defect)
                 ) {
                     throw new StopOnCharacteristicMetException();
                 }
                 if (
                     $testResult->state() === TestResultState::Fail
-                    && ($testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Failure
-                        || $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect)
+                    && ($testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Failure
+                        || $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Defect)
                 ) {
                     throw new StopOnCharacteristicMetException();
                 }

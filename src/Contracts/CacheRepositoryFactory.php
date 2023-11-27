@@ -17,5 +17,5 @@ namespace Oru\Harness\Contracts;
 
 interface CacheRepositoryFactory
 {
-    public function make(TestSuiteConfig $testSuiteConfig): CacheRepository;
+    public function make(TestSuite $testSuite): CacheRepository;
 }
