@@ -18,19 +18,16 @@ namespace Oru\Harness\Cache;
 use Oru\Harness\Contracts\CacheRepository;
 use Oru\Harness\Contracts\CacheResultRecord;
 use Oru\Harness\Contracts\Storage;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 
-use function hash_file;
 use function is_null;
-use function md5;
-use function serialize;
 
 final readonly class GenericCacheRepository implements CacheRepository
 {
     /**
      * @param Storage<CacheResultRecord> $storage
-     * @param callable(TestConfig):string $keyHashFunction
+     * @param callable(TestCase):string $keyHashFunction
      * @param callable(string):string $fileHashFunction
      */
     public function __construct(
@@ -39,9 +36,9 @@ final readonly class GenericCacheRepository implements CacheRepository
         private mixed $fileHashFunction
     ) {}
 
-    public function get(TestConfig $config): ?TestResult
+    public function get(TestCase $testCase): ?TestResult
     {
-        $key = $this->hashKey($config);
+        $key = $this->hashKey($testCase);
 
         $content = $this->storage->get($key);
         if (is_null($content)) {
@@ -54,13 +51,12 @@ final readonly class GenericCacheRepository implements CacheRepository
             }
         }
 
-
         return $content->result();
     }
 
-    public function set(TestConfig $config, TestResult $result): void
+    public function set(TestCase $testCase, TestResult $result): void
     {
-        $key = $this->hashKey($config);
+        $key = $this->hashKey($testCase);
 
         $usedFiles = [];
         foreach ($result->usedFiles() as $usedFile) {
@@ -70,7 +66,7 @@ final readonly class GenericCacheRepository implements CacheRepository
         $this->storage->put($key, new GenericCacheResultRecord($key, $usedFiles, $result));
     }
 
-    private function hashKey(TestConfig $input): string
+    private function hashKey(TestCase $input): string
     {
         return ($this->keyHashFunction)($input);
     }

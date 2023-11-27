@@ -15,11 +15,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Box;
 
-use Oru\Harness\Box\TestConfigFromStdinBox;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Box\TestCaseFromStdinBox;
+use Oru\Harness\Contracts\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Tests\Utility\StreamWrapper\FailToOpenStreamWrapper;
 use Tests\Utility\StreamWrapper\TestStreamWrapper;
 
@@ -31,8 +31,8 @@ use function stream_wrapper_register;
 use function stream_wrapper_restore;
 use function stream_wrapper_unregister;
 
-#[CoversClass(TestConfigFromStdinBox::class)]
-final class TestConfigFromStdinBoxTest extends TestCase
+#[CoversClass(TestCaseFromStdinBox::class)]
+final class TestConfigFromStdinBoxTest extends PHPUnitTestCase
 {
     #[Test]
     public function throwsWhenStdinCouldNotBeOpened(): void
@@ -42,7 +42,7 @@ final class TestConfigFromStdinBoxTest extends TestCase
         stream_wrapper_unregister('php');
         stream_wrapper_register('php', FailToOpenStreamWrapper::class);
 
-        @new TestConfigFromStdinBox();
+        @new TestCaseFromStdinBox();
 
         stream_wrapper_restore('php');
     }
@@ -55,7 +55,7 @@ final class TestConfigFromStdinBoxTest extends TestCase
         stream_wrapper_unregister('php');
         stream_wrapper_register('php', TestStreamWrapper::class);
 
-        new TestConfigFromStdinBox();
+        new TestCaseFromStdinBox();
 
         stream_wrapper_restore('php');
     }
@@ -71,7 +71,7 @@ final class TestConfigFromStdinBoxTest extends TestCase
         fwrite($stdin, serialize((object)['NOT A' => 'TestConfig']));
         fclose($stdin);
 
-        new TestConfigFromStdinBox();
+        new TestCaseFromStdinBox();
 
         stream_wrapper_restore('php');
     }
@@ -82,12 +82,12 @@ final class TestConfigFromStdinBoxTest extends TestCase
         stream_wrapper_unregister('php');
         stream_wrapper_register('php', TestStreamWrapper::class);
         $stdin = fopen('php://stdin', 'w');
-        fwrite($stdin, serialize($this->createMock(TestConfig::class)));
+        fwrite($stdin, serialize($this->createMock(TestCase::class)));
         fclose($stdin);
 
-        $actual = (new TestConfigFromStdinBox())->unbox();
+        $actual = (new TestCaseFromStdinBox())->unbox();
 
-        $this->assertInstanceOf(TestConfig::class, $actual);
+        $this->assertInstanceOf(TestCase::class, $actual);
 
         stream_wrapper_restore('php');
     }

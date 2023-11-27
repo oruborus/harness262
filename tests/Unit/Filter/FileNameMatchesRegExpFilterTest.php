@@ -15,31 +15,31 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Filter;
 
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Filter\FileNameMatchesRegExpFilter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 #[CoversClass(FileNameMatchesRegExpFilter::class)]
-final class FileNameMatchesRegExpFilterTest extends TestCase
+final class FileNameMatchesRegExpFilterTest extends PHPUnitTestCase
 {
     #[Test]
     public function filterTestConfigWithAllNonMatchingFilenames(): void
     {
         $count = 5;
-        $testConfigStubs = [];
+        $testCaseStubs = [];
         $expected = [];
         for($i = 0; $i < $count; $i++) {
-            $testConfigStub = $this->createConfiguredStub(TestConfig::class, ['path' => "path{$i}"]);
-            $testConfigStubs[] = $testConfigStub;
+            $testCaseStub = $this->createConfiguredStub(TestCase::class, ['path' => "path{$i}"]);
+            $testCaseStubs[] = $testCaseStub;
             if ($i === 2 || $i === 3) {
-                $expected[] = $testConfigStub;
+                $expected[] = $testCaseStub;
             }
         }
 
         $filter = new FileNameMatchesRegExpFilter('[23]');
-        $actual = $filter->apply(...$testConfigStubs);
+        $actual = $filter->apply(...$testCaseStubs);
 
         $this->assertSame($expected, array_values($actual));
     }

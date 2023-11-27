@@ -17,7 +17,7 @@ namespace Oru\Harness\Contracts;
 
 interface CacheRepository
 {
-    public function get(TestConfig $config): ?TestResult;
+    public function get(TestCase $testCase): ?TestResult;
 
-    public function set(TestConfig $config, TestResult $result): void;
+    public function set(TestCase $testCase, TestResult $result): void;
 }

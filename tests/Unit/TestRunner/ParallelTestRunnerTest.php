@@ -17,14 +17,14 @@ namespace Tests\Unit\TestRunner;
 
 use ErrorException;
 use Fiber;
-use Oru\Harness\Config\GenericTestConfig;
+use Oru\Harness\Config\GenericTestCase;
 use Oru\Harness\Config\GenericTestSuiteConfig;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunnerMode;
@@ -34,16 +34,16 @@ use Oru\Harness\TestRunner\ParallelTestRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use RuntimeException;
 
 use function realpath;
 
 #[CoversClass(ParallelTestRunner::class)]
 #[UsesClass(GenericFrontmatter::class)]
-#[UsesClass(GenericTestConfig::class)]
+#[UsesClass(GenericTestCase::class)]
 #[UsesClass(GenericTestResult::class)]
-final class ParallelTestRunnerTest extends TestCase
+final class ParallelTestRunnerTest extends PHPUnitTestCase
 {
     #[Test]
     public function throwsWhenProcessOpeningFailed(): void
@@ -56,7 +56,7 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'Ê↕'])
         );
 
-        $testRunner->add($this->createMock(TestConfig::class));
+        $testRunner->add($this->createMock(TestCase::class));
         $testRunner->run();
     }
 
@@ -71,7 +71,7 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/FailingTestCase.php')])
         );
 
-        $testRunner->add($this->createMock(TestConfig::class));
+        $testRunner->add($this->createMock(TestCase::class));
         $testRunner->run();
     }
 
@@ -86,7 +86,7 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/NonTestResultReturningTestCase.php')])
         );
 
-        $testRunner->add($this->createMock(TestConfig::class));
+        $testRunner->add($this->createMock(TestCase::class));
         $testRunner->run();
     }
 
@@ -99,8 +99,8 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/SuccessfulTestCase.php')])
         );
 
-        $testRunner->add($this->createMock(TestConfig::class));
-        $testRunner->add($this->createMock(TestConfig::class));
+        $testRunner->add($this->createMock(TestCase::class));
+        $testRunner->add($this->createMock(TestCase::class));
         $actual = $testRunner->run();
 
         $this->assertContainsOnlyInstancesOf(TestResult::class, $actual);
@@ -119,8 +119,8 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/SuccessfulTestCase.php')])
         );
 
-        $testRunner->add($this->createMock(TestConfig::class));
-        $testRunner->add($this->createMock(TestConfig::class));
+        $testRunner->add($this->createMock(TestCase::class));
+        $testRunner->add($this->createMock(TestCase::class));
         $testRunner->run();
     }
 
@@ -135,7 +135,7 @@ final class ParallelTestRunnerTest extends TestCase
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/FailsOnMissingInputTestCase.php')])
         );
 
-        $testConfigMock = new GenericTestConfig(
+        $testCaseMock = new GenericTestCase(
             '',
             '',
             new GenericFrontmatter('description: x'),
@@ -143,7 +143,7 @@ final class ParallelTestRunnerTest extends TestCase
             ImplicitStrictness::Unknown,
         );
 
-        $testRunner->add($testConfigMock);
+        $testRunner->add($testCaseMock);
         $testRunner->run();
     }
 
@@ -157,7 +157,7 @@ final class ParallelTestRunnerTest extends TestCase
         );
 
         $fiber = new Fiber(function () use ($testRunner) {
-            $testRunner->add($this->createMock(TestConfig::class));
+            $testRunner->add($this->createMock(TestCase::class));
             $testRunner->run();
         });
         $fiber->start();

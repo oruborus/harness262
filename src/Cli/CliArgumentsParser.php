@@ -98,7 +98,7 @@ final class CliArgumentsParser implements ArgumentsParser
                     throw new UnknownOptionException("Unknown short option `{$shortOption}` provided");
                 }
 
-                // FIXME: Throw if expaned option requires an argument
+                // FIXME: Throw if expanded option requires an argument
 
                 $this->options[$longOption] = null;
             }

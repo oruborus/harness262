@@ -15,10 +15,15 @@ declare(strict_types=1);
 
 namespace Oru\Harness\Contracts;
 
-interface TestConfigFactory
+interface TestCase
 {
-    /**
-     * @return TestConfig[]
-     */
-    public function make(string ...$paths): array;
+    public function path(): string;
+
+    public function content(): string;
+
+    public function frontmatter(): Frontmatter;
+
+    public function testSuiteConfig(): TestSuiteConfig;
+
+    public function implicitStrictness(): ImplicitStrictness;
 }

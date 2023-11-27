@@ -18,9 +18,9 @@ namespace Oru\Harness\Contracts;
 interface Filter
 {
     /**
-     * @param TestConfig ...$values
+     * @param TestCase ...$values
      *
-     * @return TestConfig[]
+     * @return TestCase[]
      */
-    public function apply(TestConfig ...$testConfigs): array;
+    public function apply(TestCase ...$testCases): array;
 }

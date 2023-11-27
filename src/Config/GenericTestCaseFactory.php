@@ -17,8 +17,8 @@ namespace Oru\Harness\Config;
 
 use Oru\Harness\Config\Exception\MissingFrontmatterException;
 use Oru\Harness\Contracts\Storage;
-use Oru\Harness\Contracts\TestConfig;
-use Oru\Harness\Contracts\TestConfigFactory;
+use Oru\Harness\Contracts\TestCase;
+use Oru\Harness\Contracts\TestCaseFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\TestSuiteConfig;
@@ -41,7 +41,7 @@ use function substr;
 use const PHP_EOL;
 use const PREG_SPLIT_NO_EMPTY;
 
-final readonly class GenericTestConfigFactory implements TestConfigFactory
+final readonly class GenericTestCaseFactory implements TestCaseFactory
 {
     public function __construct(
         private Storage $storage,
@@ -49,7 +49,7 @@ final readonly class GenericTestConfigFactory implements TestConfigFactory
     ) {}
 
     /**
-     * @return TestConfig[]
+     * @return TestCase[]
      *
      * @throws MissingFrontmatterException
      * @throws MissingRequiredKeyException
@@ -59,16 +59,16 @@ final readonly class GenericTestConfigFactory implements TestConfigFactory
      */
     public function make(string ...$paths): array
     {
-        $testConfigs = [];
+        $testCases = [];
         foreach($paths as $path) {
-            $testConfigs = [...$testConfigs, ...$this->makeFromSinglePath($path)];
+            $testCases = [...$testCases, ...$this->makeFromSinglePath($path)];
         }
 
-        return $testConfigs;
+        return $testCases;
     }
 
     /**
-     * @return TestConfig[]
+     * @return TestCase[]
      *
      * @throws MissingFrontmatterException
      * @throws MissingRequiredKeyException
@@ -106,24 +106,24 @@ final readonly class GenericTestConfigFactory implements TestConfigFactory
         $frontmatter = new GenericFrontmatter($rawFrontmatter);
 
         if (in_array(FrontmatterFlag::raw, $frontmatter->flags(), true)) {
-            return [new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Unknown)];
+            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Unknown)];
         }
 
         if (in_array(FrontmatterFlag::module, $frontmatter->flags(), true)) {
-            return [new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)];
+            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)];
         }
 
         if (in_array(FrontmatterFlag::noStrict, $frontmatter->flags(), true)) {
-            return [new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Loose)];
+            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Loose)];
         }
 
         if (in_array(FrontmatterFlag::onlyStrict, $frontmatter->flags(), true)) {
-            return [new GenericTestConfig($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)];
+            return [new GenericTestCase($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)];
         }
 
         return [
-            new GenericTestConfig($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Loose),
-            new GenericTestConfig($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)
+            new GenericTestCase($path, $content, $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Loose),
+            new GenericTestCase($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuiteConfig, ImplicitStrictness::Strict)
         ];
     }
 }

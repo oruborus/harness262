@@ -16,33 +16,33 @@ declare(strict_types=1);
 namespace Tests\Unit\Filter;
 
 use Oru\Harness\Contracts\Filter;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Filter\CompositeFilter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 #[CoversClass(CompositeFilter::class)]
-final class CompositeFilterTest extends TestCase
+final class CompositeFilterTest extends PHPUnitTestCase
 {
     #[Test]
     public function appliesAllProvidedFilters(): void
     {
         $count = 5;
-        $testConfigs = [];
+        $testCases = [];
         for($i = 0; $i < $count; $i++) {
-            $testConfigs[] = $this->createStub(TestConfig::class);
+            $testCases[] = $this->createStub(TestCase::class);
         }
         $filterMocks = [];
         for($i = 0; $i < $count; $i++) {
             $filterMock = $this->createMock(Filter::class);
-            $filterMock->expects($this->once())->method('apply')->with(...$testConfigs)->willReturn($testConfigs);
+            $filterMock->expects($this->once())->method('apply')->with(...$testCases)->willReturn($testCases);
             $filterMocks[] = $filterMock;
         }
 
         $filter = new CompositeFilter($filterMocks);
-        $actual = $filter->apply(...$testConfigs);
+        $actual = $filter->apply(...$testCases);
 
-        $this->assertSame($testConfigs, $actual);
+        $this->assertSame($testCases, $actual);
     }
 }

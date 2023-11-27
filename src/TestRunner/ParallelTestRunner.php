@@ -19,7 +19,7 @@ use Fiber;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\Printer;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestRunner;
 use RuntimeException;
@@ -39,9 +39,9 @@ final class ParallelTestRunner implements TestRunner
     private bool $dirty = true;
 
     /**
-     * @var TestConfig[] $configs
+     * @var TestCase[] $testCases
      */
-    private array $configs = [];
+    private array $testCases = [];
 
     /**
      * @var TestResult[] $results
@@ -58,10 +58,10 @@ final class ParallelTestRunner implements TestRunner
      * @throws Throwable
      * @throws RuntimeException
      */
-    public function add(TestConfig $config): void
+    public function add(TestCase $testCase): void
     {
         $this->dirty = true;
-        $this->configs[] = $config;
+        $this->testCases[] = $testCase;
     }
 
     /**
@@ -73,9 +73,9 @@ final class ParallelTestRunner implements TestRunner
             return $this->results;
         }
 
-        foreach ($this->configs as $config) {
+        foreach ($this->testCases as $testCase) {
             $this->dirty = false;
-            $serializedConfig = serialize($config);
+            $serializedConfig = serialize($testCase);
 
             $descriptorspec = [
                 0 => ["pipe", "r"],

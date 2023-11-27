@@ -15,7 +15,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Config;
 
-use Oru\Harness\Config\GenericTestConfig;
+use Oru\Harness\Config\GenericTestCase;
 use Oru\Harness\Contracts\Frontmatter;
 use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\TestSuiteConfig;
@@ -23,8 +23,8 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(GenericTestConfig::class)]
-final class GenericTestConfigTest extends TestCase
+#[CoversClass(GenericTestCase::class)]
+final class GenericTestCaseTest extends TestCase
 {
     #[Test]
     public function actsAsValueObject(): void
@@ -35,7 +35,7 @@ final class GenericTestConfigTest extends TestCase
         $expectedTestSuiteConfig    = $this->createMock(TestSuiteConfig::class);
         $expectedImplicitStrictness = ImplicitStrictness::Unknown;
 
-        $actual = new GenericTestConfig(
+        $actual = new GenericTestCase(
             $expectedPath,
             $expectedContent,
             $expectedFrontmatter,

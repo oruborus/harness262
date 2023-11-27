@@ -18,49 +18,49 @@ namespace Tests\Unit\Filter;
 use Generator;
 use Oru\Harness\Contracts\Frontmatter;
 use Oru\Harness\Contracts\FrontmatterFlag;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Filter\FrontmatterFlagFilter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 #[CoversClass(FrontmatterFlagFilter::class)]
-final class FrontmatterFlagFilterTest extends TestCase
+final class FrontmatterFlagFilterTest extends PHPUnitTestCase
 {
     #[Test]
     #[DataProvider('provideFlag')]
-    public function filterTestConfigsWithMatchingFlag(FrontmatterFlag $flag, array $testConfigs, array $expected): void
+    public function filterTestConfigsWithMatchingFlag(FrontmatterFlag $flag, array $testCases, array $expected): void
     {
         $filter = new FrontmatterFlagFilter($flag);
-        $actual = $filter->apply(...$testConfigs);
+        $actual = $filter->apply(...$testCases);
 
         $this->assertSame($expected, array_values($actual));
     }
 
     public static function provideFlag(): Generator
     {
-        $strict = static::createConfiguredStub(TestConfig::class, [
+        $strict = static::createConfiguredStub(TestCase::class, [
             'frontmatter' => static::createConfiguredStub(Frontmatter::class, [
                 'flags' => [FrontmatterFlag::onlyStrict]
             ])
         ]);
-        $noStrict = static::createConfiguredStub(TestConfig::class, [
+        $noStrict = static::createConfiguredStub(TestCase::class, [
             'frontmatter' => static::createConfiguredStub(Frontmatter::class, [
                 'flags' => [FrontmatterFlag::noStrict]
             ])
         ]);
-        $module = static::createConfiguredStub(TestConfig::class, [
+        $module = static::createConfiguredStub(TestCase::class, [
             'frontmatter' => static::createConfiguredStub(Frontmatter::class, [
                 'flags' => [FrontmatterFlag::module]
             ])
         ]);
-        $async = static::createConfiguredStub(TestConfig::class, [
+        $async = static::createConfiguredStub(TestCase::class, [
             'frontmatter' => static::createConfiguredStub(Frontmatter::class, [
                 'flags' => [FrontmatterFlag::async]
             ])
         ]);
-        $raw = static::createConfiguredStub(TestConfig::class, [
+        $raw = static::createConfiguredStub(TestCase::class, [
             'frontmatter' => static::createConfiguredStub(Frontmatter::class, [
                 'flags' => [FrontmatterFlag::raw]
             ])

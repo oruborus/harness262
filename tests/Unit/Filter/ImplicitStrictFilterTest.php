@@ -17,29 +17,29 @@ namespace Tests\Unit\Filter;
 
 use Generator;
 use Oru\Harness\Contracts\ImplicitStrictness;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Filter\ImplicitStrictFilter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 use function array_pop;
 
 #[CoversClass(ImplicitStrictFilter::class)]
-final class ImplicitStrictFilterTest extends TestCase
+final class ImplicitStrictFilterTest extends PHPUnitTestCase
 {
     #[Test]
     #[DataProvider('provideImplicitStrictness')]
     public function filterTestConfigWithAllNonMatchingFilenames(ImplicitStrictness $implicitStrictness): void
     {
-        $testConfigStubs = [];
-        $testConfigStubs[] = $this->createConfiguredStub(TestConfig::class, ['implicitStrictness' => ImplicitStrictness::Strict]);
-        $testConfigStubs[] = $this->createConfiguredStub(TestConfig::class, ['implicitStrictness' => ImplicitStrictness::Loose]);
-        $testConfigStubs[] = $this->createConfiguredStub(TestConfig::class, ['implicitStrictness' => ImplicitStrictness::Unknown]);
+        $testCaseStubs = [];
+        $testCaseStubs[] = $this->createConfiguredStub(TestCase::class, ['implicitStrictness' => ImplicitStrictness::Strict]);
+        $testCaseStubs[] = $this->createConfiguredStub(TestCase::class, ['implicitStrictness' => ImplicitStrictness::Loose]);
+        $testCaseStubs[] = $this->createConfiguredStub(TestCase::class, ['implicitStrictness' => ImplicitStrictness::Unknown]);
 
         $filter = new ImplicitStrictFilter($implicitStrictness);
-        $actual = $filter->apply(...$testConfigStubs);
+        $actual = $filter->apply(...$testCaseStubs);
 
         $this->assertCount(1, $actual);
         $actual = array_pop($actual);

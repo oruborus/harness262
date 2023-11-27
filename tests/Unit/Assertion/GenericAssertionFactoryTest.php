@@ -24,13 +24,13 @@ use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\Frontmatter;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\FrontmatterNegative;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 #[CoversClass(GenericAssertionFactory::class)]
-final class GenericAssertionFactoryTest extends TestCase
+final class GenericAssertionFactoryTest extends PHPUnitTestCase
 {
     #[Test]
     public function returnsCorrectAssertionWithoutNegativeFrontmatter(): void
@@ -38,7 +38,7 @@ final class GenericAssertionFactoryTest extends TestCase
         $factory = new GenericAssertionFactory($this->createMock(Facade::class));
 
         $actual = $factory->make(
-            $this->createConfiguredMock(TestConfig::class, [
+            $this->createConfiguredMock(TestCase::class, [
                 'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
                     'negative' => null
                 ])
@@ -54,7 +54,7 @@ final class GenericAssertionFactoryTest extends TestCase
         $factory = new GenericAssertionFactory($this->createMock(Facade::class));
 
         $actual = $factory->make(
-            $this->createConfiguredMock(TestConfig::class, [
+            $this->createConfiguredMock(TestCase::class, [
                 'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
                     'negative' => $this->createMock(FrontmatterNegative::class)
                 ])
@@ -70,7 +70,7 @@ final class GenericAssertionFactoryTest extends TestCase
         $factory = new GenericAssertionFactory($this->createMock(Facade::class));
 
         $actual = $factory->make(
-            $this->createConfiguredMock(TestConfig::class, [
+            $this->createConfiguredMock(TestCase::class, [
                 'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
                     'flags' => [FrontmatterFlag::async]
                 ])

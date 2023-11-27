@@ -17,7 +17,7 @@ namespace Oru\Harness\Filter;
 
 use Oru\Harness\Contracts\Filter;
 use Oru\Harness\Contracts\FrontmatterFlag;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 
 use function array_filter;
 use function in_array;
@@ -29,15 +29,15 @@ final readonly class FrontmatterFlagFilter implements Filter
     ) {}
 
     /**
-     * @param TestConfig ...$values
+     * @param TestCase ...$values
      *
-     * @return TestConfig[]
+     * @return TestCase[]
      */
-    public function apply(TestConfig ...$testConfigs): array
+    public function apply(TestCase ...$testCases): array
     {
         return array_filter(
-            $testConfigs,
-            fn(TestConfig $testConfig): bool => in_array($this->flag, $testConfig->frontmatter()->flags())
+            $testCases,
+            fn(TestCase $testCase): bool => in_array($this->flag, $testCase->frontmatter()->flags())
         );
     }
 }

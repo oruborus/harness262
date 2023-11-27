@@ -17,7 +17,7 @@ namespace Oru\Harness\Contracts;
 
 interface TestRunner
 {
-    public function add(TestConfig $config): void;
+    public function add(TestCase $testCase): void;
 
     /**
      * @return TestResult[]

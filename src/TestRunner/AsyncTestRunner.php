@@ -20,7 +20,7 @@ use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\Loop;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunner;
@@ -42,24 +42,24 @@ final class AsyncTestRunner implements TestRunner
         private readonly Loop $loop
     ) {}
 
-    public function add(TestConfig $config): void
+    public function add(TestCase $testCase): void
     {
         $task = new FiberTask(
-            new Fiber(fn(): TestResult => $this->runTest($config)),
-            function (TestResult $testResult) use ($config): void {
+            new Fiber(fn(): TestResult => $this->runTest($testCase)),
+            function (TestResult $testResult) use ($testCase): void {
                 $this->results[] = $testResult;
                 $this->printer->step($testResult->state());
                 if (
                     $testResult->state() === TestResultState::Error
-                    && ($config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
-                        || $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect)
+                    && ($testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
+                        || $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect)
                 ) {
                     throw new StopOnCharacteristicMetException();
                 }
                 if (
                     $testResult->state() === TestResultState::Fail
-                    && ($config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Failure
-                        || $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect)
+                    && ($testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Failure
+                        || $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect)
                 ) {
                     throw new StopOnCharacteristicMetException();
                 }
@@ -97,9 +97,9 @@ final class AsyncTestRunner implements TestRunner
      * @throws RuntimeException
      * @throws Throwable
      */
-    private function runTest(TestConfig $config): TestResult
+    private function runTest(TestCase $testCase): TestResult
     {
-        $serializedConfig = serialize($config);
+        $serializedConfig = serialize($testCase);
 
         $descriptorspec = [
             0 => ["pipe", "r"],

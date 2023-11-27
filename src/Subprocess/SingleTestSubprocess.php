@@ -16,7 +16,7 @@ declare(strict_types=1);
 namespace Oru\Harness\Subprocess;
 
 use Oru\Harness\Contracts\Subprocess;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestRunner;
 use Oru\Harness\Subprocess\Exception\InvalidReturnValueException;
@@ -31,7 +31,7 @@ final class SingleTestSubprocess implements Subprocess
 {
     public function __construct(
         private TestRunner $testRunner,
-        private TestConfig $testConfig
+        private TestCase $testCase
     ) {}
 
     /**
@@ -39,7 +39,7 @@ final class SingleTestSubprocess implements Subprocess
      */
     public function run(): TestResult
     {
-        $this->testRunner->add($this->testConfig);
+        $this->testRunner->add($this->testCase);
 
         $result = $this->testRunner->run();
 

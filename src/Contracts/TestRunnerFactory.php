@@ -17,5 +17,5 @@ namespace Oru\Harness\Contracts;
 
 interface TestRunnerFactory
 {
-    public function make(TestSuiteConfig $config): TestRunner;
+    public function make(TestSuiteConfig $testSuiteConfig): TestRunner;
 }

@@ -16,23 +16,23 @@ declare(strict_types=1);
 namespace Tests\Unit\Cache;
 
 use Oru\Harness\Cache\NoCacheRepository;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 #[CoversClass(NoCacheRepository::class)]
-final class NoCacheRepositoryTest extends TestCase
+final class NoCacheRepositoryTest extends PHPUnitTestCase
 {
     #[Test]
     public function returnsNullOnGet(): void
     {
         $repository = new NoCacheRepository();
-        $config = $this->createMock(TestConfig::class);
+        $testCase = $this->createMock(TestCase::class);
 
-        $actual = $repository->get($config);
+        $actual = $repository->get($testCase);
 
         $this->assertNull($actual);
     }
@@ -41,7 +41,7 @@ final class NoCacheRepositoryTest extends TestCase
     public function returnsNullOnSet(): void
     {
         $repository = new NoCacheRepository();
-        $config = $this->createMock(TestConfig::class);
+        $testCase = $this->createMock(TestCase::class);
         $result = $this->createConfiguredMock(TestResult::class, [
             'state' => TestResultState::Success,
             'usedFiles' => [],
@@ -49,7 +49,7 @@ final class NoCacheRepositoryTest extends TestCase
             'throwable' => null
         ]);
 
-        $actual = $repository->set($config, $result);
+        $actual = $repository->set($testCase, $result);
 
         $this->assertNull($actual);
     }

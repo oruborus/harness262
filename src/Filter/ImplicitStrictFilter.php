@@ -17,7 +17,7 @@ namespace Oru\Harness\Filter;
 
 use Oru\Harness\Contracts\Filter;
 use Oru\Harness\Contracts\ImplicitStrictness;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 
 use function array_filter;
 
@@ -28,15 +28,15 @@ final readonly class ImplicitStrictFilter implements Filter
     ) {}
 
     /**
-     * @param TestConfig ...$values
+     * @param TestCase ...$values
      *
-     * @return TestConfig[]
+     * @return TestCase[]
      */
-    public function apply(TestConfig ...$testConfigs): array
+    public function apply(TestCase ...$testCases): array
     {
         return array_filter(
-            $testConfigs,
-            fn(TestConfig $testConfig): bool => $testConfig->implicitStrictness() === $this->implicitStrictness
+            $testCases,
+            fn(TestCase $testCase): bool => $testCase->implicitStrictness() === $this->implicitStrictness
         );
     }
 }

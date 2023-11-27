@@ -21,7 +21,7 @@ use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunner;
@@ -36,9 +36,9 @@ use function ob_start;
 final class LinearTestRunner implements TestRunner
 {
     /**
-     * @var TestConfig[] $configs
+     * @var TestCase[] $testCases
      */
-    private array $configs = [];
+    private array $testCases = [];
 
     /**
      * @var TestResult[] $results
@@ -51,14 +51,14 @@ final class LinearTestRunner implements TestRunner
         private readonly Printer $printer
     ) {}
 
-    public function add(TestConfig $config): void
+    public function add(TestCase $testCase): void
     {
-        $this->configs[] = $config;
+        $this->testCases[] = $testCase;
     }
 
-    private function runTest(TestConfig $testConfig): mixed
+    private function runTest(TestCase $testCase): mixed
     {
-        if (!in_array(FrontmatterFlag::async, $testConfig->frontmatter()->flags())) {
+        if (!in_array(FrontmatterFlag::async, $testCase->frontmatter()->flags())) {
             return $this->facade->engineRun();
         }
 
@@ -85,40 +85,40 @@ final class LinearTestRunner implements TestRunner
      */
     public function run(): array
     {
-        foreach ($this->configs as $config) {
+        foreach ($this->testCases as $testCase) {
 
-            $differences = array_diff($config->frontmatter()->features(), $this->facade->engineSupportedFeatures());
+            $differences = array_diff($testCase->frontmatter()->features(), $this->facade->engineSupportedFeatures());
 
             if (count($differences) > 0) {
-                $this->addResult(new GenericTestResult(TestResultState::Skip, $config->path(), [], 0));
+                $this->addResult(new GenericTestResult(TestResultState::Skip, $testCase->path(), [], 0));
                 continue;
             }
 
             $this->facade->initialize();
 
-            foreach ($config->frontmatter()->includes() as $include) {
+            foreach ($testCase->frontmatter()->includes() as $include) {
                 $this->facade->engineAddFiles($include->value);
             }
 
-            $this->facade->engineAddCode($config->content());
+            $this->facade->engineAddCode($testCase->content());
 
             try {
                 /**
                  * @psalm-suppress MixedAssignment  Test outcomes intentionally return `mixed`
                  */
-                $actual = $this->runTest($config);
+                $actual = $this->runTest($testCase);
             } catch (Throwable $throwable) {
-                $this->addResult(new GenericTestResult(TestResultState::Error, $config->path(), [], 0, $throwable));
+                $this->addResult(new GenericTestResult(TestResultState::Error, $testCase->path(), [], 0, $throwable));
                 if (
-                    $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
-                    || $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
+                    $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
+                    || $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
                 ) {
                     break;
                 }
                 continue;
             }
 
-            $assertion = $this->assertionFactory->make($config);
+            $assertion = $this->assertionFactory->make($testCase);
 
             try {
                 /**
@@ -126,26 +126,26 @@ final class LinearTestRunner implements TestRunner
                  */
                 $assertion->assert($actual);
             } catch (AssertionFailedException $assertionFailedException) {
-                $this->addResult(new GenericTestResult(TestResultState::Fail, $config->path(), [], 0, $assertionFailedException));
+                $this->addResult(new GenericTestResult(TestResultState::Fail, $testCase->path(), [], 0, $assertionFailedException));
                 if (
-                    $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Failure
-                    || $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
+                    $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Failure
+                    || $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
                 ) {
                     break;
                 }
                 continue;
             } catch (Throwable $throwable) {
-                $this->addResult(new GenericTestResult(TestResultState::Error, $config->path(), [], 0, $throwable));
+                $this->addResult(new GenericTestResult(TestResultState::Error, $testCase->path(), [], 0, $throwable));
                 if (
-                    $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
-                    || $config->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
+                    $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Error
+                    || $testCase->testSuiteConfig()->stopOnCharacteristic() === StopOnCharacteristic::Defect
                 ) {
                     break;
                 }
                 continue;
             }
 
-            $this->addResult(new GenericTestResult(TestResultState::Success, $config->path(), [], 0));
+            $this->addResult(new GenericTestResult(TestResultState::Success, $testCase->path(), [], 0));
         }
 
         return $this->results;

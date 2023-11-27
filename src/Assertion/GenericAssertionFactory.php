@@ -19,7 +19,7 @@ use Oru\Harness\Contracts\Assertion;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\FrontmatterFlag;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 
 use function in_array;
 
@@ -29,13 +29,13 @@ final readonly class GenericAssertionFactory implements AssertionFactory
         private Facade $facade
     ) {}
 
-    public function make(TestConfig $config): Assertion
+    public function make(TestCase $testCase): Assertion
     {
-        if ($negative = $config->frontmatter()->negative()) {
+        if ($negative = $testCase->frontmatter()->negative()) {
             return new AssertIsThrowableWithConstructor($this->facade, $negative);
         }
 
-        if (in_array(FrontmatterFlag::async, $config->frontmatter()->flags())) {
+        if (in_array(FrontmatterFlag::async, $testCase->frontmatter()->flags())) {
             return new AssertMultiple(
                 new AssertIsNormal($this->facade),
                 new AssertAsync()

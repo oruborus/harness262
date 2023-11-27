@@ -36,19 +36,19 @@ final class GenericTestRunnerFactory implements TestRunnerFactory
         private CacheRepository $cacheRepository
     ) {}
 
-    public function make(TestSuiteConfig $config): TestRunner
+    public function make(TestSuiteConfig $testSuiteConfig): TestRunner
     {
-        $testRunner = match ($config->testRunnerMode()) {
+        $testRunner = match ($testSuiteConfig->testRunnerMode()) {
             TestRunnerMode::Linear   => new LinearTestRunner($this->facade, $this->assertionFactory, $this->printer),
             TestRunnerMode::Parallel => new ParallelTestRunner($this->assertionFactory, $this->printer, $this->command),
-            TestRunnerMode::Async    => new AsyncTestRunner($this->printer, $this->command, new TaskLoop($config->concurrency()))
+            TestRunnerMode::Async    => new AsyncTestRunner($this->printer, $this->command, new TaskLoop($testSuiteConfig->concurrency()))
         };
 
-        if (!$config->cache()) {
+        if (!$testSuiteConfig->cache()) {
             return $testRunner;
         }
 
-        if ($config->testRunnerMode() === TestRunnerMode::Linear) {
+        if ($testSuiteConfig->testRunnerMode() === TestRunnerMode::Linear) {
             return $testRunner;
         }
 

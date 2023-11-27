@@ -15,14 +15,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Filter;
 
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Filter\PassthroughFilter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 #[CoversClass(PassthroughFilter::class)]
-final class PassthroughFilterTest extends TestCase
+final class PassthroughFilterTest extends PHPUnitTestCase
 {
     #[Test]
     public function doesNotAlterTheProvidedListOfTestConfigs(): void
@@ -30,7 +30,7 @@ final class PassthroughFilterTest extends TestCase
         $count = 5;
         $expected = [];
         for($i = 0; $i < $count; $i++) {
-            $expected[] = $this->createStub(TestConfig::class);
+            $expected[] = $this->createStub(TestCase::class);
         }
 
         $filter = new PassthroughFilter();

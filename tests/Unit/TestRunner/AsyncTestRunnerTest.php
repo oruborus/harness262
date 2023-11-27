@@ -18,7 +18,7 @@ namespace Tests\Unit\TestRunner;
 use Closure;
 use ErrorException;
 use Generator;
-use Oru\Harness\Config\GenericTestConfig;
+use Oru\Harness\Config\GenericTestCase;
 use Oru\Harness\Config\GenericTestSuiteConfig;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\ImplicitStrictness;
@@ -26,7 +26,7 @@ use Oru\Harness\Contracts\Loop;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\Task;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
@@ -36,13 +36,13 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use RuntimeException;
 use Tests\Utility\Loop\SimpleLoop;
 
 #[CoversClass(AsyncTestRunner::class)]
 #[UsesClass(FiberTask::class)]
-final class AsyncTestRunnerTest extends TestCase
+final class AsyncTestRunnerTest extends PHPUnitTestCase
 {
     #[Test]
     public function addsTaskToProvidedLoop(): void
@@ -51,10 +51,10 @@ final class AsyncTestRunnerTest extends TestCase
         $loopMock->expects($this->once())->method('add');
         $printerStub = $this->createMock(Printer::class);
         $commandStub = $this->createMock(Command::class);
-        $testConfigStub = $this->createMock(TestConfig::class);
+        $testCaseStub = $this->createMock(TestCase::class);
 
         $testRunner = new AsyncTestRunner($printerStub, $commandStub, $loopMock);
-        $testRunner->add($testConfigStub);
+        $testRunner->add($testCaseStub);
     }
 
     #[Test]
@@ -63,14 +63,14 @@ final class AsyncTestRunnerTest extends TestCase
         $commandStub = $this->createConfiguredStub(Command::class, [
             '__toString' => 'php tests/Utility/Template/SuccessfulTestCase.php',
         ]);
-        $testConfigStub = $this->createStub(TestConfig::class);
+        $testCaseStub = $this->createStub(TestCase::class);
         $testRunner = new AsyncTestRunner(
             $this->createStub(Printer::class),
             $commandStub,
             new SimpleLoop(),
         );
 
-        $testRunner->add($testConfigStub);
+        $testRunner->add($testCaseStub);
         $actual = $testRunner->run();
 
         $this->assertCount(1, $actual);
@@ -85,14 +85,14 @@ final class AsyncTestRunnerTest extends TestCase
         $commandStub = $this->createConfiguredStub(Command::class, [
             '__toString' => 'php tests/Utility/Template/FailingTestCase.php',
         ]);
-        $testConfigStub = $this->createStub(TestConfig::class);
+        $testCaseStub = $this->createStub(TestCase::class);
         $testRunner = new AsyncTestRunner(
             $this->createStub(Printer::class),
             $commandStub,
             new SimpleLoop(),
         );
 
-        $testRunner->add($testConfigStub);
+        $testRunner->add($testCaseStub);
         $testRunner->run();
     }
 
@@ -105,14 +105,14 @@ final class AsyncTestRunnerTest extends TestCase
         $commandStub = $this->createConfiguredStub(Command::class, [
             '__toString' => 'php tests/Utility/Template/NonTestResultReturningTestCase.php',
         ]);
-        $testConfigStub = $this->createStub(TestConfig::class);
+        $testCaseStub = $this->createStub(TestCase::class);
         $testRunner = new AsyncTestRunner(
             $this->createStub(Printer::class),
             $commandStub,
             new SimpleLoop(),
         );
 
-        $testRunner->add($testConfigStub);
+        $testRunner->add($testCaseStub);
         $testRunner->run();
     }
 
@@ -124,14 +124,14 @@ final class AsyncTestRunnerTest extends TestCase
         ]);
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('step');
-        $testConfigStub = $this->createStub(TestConfig::class);
+        $testCaseStub = $this->createStub(TestCase::class);
         $testRunner = new AsyncTestRunner(
             $printerMock,
             $commandStub,
             new SimpleLoop(),
         );
 
-        $testRunner->add($testConfigStub);
+        $testRunner->add($testCaseStub);
         $testRunner->run();
     }
 
@@ -143,7 +143,7 @@ final class AsyncTestRunnerTest extends TestCase
         $commandStub = $this->createConfiguredStub(Command::class, [
             '__toString' => 'php tests/Utility/Template/FailsOnMissingInputTestCase.php',
         ]);
-        $testConfigMock = new GenericTestConfig(
+        $testCaseMock = new GenericTestCase(
             '',
             '',
             new GenericFrontmatter('description: x'),
@@ -156,7 +156,7 @@ final class AsyncTestRunnerTest extends TestCase
             new SimpleLoop(),
         );
 
-        $testRunner->add($testConfigMock);
+        $testRunner->add($testCaseMock);
         $testRunner->run();
     }
 
@@ -166,7 +166,7 @@ final class AsyncTestRunnerTest extends TestCase
         $commandStub = $this->createConfiguredStub(Command::class, [
             '__toString' => 'php tests/Utility/Template/DelayedTestCase.php',
         ]);
-        $testConfigStub = $this->createStub(TestConfig::class);
+        $testCaseStub = $this->createStub(TestCase::class);
         $testRunner = new AsyncTestRunner(
             $this->createMock(Printer::class),
             $commandStub,
@@ -195,7 +195,7 @@ final class AsyncTestRunnerTest extends TestCase
             }
         );
 
-        $testRunner->add($testConfigStub);
+        $testRunner->add($testCaseStub);
         $testRunner->run();
     }
 
@@ -206,8 +206,8 @@ final class AsyncTestRunnerTest extends TestCase
         $commandStub = $this->createConfiguredStub(Command::class, [
             '__toString' => 'php tests/Utility/Template/BasedOnContentTestCase.php',
         ]);
-        $configs = array_map(
-            static fn(string $content): TestConfig => new GenericTestConfig(
+        $testCases = array_map(
+            static fn(string $content): TestCase => new GenericTestCase(
                 '',
                 $content,
                 new GenericFrontmatter('description: x'),
@@ -221,8 +221,8 @@ final class AsyncTestRunnerTest extends TestCase
             $commandStub,
             new SimpleLoop(),
         );
-        foreach ($configs as $config) {
-            $testRunner->add($config);
+        foreach ($testCases as $testCase) {
+            $testRunner->add($testCase);
         }
 
         $actual = $testRunner->run();

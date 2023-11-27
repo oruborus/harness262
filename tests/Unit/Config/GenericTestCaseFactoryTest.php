@@ -17,8 +17,8 @@ namespace Tests\Unit\Config;
 
 use Generator;
 use Oru\Harness\Config\Exception\MissingFrontmatterException;
-use Oru\Harness\Config\GenericTestConfig;
-use Oru\Harness\Config\GenericTestConfigFactory;
+use Oru\Harness\Config\GenericTestCase;
+use Oru\Harness\Config\GenericTestCaseFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\Storage;
@@ -33,10 +33,10 @@ use PHPUnit\Framework\TestCase;
 use function in_array;
 use function array_shift;
 
-#[CoversClass(GenericTestConfigFactory::class)]
+#[CoversClass(GenericTestCaseFactory::class)]
 #[UsesClass(GenericFrontmatter::class)]
-#[UsesClass(GenericTestConfig::class)]
-final class GenericTestConfigFactoryTest extends TestCase
+#[UsesClass(GenericTestCase::class)]
+final class GenericTestCaseFactoryTest extends TestCase
 {
     #[Test]
     public function failsWhenProvidedFileCannotBeRead(): void
@@ -44,7 +44,7 @@ final class GenericTestConfigFactoryTest extends TestCase
         $path = 'xxx';
         $this->expectExceptionMessage("Could not open `{$path}`");
 
-        $factory = new GenericTestConfigFactory(
+        $factory = new GenericTestCaseFactory(
             $this->createMock(Storage::class),
             $this->createStub(TestSuiteConfig::class)
         );
@@ -57,7 +57,7 @@ final class GenericTestConfigFactoryTest extends TestCase
     {
         $this->expectExceptionObject(new MissingFrontmatterException('Provided test file does not contain a frontmatter section'));
 
-        $factory = new GenericTestConfigFactory(
+        $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => '']),
             $this->createStub(TestSuiteConfig::class)
         );
@@ -70,7 +70,7 @@ final class GenericTestConfigFactoryTest extends TestCase
     public function createsNonStrictTestConfiguration(FrontmatterFlag $flag): void
     {
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
-        $factory = new GenericTestConfigFactory(
+        $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
             $this->createStub(TestSuiteConfig::class)
         );
@@ -96,7 +96,7 @@ final class GenericTestConfigFactoryTest extends TestCase
     public function createsStrictTestConfiguration(FrontmatterFlag $flag): void
     {
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
-        $factory = new GenericTestConfigFactory(
+        $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
             $this->createStub(TestSuiteConfig::class)
         );
@@ -120,7 +120,7 @@ final class GenericTestConfigFactoryTest extends TestCase
     public function createsStrictAndNonStrictTestConfigurations(FrontmatterFlag $flag): void
     {
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
-        $factory = new GenericTestConfigFactory(
+        $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
             $this->createStub(TestSuiteConfig::class)
         );
@@ -161,7 +161,7 @@ final class GenericTestConfigFactoryTest extends TestCase
     {
         $frontmatter = "description: required\nflags: [noStrict]\n\n\nincludes: [doneprintHandle.js]";
         $expected = "/*---\n{$frontmatter}\n---*/";
-        $factory = new GenericTestConfigFactory(
+        $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
             $this->createStub(TestSuiteConfig::class)
         );
@@ -176,7 +176,7 @@ final class GenericTestConfigFactoryTest extends TestCase
     public function indentationIsHandled(): void
     {
         $expected = "/*---\n   description: required\n   flags: [noStrict]\n   includes: [doneprintHandle.js]\n---*/";
-        $factory = new GenericTestConfigFactory(
+        $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
             $this->createStub(TestSuiteConfig::class)
         );
@@ -190,7 +190,7 @@ final class GenericTestConfigFactoryTest extends TestCase
     #[Test]
     public function canHandleMultipleInputPaths(): void
     {
-        $factory = new GenericTestConfigFactory(
+        $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, [
                 'get' => "/*---\ndescription: required\nflags: [raw]\n---*/\n// CONTENT"]),
             $this->createStub(TestSuiteConfig::class)

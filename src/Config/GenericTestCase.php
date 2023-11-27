@@ -17,10 +17,10 @@ namespace Oru\Harness\Config;
 
 use Oru\Harness\Contracts\Frontmatter;
 use Oru\Harness\Contracts\ImplicitStrictness;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestSuiteConfig;
 
-final readonly class GenericTestConfig implements TestConfig
+final readonly class GenericTestCase implements TestCase
 {
     public function __construct(
         private string $path,

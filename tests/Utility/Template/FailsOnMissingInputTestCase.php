@@ -13,10 +13,10 @@
 
 declare(strict_types=1);
 
-use Oru\Harness\Box\TestConfigFromStdinBox;
+use Oru\Harness\Box\TestCaseFromStdinBox;
 
 require './vendor/autoload.php';
 
-(new TestConfigFromStdinBox())->unbox();
+(new TestCaseFromStdinBox())->unbox();
 
 echo serialize(new RuntimeException('SUCCESS'));

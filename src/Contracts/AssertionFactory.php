@@ -17,5 +17,5 @@ namespace Oru\Harness\Contracts;
 
 interface AssertionFactory
 {
-    public function make(TestConfig $config): Assertion;
+    public function make(TestCase $testCase): Assertion;
 }

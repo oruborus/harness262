@@ -15,22 +15,22 @@ declare(strict_types=1);
 
 namespace Oru\Harness\Filter;
 
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 
 use function preg_match;
 
 final class FileNameDoesNotMatchRegExpFilter extends BaseRegExpFilter
 {
     /**
-     * @param TestConfig ...$values
+     * @param TestCase ...$values
      *
-     * @return TestConfig[]
+     * @return TestCase[]
      */
-    public function apply(TestConfig ...$testConfigs): array
+    public function apply(TestCase ...$testCases): array
     {
         return array_filter(
-            $testConfigs,
-            fn(TestConfig $testConfig): bool => !preg_match($this->pattern, $testConfig->path())
+            $testCases,
+            fn(TestCase $testCase): bool => !preg_match($this->pattern, $testCase->path())
         );
     }
 

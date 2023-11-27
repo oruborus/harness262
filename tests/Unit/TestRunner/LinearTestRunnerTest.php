@@ -27,7 +27,7 @@ use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\FrontmatterInclude;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestSuiteConfig;
@@ -38,7 +38,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use RuntimeException;
 use Throwable;
 
@@ -46,7 +46,7 @@ use function array_map;
 
 #[CoversClass(LinearTestRunner::class)]
 #[UsesClass(GenericTestResult::class)]
-final class LinearTestRunnerTest extends TestCase
+final class LinearTestRunnerTest extends PHPUnitTestCase
 {
     #[Test]
     public function skipsTestExecutionWhenRequiredFeatureIsNotImplemented(): void
@@ -63,7 +63,7 @@ final class LinearTestRunnerTest extends TestCase
             $this->createMock(AssertionFactory::class),
             $printerMock
         );
-        $config = $this->createConfiguredMock(TestConfig::class, [
+        $testCaseMock = $this->createConfiguredMock(TestCase::class, [
             'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
                 'features' => ['missingFeature', 'supportedFeature1']
             ]),
@@ -72,8 +72,8 @@ final class LinearTestRunnerTest extends TestCase
             ])
         ]);
 
-        $testRunner->add($config);
-        $testRunner->add($config);
+        $testRunner->add($testCaseMock);
+        $testRunner->add($testCaseMock);
         $actual = $testRunner->run();
 
         $this->assertCount(2, $actual);
@@ -93,7 +93,7 @@ final class LinearTestRunnerTest extends TestCase
             $this->createMock(AssertionFactory::class),
             $printerMock
         );
-        $config = $this->createConfiguredMock(TestConfig::class, [
+        $testCaseMock = $this->createConfiguredMock(TestCase::class, [
             'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
                 'features' => ['supportedFeature1', 'supportedFeature2']
             ]),
@@ -102,7 +102,7 @@ final class LinearTestRunnerTest extends TestCase
             ])
         ]);
 
-        $testRunner->add($config);
+        $testRunner->add($testCaseMock);
         [$actual] = $testRunner->run();
 
         $this->assertNotSame(TestResultState::Skip, $actual->state());
@@ -118,13 +118,13 @@ final class LinearTestRunnerTest extends TestCase
             $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class)
         );
-        $config = $this->createConfiguredStub(TestConfig::class, [
+        $testCaseMock = $this->createConfiguredStub(TestCase::class, [
             'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
 
-        $testRunner->add($config);
+        $testRunner->add($testCaseMock);
         $testRunner->run();
     }
 
@@ -144,7 +144,7 @@ final class LinearTestRunnerTest extends TestCase
             $this->createMock(AssertionFactory::class),
             $printerMock
         );
-        $config = $this->createConfiguredMock(TestConfig::class, [
+        $testCaseMock = $this->createConfiguredMock(TestCase::class, [
             'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
                 'includes' => [FrontmatterInclude::assert, FrontmatterInclude::sta]
             ]),
@@ -153,7 +153,7 @@ final class LinearTestRunnerTest extends TestCase
             ])
         ]);
 
-        $testRunner->add($config);
+        $testRunner->add($testCaseMock);
         $testRunner->run();
     }
 
@@ -170,14 +170,14 @@ final class LinearTestRunnerTest extends TestCase
             $this->createMock(AssertionFactory::class),
             $printerMock
         );
-        $config = $this->createConfiguredMock(TestConfig::class, [
+        $testCaseMock = $this->createConfiguredMock(TestCase::class, [
             'content' => 'CODE',
             'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
 
-        $testRunner->add($config);
+        $testRunner->add($testCaseMock);
         $testRunner->run();
     }
 
@@ -196,14 +196,14 @@ final class LinearTestRunnerTest extends TestCase
             $this->createConfiguredStub(AssertionFactory::class, ['make' => $assertionStub]),
             $printerMock
         );
-        $config = $this->createConfiguredStub(TestConfig::class, [
+        $testCaseStub = $this->createConfiguredStub(TestCase::class, [
             'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
 
-        $testRunner->add($config);
-        $testRunner->add($config);
+        $testRunner->add($testCaseStub);
+        $testRunner->add($testCaseStub);
         $actual = $testRunner->run();
 
         $this->assertCount(2, $actual);
@@ -231,14 +231,14 @@ final class LinearTestRunnerTest extends TestCase
             ]),
             $printerMock
         );
-        $config = $this->createConfiguredStub(TestConfig::class, [
+        $testCaseStub = $this->createConfiguredStub(TestCase::class, [
             'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
 
-        $testRunner->add($config);
-        $testRunner->add($config);
+        $testRunner->add($testCaseStub);
+        $testRunner->add($testCaseStub);
         $actual = $testRunner->run();
 
         $this->assertCount(2, $actual);
@@ -266,14 +266,14 @@ final class LinearTestRunnerTest extends TestCase
             ]),
             $printerMock
         );
-        $config = $this->createConfiguredStub(TestConfig::class, [
+        $testCaseStub = $this->createConfiguredStub(TestCase::class, [
             'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
 
-        $testRunner->add($config);
-        $testRunner->add($config);
+        $testRunner->add($testCaseStub);
+        $testRunner->add($testCaseStub);
         $actual = $testRunner->run();
 
         $this->assertCount(2, $actual);
@@ -294,13 +294,13 @@ final class LinearTestRunnerTest extends TestCase
             $this->createMock(AssertionFactory::class),
             $printerMock
         );
-        $config = $this->createConfiguredStub(TestConfig::class, [
+        $testCaseStub = $this->createConfiguredStub(TestCase::class, [
             'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
                 'stopOnCharacteristic' => StopOnCharacteristic::Nothing
             ])
         ]);
 
-        $testRunner->add($config);
+        $testRunner->add($testCaseStub);
         [$actual] = $testRunner->run();
 
         $this->assertSame(TestResultState::Success, $actual->state());
@@ -327,7 +327,7 @@ final class LinearTestRunnerTest extends TestCase
             $assertionFactoryMock,
             $this->createMock(Printer::class)
         );
-        $config = $this->createConfiguredMock(TestConfig::class, [
+        $testCaseMock = $this->createConfiguredMock(TestCase::class, [
             'frontmatter' => $this->createConfiguredMock(Frontmatter::class, [
                 'flags' => [FrontmatterFlag::async]
             ]),
@@ -336,7 +336,7 @@ final class LinearTestRunnerTest extends TestCase
             ])
         ]);
 
-        $testRunner->add($config);
+        $testRunner->add($testCaseMock);
         $testRunner->run();
     }
 
@@ -353,7 +353,7 @@ final class LinearTestRunnerTest extends TestCase
                 throw $this->createStub(Throwable::class);
             }
         });
-        $testConfigStub = $this->createConfiguredStub(TestConfig::class, [
+        $testCaseStub = $this->createConfiguredStub(TestCase::class, [
             'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
                 'stopOnCharacteristic' => $stopOnCharacteristic
             ])
@@ -364,9 +364,9 @@ final class LinearTestRunnerTest extends TestCase
             $this->createStub(Printer::class),
             $stopOnCharacteristic
         );
-        $testRunner->add($testConfigStub);
-        $testRunner->add($testConfigStub);
-        $testRunner->add($testConfigStub);
+        $testRunner->add($testCaseStub);
+        $testRunner->add($testCaseStub);
+        $testRunner->add($testCaseStub);
 
         try {
             $testRunner->run();
@@ -398,7 +398,7 @@ final class LinearTestRunnerTest extends TestCase
                 default => null
             };
         });
-        $testConfigStub = $this->createConfiguredStub(TestConfig::class, [
+        $testCaseStub = $this->createConfiguredStub(TestCase::class, [
             'testSuiteConfig' => $this->createConfiguredStub(TestSuiteConfig::class, [
                 'stopOnCharacteristic' => $stopOnCharacteristic
             ])
@@ -409,10 +409,10 @@ final class LinearTestRunnerTest extends TestCase
             $this->createStub(Printer::class),
             $stopOnCharacteristic
         );
-        $testRunner->add($testConfigStub);
-        $testRunner->add($testConfigStub);
-        $testRunner->add($testConfigStub);
-        $testRunner->add($testConfigStub);
+        $testRunner->add($testCaseStub);
+        $testRunner->add($testCaseStub);
+        $testRunner->add($testCaseStub);
+        $testRunner->add($testCaseStub);
 
         try {
             $testRunner->run();

@@ -13,15 +13,15 @@
 
 declare(strict_types=1);
 
-use Oru\Harness\Box\TestConfigFromStdinBox;
+use Oru\Harness\Box\TestCaseFromStdinBox;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\TestRunner\GenericTestResult;
 
 require './vendor/autoload.php';
 
-$config = (new TestConfigFromStdinBox())->unbox();
+$testCase = (new TestCaseFromStdinBox())->unbox();
 
-$resultState = match ($config->content()) {
+$resultState = match ($testCase->content()) {
     'success' => TestResultState::Success,
     'error' => TestResultState::Error,
     'failure' => TestResultState::Fail,

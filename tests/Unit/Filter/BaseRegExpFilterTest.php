@@ -15,15 +15,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Filter;
 
-use Oru\Harness\Contracts\TestConfig;
+use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Filter\BaseRegExpFilter;
 use Oru\Harness\Filter\Exception\MalformedRegularExpressionPatternException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 #[CoversClass(BaseRegExpFilter::class)]
-final class BaseRegExpFilterTest extends TestCase
+final class BaseRegExpFilterTest extends PHPUnitTestCase
 {
     #[Test]
     public function failsWhenProvidedRegularExpressionPatternIsNotValid(): void
@@ -31,11 +31,11 @@ final class BaseRegExpFilterTest extends TestCase
         try {
             new class ('(') extends BaseRegExpFilter {
                 /**
-                 * @param TestConfig ...$values
+                 * @param TestCase ...$values
                  *
-                 * @return TestConfig[]
+                 * @return TestCase[]
                  */
-                public function apply(TestConfig ...$testConfigs): array
+                public function apply(TestCase ...$testCases): array
                 {
                     return [];
                 }

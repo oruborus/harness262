@@ -24,7 +24,7 @@ use Oru\Harness\Command\ClonedPhpCommand;
 use Oru\Harness\Config\Exception\InvalidPathException;
 use Oru\Harness\Config\Exception\MissingFrontmatterException;
 use Oru\Harness\Config\Exception\MissingPathException;
-use Oru\Harness\Config\GenericTestConfigFactory;
+use Oru\Harness\Config\GenericTestCaseFactory;
 use Oru\Harness\Config\TestSuiteConfigFactory;
 use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
@@ -135,7 +135,7 @@ final readonly class Harness
             return 1;
         }
 
-        $testConfigFactory      = new GenericTestConfigFactory($testStorage, $testSuiteConfig);
+        $testCaseFactory        = new GenericTestCaseFactory($testStorage, $testSuiteConfig);
         $cacheRepositoryFactory = new GenericCacheRepositoryFactory();
         $cacheRepository        = $cacheRepositoryFactory->make($testSuiteConfig);
 
@@ -152,19 +152,19 @@ final readonly class Harness
             return 1;
         }
 
-        // 3. Let **preparedTestConfigurations** be the result of **testConfigFactory**.make() for every element of **testSuiteConfig**.[[paths]].
-        $preparedTestConfigurations = $testConfigFactory->make(...$testSuiteConfig->paths());
+        // 3. Let **preparedTestCases** be the result of **testCaseFactory**.make() for every element of **testSuiteConfig**.[[paths]].
+        $preparedTestCases = $testCaseFactory->make(...$testSuiteConfig->paths());
 
-        // 4. Let **filteredTestConfigurations** be the result of **filter**.apply() for every element of **preparedTestConfigurations**.
-        $filteredTestConfigurations = $filter->apply(...$preparedTestConfigurations);
+        // 4. Let **filteredTestCases** be the result of **filter**.apply() for every element of **preparedTestCases**.
+        $filteredTestCases = $filter->apply(...$preparedTestCases);
 
-        // 5. Perform **printer**.setStepCount(count(**preparedTestConfigurations**)).
-        $printer->setStepCount(count($filteredTestConfigurations));
+        // 5. Perform **printer**.setStepCount(count(**preparedTestCases**)).
+        $printer->setStepCount(count($filteredTestCases));
 
-        // 6. For each **testConfig** of **filteredTestConfigurations**, do
-        foreach ($filteredTestConfigurations as $testConfig) {
-            // a. Perform **testRunner**.add(**testConfig**).
-            $testRunner->add($testConfig);
+        // 6. For each **testCase** of **filteredTestCases**, do
+        foreach ($filteredTestCases as $testCase) {
+            // a. Perform **testRunner**.add(**testCase**).
+            $testRunner->add($testCase);
         }
 
         // 7. Let **testSuiteEndTime** be the current system time in seconds.
