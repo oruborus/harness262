@@ -13,12 +13,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Config;
+namespace Tests\Unit\TestCase;
 
-use Oru\Harness\Config\GenericTestCase;
 use Oru\Harness\Contracts\Frontmatter;
 use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\TestSuite;
+use Oru\Harness\TestCase\GenericTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

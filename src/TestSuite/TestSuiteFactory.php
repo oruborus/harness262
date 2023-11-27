@@ -13,17 +13,17 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Config;
+namespace Oru\Harness\TestSuite;
 
 use FilesystemIterator;
 use Iterator;
-use Oru\Harness\Config\Exception\InvalidPathException;
-use Oru\Harness\Config\Exception\MissingPathException;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\CoreCounter;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuite;
+use Oru\Harness\TestSuite\Exception\InvalidPathException;
+use Oru\Harness\TestSuite\Exception\MissingPathException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 

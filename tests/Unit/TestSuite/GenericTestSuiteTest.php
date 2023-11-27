@@ -13,11 +13,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Config;
+namespace Tests\Unit\TestSuite;
 
-use Oru\Harness\Config\GenericTestSuite;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
+use Oru\Harness\TestSuite\GenericTestSuite;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

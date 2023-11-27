@@ -13,8 +13,8 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Config\Exception;
+namespace Oru\Harness\TestCase\Exception;
 
 use RuntimeException;
 
-final class MissingPathException extends RuntimeException {}
+final class MissingFrontmatterException extends RuntimeException {}

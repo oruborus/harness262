@@ -13,7 +13,7 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Config;
+namespace Oru\Harness\TestCase;
 
 use Oru\Harness\Contracts\Frontmatter;
 use Oru\Harness\Contracts\ImplicitStrictness;

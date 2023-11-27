@@ -13,7 +13,7 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Config\Exception;
+namespace Oru\Harness\TestSuite\Exception;
 
 use RuntimeException;
 

@@ -13,7 +13,7 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Config;
+namespace Oru\Harness\TestSuite;
 
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;

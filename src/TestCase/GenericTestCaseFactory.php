@@ -13,9 +13,8 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Config;
+namespace Oru\Harness\TestCase;
 
-use Oru\Harness\Config\Exception\MissingFrontmatterException;
 use Oru\Harness\Contracts\Storage;
 use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestCaseFactory;
@@ -27,6 +26,7 @@ use Oru\Harness\Frontmatter\Exception\ParseException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedKeyException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedNegativePhaseException;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
+use Oru\Harness\TestCase\Exception\MissingFrontmatterException;
 use RuntimeException;
 
 use function array_map;

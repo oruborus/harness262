@@ -13,17 +13,17 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Config;
+namespace Tests\Unit\TestCase;
 
 use Generator;
-use Oru\Harness\Config\Exception\MissingFrontmatterException;
-use Oru\Harness\Config\GenericTestCase;
-use Oru\Harness\Config\GenericTestCaseFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\ImplicitStrictness;
 use Oru\Harness\Contracts\Storage;
 use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
+use Oru\Harness\TestCase\Exception\MissingFrontmatterException;
+use Oru\Harness\TestCase\GenericTestCase;
+use Oru\Harness\TestCase\GenericTestCaseFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;

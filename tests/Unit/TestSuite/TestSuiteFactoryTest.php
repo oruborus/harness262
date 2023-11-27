@@ -13,16 +13,16 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Config;
+namespace Tests\Unit\TestSuite;
 
 use Generator;
-use Oru\Harness\Config\Exception\InvalidPathException;
-use Oru\Harness\Config\Exception\MissingPathException;
-use Oru\Harness\Config\TestSuiteFactory;
 use Oru\Harness\Contracts\CoreCounter;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuite;
+use Oru\Harness\TestSuite\Exception\InvalidPathException;
+use Oru\Harness\TestSuite\Exception\MissingPathException;
+use Oru\Harness\TestSuite\TestSuiteFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
