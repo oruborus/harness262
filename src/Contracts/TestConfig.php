@@ -15,7 +15,7 @@ declare(strict_types=1);
 
 namespace Oru\Harness\Contracts;
 
-interface TestConfig extends Config
+interface TestConfig
 {
     public function path(): string;
 
