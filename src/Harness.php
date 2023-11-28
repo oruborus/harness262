@@ -37,6 +37,7 @@ use Oru\Harness\Printer\GenericPrinterFactory;
 use Oru\Harness\Storage\FileStorage;
 use Oru\Harness\TestCase\Exception\MissingFrontmatterException;
 use Oru\Harness\TestCase\GenericTestCaseFactory;
+use Oru\Harness\TestResult\GenericTestResultFactory;
 use Oru\Harness\TestRunner\GenericTestRunnerFactory;
 use Oru\Harness\TestSuite\Exception\InvalidPathException;
 use Oru\Harness\TestSuite\Exception\MissingPathException;
@@ -139,7 +140,8 @@ final readonly class Harness
         $cacheRepositoryFactory = new GenericCacheRepositoryFactory();
         $cacheRepository        = $cacheRepositoryFactory->make($testSuite);
 
-        $testRunnerFactory      = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command, $cacheRepository);
+        $testResultFactory      = new GenericTestResultFactory();
+        $testRunnerFactory      = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command, $cacheRepository, $testResultFactory);
         $testRunner             = $testRunnerFactory->make($testSuite);
 
         try {

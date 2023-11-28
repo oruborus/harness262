@@ -18,9 +18,8 @@ namespace Oru\Harness\TestRunner;
 use Oru\Harness\Contracts\CacheRepository;
 use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
-use Oru\Harness\Contracts\TestResultState;
+use Oru\Harness\Contracts\TestResultFactory;
 use Oru\Harness\Contracts\TestRunner;
-use Oru\Harness\TestResult\GenericTestResult;
 
 final class CacheTestRunner implements TestRunner
 {
@@ -31,13 +30,14 @@ final class CacheTestRunner implements TestRunner
 
     public function __construct(
         private CacheRepository $cacheRepository,
-        private TestRunner $testRunner
+        private TestRunner $testRunner,
+        private TestResultFactory $testResultFactory,
     ) {}
 
     public function add(TestCase $testCase): void
     {
         if ($testResult = $this->cacheRepository->get($testCase)) {
-            $this->results[] = new GenericTestResult(TestResultState::Cache, $testCase->path(), $testResult->usedFiles(), 0);
+            $this->results[] = $this->testResultFactory->makeCached($testCase->path(), $testResult->usedFiles());
             return;
         }
 

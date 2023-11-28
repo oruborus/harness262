@@ -23,9 +23,8 @@ use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
-use Oru\Harness\Contracts\TestResultState;
+use Oru\Harness\Contracts\TestResultFactory;
 use Oru\Harness\Contracts\TestRunner;
-use Oru\Harness\TestResult\GenericTestResult;
 use Throwable;
 
 use function array_diff;
@@ -49,7 +48,8 @@ final class LinearTestRunner implements TestRunner
     public function __construct(
         private readonly Facade $facade,
         private readonly AssertionFactory $assertionFactory,
-        private readonly Printer $printer
+        private readonly Printer $printer,
+        private readonly TestResultFactory $testResultFactory,
     ) {}
 
     public function add(TestCase $testCase): void
@@ -91,7 +91,7 @@ final class LinearTestRunner implements TestRunner
             $differences = array_diff($testCase->frontmatter()->features(), $this->facade->engineSupportedFeatures());
 
             if (count($differences) > 0) {
-                $this->addResult(new GenericTestResult(TestResultState::Skip, $testCase->path(), [], 0));
+                $this->addResult($this->testResultFactory->makeSkipped($testCase->path()));
                 continue;
             }
 
@@ -109,7 +109,7 @@ final class LinearTestRunner implements TestRunner
                  */
                 $actual = $this->runTest($testCase);
             } catch (Throwable $throwable) {
-                $this->addResult(new GenericTestResult(TestResultState::Error, $testCase->path(), [], 0, $throwable));
+                $this->addResult($this->testResultFactory->makeErrored($testCase->path(), [], 0, $throwable));
                 if (
                     $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Error
                     || $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Defect
@@ -127,7 +127,7 @@ final class LinearTestRunner implements TestRunner
                  */
                 $assertion->assert($actual);
             } catch (AssertionFailedException $assertionFailedException) {
-                $this->addResult(new GenericTestResult(TestResultState::Fail, $testCase->path(), [], 0, $assertionFailedException));
+                $this->addResult($this->testResultFactory->makeFailed($testCase->path(), [], 0, $assertionFailedException));
                 if (
                     $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Failure
                     || $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Defect
@@ -136,7 +136,7 @@ final class LinearTestRunner implements TestRunner
                 }
                 continue;
             } catch (Throwable $throwable) {
-                $this->addResult(new GenericTestResult(TestResultState::Error, $testCase->path(), [], 0, $throwable));
+                $this->addResult($this->testResultFactory->makeErrored($testCase->path(), [], 0, $throwable));
                 if (
                     $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Error
                     || $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Defect
@@ -146,7 +146,7 @@ final class LinearTestRunner implements TestRunner
                 continue;
             }
 
-            $this->addResult(new GenericTestResult(TestResultState::Success, $testCase->path(), [], 0));
+            $this->addResult($this->testResultFactory->makeSuccessful($testCase->path(), [], 0));
         }
 
         return $this->results;

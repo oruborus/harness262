@@ -18,6 +18,7 @@ namespace Tests\Unit\TestRunner;
 use Oru\Harness\Contracts\CacheRepository;
 use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
+use Oru\Harness\Contracts\TestResultFactory;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunner;
 use Oru\Harness\TestRunner\CacheTestRunner;
@@ -37,7 +38,10 @@ final class CacheTestRunnerTest extends PHPUnitTestCase
         ]);
         $testRunnerMock = $this->createMock(TestRunner::class);
         $testRunnerMock->expects($this->never())->method('add');
-        $testRunner = new CacheTestRunner($cacheRepositoryStub, $testRunnerMock);
+        $testResultFactoryStub = $this->createConfiguredStub(TestResultFactory::class, [
+            'makeCached' => $this->createConfiguredStub(TestResult::class, ['state' => TestResultState::Cache])
+        ]);
+        $testRunner = new CacheTestRunner($cacheRepositoryStub, $testRunnerMock, $testResultFactoryStub);
 
         for ($i = 0; $i < $repetitions; $i++) {
             $testRunner->add($this->createStub(TestCase::class));
@@ -60,7 +64,7 @@ final class CacheTestRunnerTest extends PHPUnitTestCase
         ]);
         $testRunnerMock = $this->createMock(TestRunner::class);
         $testRunnerMock->expects($this->once())->method('add');
-        $testRunner = new CacheTestRunner($cacheRepositoryStub, $testRunnerMock);
+        $testRunner = new CacheTestRunner($cacheRepositoryStub, $testRunnerMock, $this->createStub(TestResultFactory::class));
 
         $testRunner->add($this->createStub(TestCase::class));
     }

@@ -22,6 +22,7 @@ use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
+use Oru\Harness\Contracts\TestResultFactory;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\TestRunner\AsyncTestRunner;
@@ -52,7 +53,8 @@ final class GenericTestRunnerFactoryTest extends TestCase
             $this->createStub(AssertionFactory::class),
             $this->createStub(Printer::class),
             $this->createStub(Command::class),
-            $this->createStub(CacheRepository::class)
+            $this->createStub(CacheRepository::class),
+            $this->createStub(TestResultFactory::class),
         );
 
         $actual = $factory->make($testSuiteStub);
@@ -85,7 +87,8 @@ final class GenericTestRunnerFactoryTest extends TestCase
             $this->createStub(AssertionFactory::class),
             $this->createStub(Printer::class),
             $this->createStub(Command::class),
-            $this->createStub(CacheRepository::class)
+            $this->createStub(CacheRepository::class),
+            $this->createStub(TestResultFactory::class),
         );
 
         $actual = $factory->make($testSuiteStub);
@@ -104,6 +107,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
             $this->createStub(Printer::class),
             $this->createStub(Command::class),
             $this->createStub(CacheRepository::class),
+            $this->createStub(TestResultFactory::class),
         );
         $testSuiteStub = $this->createConfiguredStub(TestSuite::class, [
             'testRunnerMode' => $mode,
@@ -117,7 +121,8 @@ final class GenericTestRunnerFactoryTest extends TestCase
         ]);
         $expected = new CacheTestRunner(
             $this->createStub(CacheRepository::class),
-            $factory->make($expectedTestSuiteStub)
+            $factory->make($expectedTestSuiteStub),
+            $this->createStub(TestResultFactory::class),
         );
 
         $actual = $factory->make($testSuiteStub);
