@@ -24,14 +24,13 @@ use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultFactory;
+use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunner;
+use Oru\Harness\Helpers\OutputBuffer;
 use Throwable;
 
 use function array_diff;
-use function count;
 use function in_array;
-use function ob_get_clean;
-use function ob_start;
 
 final class LinearTestRunner implements TestRunner
 {
@@ -57,99 +56,83 @@ final class LinearTestRunner implements TestRunner
         $this->testCases[] = $testCase;
     }
 
-    private function runTest(TestCase $testCase): mixed
-    {
-        if (!in_array(FrontmatterFlag::async, $testCase->frontmatter()->flags())) {
-            return $this->facade->engineRun();
-        }
-
-        ob_start();
-        /**
-         * @psalm-suppress MixedAssignment  Engine intentionally returns `mixed`
-         */
-        $returnValue = $this->facade->engineRun();
-        $output = ob_get_clean();
-
-        return $this->facade->isNormalCompletion($returnValue) ?
-            $output :
-            $returnValue;
-    }
-
-    private function addResult(TestResult $result): void
-    {
-        $this->results[] = $result;
-        $this->printer->step($result->state());
-    }
-
     /**
      * @return TestResult[]
      */
     public function run(): array
     {
         foreach ($this->testCases as $testCase) {
+            $testResult = $this->runTestCase($testCase);
 
-            $differences = array_diff($testCase->frontmatter()->features(), $this->facade->engineSupportedFeatures());
+            $this->results[] = $testResult;
+            $this->printer->step($testResult->state());
 
-            if (count($differences) > 0) {
-                $this->addResult($this->testResultFactory->makeSkipped($testCase->path()));
-                continue;
+            if (match([$testCase->testSuite()->stopOnCharacteristic(), $testResult->state()]) {
+                [StopOnCharacteristic::Error,   TestResultState::Error],
+                [StopOnCharacteristic::Defect,  TestResultState::Error],
+                [StopOnCharacteristic::Failure, TestResultState::Fail],
+                [StopOnCharacteristic::Defect,  TestResultState::Fail] => true,
+                default => false
+            }) {
+                break;
             }
-
-            $this->facade->initialize();
-
-            foreach ($testCase->frontmatter()->includes() as $include) {
-                $this->facade->engineAddFiles($include->value);
-            }
-
-            $this->facade->engineAddCode($testCase->content());
-
-            try {
-                /**
-                 * @psalm-suppress MixedAssignment  Test outcomes intentionally return `mixed`
-                 */
-                $actual = $this->runTest($testCase);
-            } catch (Throwable $throwable) {
-                $this->addResult($this->testResultFactory->makeErrored($testCase->path(), [], 0, $throwable));
-                if (
-                    $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Error
-                    || $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Defect
-                ) {
-                    break;
-                }
-                continue;
-            }
-
-            $assertion = $this->assertionFactory->make($testCase);
-
-            try {
-                /**
-                 * @psalm-suppress PossiblyUndefinedVariable  `$actual` is never undefined as the previous catch-block either continues or breaks
-                 */
-                $assertion->assert($actual);
-            } catch (AssertionFailedException $assertionFailedException) {
-                $this->addResult($this->testResultFactory->makeFailed($testCase->path(), [], 0, $assertionFailedException));
-                if (
-                    $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Failure
-                    || $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Defect
-                ) {
-                    break;
-                }
-                continue;
-            } catch (Throwable $throwable) {
-                $this->addResult($this->testResultFactory->makeErrored($testCase->path(), [], 0, $throwable));
-                if (
-                    $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Error
-                    || $testCase->testSuite()->stopOnCharacteristic() === StopOnCharacteristic::Defect
-                ) {
-                    break;
-                }
-                continue;
-            }
-
-            $this->addResult($this->testResultFactory->makeSuccessful($testCase->path(), [], 0));
         }
 
         return $this->results;
+    }
+
+    private function hasUnsupportedFeatures(TestCase $testCase): bool
+    {
+        return (bool) array_diff($testCase->frontmatter()->features(), $this->facade->engineSupportedFeatures());
+    }
+
+    private function runTestCase(TestCase $testCase): TestResult
+    {
+        if ($this->hasUnsupportedFeatures($testCase)) {
+            return $this->testResultFactory->makeSkipped($testCase->path());
+        }
+
+        $this->facade->initialize();
+
+        foreach ($testCase->frontmatter()->includes() as $include) {
+            $this->facade->engineAddFiles($include->value);
+        }
+
+        $this->facade->engineAddCode($testCase->content());
+
+        $assertion = $this->assertionFactory->make($testCase);
+
+        try {
+            /**
+             * @psalm-suppress MixedAssignment  Test outcomes intentionally return `mixed`
+             */
+            $actual = $this->runTestCodeInEngine($testCase);
+            $assertion->assert($actual);
+            return $this->testResultFactory->makeSuccessful($testCase->path(), [], 0);
+        } catch (AssertionFailedException $assertionFailedException) {
+            return $this->testResultFactory->makeFailed($testCase->path(), [], 0, $assertionFailedException);
+        } catch (Throwable $throwable) {
+            return $this->testResultFactory->makeErrored($testCase->path(), [], 0, $throwable);
+        }
+    }
+
+    private function runTestCodeInEngine(TestCase $testCase): mixed
+    {
+        $outputBuffer = new OutputBuffer();
+
+        /**
+         * @psalm-suppress MixedAssignment  Engine intentionally returns `mixed`
+         */
+        $returnValue = $this->facade->engineRun();
+
+        if (
+            in_array(FrontmatterFlag::async, $testCase->frontmatter()->flags())
+            && $this->facade->isNormalCompletion($returnValue)
+        ) {
+            return (string) $outputBuffer;
+        }
+
+        return $returnValue;
     }
 
     /**

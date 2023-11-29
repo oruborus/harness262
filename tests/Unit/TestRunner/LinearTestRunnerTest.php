@@ -321,7 +321,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
     }
 
     #[Test]
-    public function capturesAndPerformsAssertionOnEngineOutputForAsyncTest(): void
+    public function capturesAndPerformsAssertionOnEngineOutputForAsyncTestWhenTestCaseReturnsANormalCompletion(): void
     {
         $expected = 'TEST OUTPUT';
         $facadeStub = $this->createStub(Facade::class);
@@ -330,7 +330,44 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         });
         $facadeStub->method('isNormalCompletion')->willReturn(true);
         $assertionMock = $this->createMock(Assertion::class);
-        $assertionMock->expects($this->once())->method('assert')->with($expected);
+        $assertionMock->expects($this->once())->method('assert')->with($this->identicalTo($expected));
+        $assertionFactoryMock = $this->createConfiguredMock(AssertionFactory::class, [
+            'make' => $assertionMock
+        ]);
+        $testResultFactoryStub = $this->createTestResultFactoryStub();
+        $testCaseStub = $this->createConfiguredStub(TestCase::class, [
+            'frontmatter' => $this->createConfiguredStub(Frontmatter::class, [
+                'flags' => [FrontmatterFlag::async]
+            ]),
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
+                'stopOnCharacteristic' => StopOnCharacteristic::Nothing
+            ])
+        ]);
+
+        $testRunner = new LinearTestRunner(
+            $facadeStub,
+            $assertionFactoryMock,
+            $this->createStub(Printer::class),
+            $testResultFactoryStub,
+        );
+
+        $testRunner->add($testCaseStub);
+        $testRunner->run();
+    }
+
+    #[Test]
+    public function capturesAndPerformsAssertionOnEngineOutputForAsyncTestWhenTestCaseReturnsAnAbruptCompletion(): void
+    {
+        $expected = (object) [];
+        $facadeStub = $this->createStub(Facade::class);
+        $facadeStub->method('engineRun')->willReturnCallback(static function () use ($expected): mixed {
+            echo 'SOME OUTPUT';
+
+            return $expected;
+        });
+        $facadeStub->method('isNormalCompletion')->willReturn(false);
+        $assertionMock = $this->createMock(Assertion::class);
+        $assertionMock->expects($this->once())->method('assert')->with($this->identicalTo($expected));
         $assertionFactoryMock = $this->createConfiguredMock(AssertionFactory::class, [
             'make' => $assertionMock
         ]);
