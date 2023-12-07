@@ -140,10 +140,10 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
     public function addsIncludesFromConfigToEngine(): void
     {
         $facadeMock = $this->createMock(Facade::class);
-        $facadeMock->expects($this->exactly(2))->method('engineAddFiles')->willReturnMap(
+        $facadeMock->expects($this->exactly(2))->method('engineAddFiles')->willReturnMap([
             [FrontmatterInclude::assert->value],
             [FrontmatterInclude::sta->value]
-        );
+        ]);
         $facadeMock->method('engineRun')->willReturn('UndefinedValue');
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('step');
