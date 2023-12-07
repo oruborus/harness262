@@ -52,7 +52,7 @@ final class GenericFilterFactoryTest extends TestCase
         $factory = new GenericFilterFactory($argumentsParserStub);
         $actual = $factory->make();
 
-        $this->assertInstanceOf(FileNameDoesNotMatchRegExpFilter::class, $actual);
+        $this->assertInstanceOf(FileNameMatchesRegExpFilter::class, $actual);
     }
 
     #[Test]
@@ -64,7 +64,7 @@ final class GenericFilterFactoryTest extends TestCase
         $factory = new GenericFilterFactory($argumentsParserStub);
         $actual = $factory->make();
 
-        $this->assertInstanceOf(FileNameMatchesRegExpFilter::class, $actual);
+        $this->assertInstanceOf(FileNameDoesNotMatchRegExpFilter::class, $actual);
     }
 
     #[Test]

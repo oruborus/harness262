@@ -3,7 +3,7 @@
     "description": "PHP based ECMAScript test262 harness",
     "type": "library",
     "license": "BSD-3-Clause",
-    "version": "0.2",
+    "version": "0.2.1",
     "authors": [
         {
             "name": "Felix Jahn",

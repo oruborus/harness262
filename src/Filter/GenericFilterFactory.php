@@ -38,11 +38,11 @@ final readonly class GenericFilterFactory implements FilterFactory
         $filters = [];
 
         if ($this->argumentsParser->hasOption('include')) {
-            $filters[] = new FileNameDoesNotMatchRegExpFilter($this->argumentsParser->getOption('include'));
+            $filters[] = new FileNameMatchesRegExpFilter($this->argumentsParser->getOption('include'));
         }
 
         if ($this->argumentsParser->hasOption('exclude')) {
-            $filters[] = new FileNameMatchesRegExpFilter($this->argumentsParser->getOption('exclude'));
+            $filters[] = new FileNameDoesNotMatchRegExpFilter($this->argumentsParser->getOption('exclude'));
         }
 
         if ($this->argumentsParser->hasOption('only-strict')) {
