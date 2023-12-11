@@ -17,6 +17,8 @@ namespace Tests\Utility\StreamWrapper;
 
 final class FailToOpenStreamWrapper
 {
+    public mixed $context;
+
     public function stream_open(
         string $path,
         string $mode,
