@@ -23,7 +23,6 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Tests\Utility\Facade\TestFacade;
 
 use const PHP_EOL;
 
@@ -92,39 +91,5 @@ final class HarnessTest extends TestCase
         $actual = $harness->run(['harness.php']);
 
         $this->assertSame(1, $actual);
-    }
-
-    // #[Test]
-    public function doesNotExecuteAllTestsWhenStopOnCharacteristicIsMet(): void
-    {
-        $harness = new Harness(new TestFacade());
-
-        \ob_start();
-        $harness->run([
-            'harness.php',
-            './tests/EndToEnd/Fixtures/fail.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            './tests/EndToEnd/Fixtures/empty.js',
-            '--stop-on-failure',
-            '--debug'
-        ]);
-        $output = \ob_get_clean();
-
-        $this->assertStringNotContainsString('........', $output);
-        $this->assertMatchesRegularExpression('/Duration: \d\d:\d\d/', $output);
     }
 }
