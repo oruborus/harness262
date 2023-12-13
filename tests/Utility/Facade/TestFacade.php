@@ -21,7 +21,7 @@ use Oru\Harness\Contracts\Facade;
 use function array_filter;
 use function strpos;
 
-final class TestFacade implements Facade
+class TestFacade implements Facade
 {
     private bool $fails = false;
 

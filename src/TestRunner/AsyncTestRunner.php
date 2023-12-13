@@ -108,7 +108,15 @@ final class AsyncTestRunner implements TestRunner
         ];
 
         $cwd = '.';
-        $env = [];
+        $env = $_ENV;
+        if (\function_exists('xdebug_info')) {
+            if (in_array('debug', \xdebug_info('mode'))) {
+
+                $env = [
+                    'XDEBUG_MODE' => 'off',
+                ];
+            }
+        }
 
         $options = ['bypass_shell' => true];
 
@@ -125,6 +133,7 @@ final class AsyncTestRunner implements TestRunner
         }
 
         $output = stream_get_contents($pipes[1]);
+        $err = stream_get_contents($pipes[2]);
         fclose($pipes[1]);
         fclose($pipes[2]);
 
@@ -138,7 +147,7 @@ final class AsyncTestRunner implements TestRunner
         }
 
         if (!$result instanceof TestResult) {
-            throw new RuntimeException("Subprocess did not return a `TestResult` - Returned: {$output}");
+            throw new RuntimeException("Subprocess did not return a `TestResult` - Output: {$output} - Err: {$err}");
         }
 
         return $result;

@@ -16,6 +16,7 @@ declare(strict_types=1);
 namespace Tests\Acceptance\Bootstrap;
 
 use Behat\Behat\Context\Context;
+use Behat\Behat\Tester\Exception\PendingException;
 use Behat\Step\Given;
 use Behat\Step\Then;
 use Behat\Step\When;
@@ -25,10 +26,13 @@ use PHPUnit\Framework\Exception;
 use PHPUnit\Framework\ExpectationFailedException;
 use Tests\Acceptance\Bootstrap\Utility\NamedTemporaryFileHelper;
 use Tests\Acceptance\Bootstrap\Utility\TemporaryDirectoryHelper;
+use Tests\Utility\Facade\Exception\PidExtractionException;
 
 use function array_unshift;
 use function implode;
+use function preg_match;
 use function preg_match_all;
+use function preg_quote;
 use function shell_exec;
 use function str_split;
 use function strlen;
@@ -69,6 +73,25 @@ final class FeatureContext implements Context
         require './vendor/autoload.php';
 
         return static fn(): Facade => new TestFacade();
+        EOF;
+
+        $this->aFileNamedWith('Harness.php', $content);
+    }
+
+    #[Given('a Facade that checks for realm isolation')]
+    public function aFacadeThatChecksForRealmIsolation()
+    {
+        $content = <<<EOF
+        <?php
+
+        declare(strict_types=1);
+
+        use Oru\Harness\Contracts\Facade;
+        use Tests\Utility\Facade\ProcessTestFacade;
+        
+        require './vendor/autoload.php';
+
+        return static fn(): Facade => new ProcessTestFacade(-1);
         EOF;
 
         $this->aFileNamedWith('Harness.php', $content);
@@ -176,5 +199,26 @@ final class FeatureContext implements Context
             yield from $this->generatePermutations($string, $start + 1, $end);
             [$string[$start], $string[$i]] = [$string[$i], $string[$start]];
         }
+    }
+
+    /**
+     * @throws Exception
+     * @throws ExpectationFailedException
+     */
+    #[Then('a new process gets spawned')]
+    public function aNewProcessGetsSpawned()
+    {
+        $pattern =  '/' . preg_quote(PidExtractionException::class, '/') . ': (?<parentPid>[+-]?\d+) (?<pid>[+-]?\d+)/';
+        $found = preg_match($pattern, $this->actual, $matches);
+
+        Assert::assertSame(1, $found, 'Could not extract PID from child process');
+
+        $parentPid = (int) $matches['parentPid'];
+        $pid       = (int) $matches['pid'];
+
+        Assert::assertNotSame(-1, $parentPid, 'Could not generate PID in parent process');
+        Assert::assertNotSame(-2, $pid, 'Could not generate PID in child process');
+
+        Assert::assertNotSame($parentPid, $pid, 'Could not detect the creation of another process');
     }
 }
