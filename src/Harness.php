@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Oru\Harness;
 
+use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Cache\GenericCacheRepositoryFactory;
 use Oru\Harness\Cli\CliArgumentsParser;
@@ -23,7 +24,6 @@ use Oru\Harness\Cli\Exception\UnknownOptionException;
 use Oru\Harness\Command\ClonedPhpCommand;
 use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
-use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Filter\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Filter\GenericFilterFactory;
 use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
@@ -76,11 +76,12 @@ final readonly class Harness
     private TemporaryFileHandler $temporaryFileHandler;
 
     public function __construct(
-        private Facade $facade
+        private Engine $engine,
+        string $path,
     ) {
         $contents = str_replace(
-            '{{FACADE_PATH}}',
-            $this->facade->path(),
+            '{{CONFIG_PATH}}',
+            $path,
             file_get_contents(realpath(static::TEMPLATE_PATH))
         );
         $this->temporaryFileHandler = new TemporaryFileHandler($contents);
@@ -105,7 +106,7 @@ final readonly class Harness
         $argumentsParser        = new CliArgumentsParser($arguments, static::CLI_OPTIONS);
         $printerFactory         = new GenericPrinterFactory();
         $outputFactory          = new GenericOutputFactory();
-        $assertionFactory       = new GenericAssertionFactory($this->facade);
+        $assertionFactory       = new GenericAssertionFactory($this->engine);
         $command                = new ClonedPhpCommand(realpath($this->temporaryFileHandler->path()));
 
         $outputConfigFactory    = new OutputConfigFactory($argumentsParser);
@@ -141,7 +142,7 @@ final readonly class Harness
         $cacheRepository        = $cacheRepositoryFactory->make($testSuite);
 
         $testResultFactory      = new GenericTestResultFactory();
-        $testRunnerFactory      = new GenericTestRunnerFactory($this->facade, $assertionFactory, $printer, $command, $cacheRepository, $testResultFactory);
+        $testRunnerFactory      = new GenericTestRunnerFactory($this->engine, $assertionFactory, $printer, $command, $cacheRepository, $testResultFactory);
         $testRunner             = $testRunnerFactory->make($testSuite);
 
         try {

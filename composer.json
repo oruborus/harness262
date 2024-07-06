@@ -32,6 +32,7 @@
         "fidry/cpu-core-counter": "*"
     },
     "require-dev": {
+        "oru/ecma262core": "dev-main",
         "phpunit/phpunit": "^10.0",
         "psalm/plugin-phpunit": "^0.18.4",
         "symplify/easy-coding-standard": "11.2.4.72",

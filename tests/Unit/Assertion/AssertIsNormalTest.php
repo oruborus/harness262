@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -15,12 +15,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assertion;
 
+use Oru\EcmaScript\Core\Contracts\Agent;
+use Oru\EcmaScript\Core\Contracts\Values\NumberValue;
+use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
+use Oru\EcmaScript\Core\Contracts\Values\StringValue;
+use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
+use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 use Oru\Harness\Assertion\AssertIsNormal;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Assertion\Exception\EngineException;
-use Oru\Harness\Contracts\Facade;
-use Oru\Harness\Frontmatter\GenericFrontmatter;
-use Oru\Harness\Test\GenericTestConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -29,17 +32,27 @@ use Throwable;
 #[CoversClass(AssertIsNormal::class)]
 final class AssertIsNormalTest extends TestCase
 {
+    private function createAssertIsNormal(): AssertIsNormal
+    {
+        $agent = $this->createStub(Agent::class);
+        $valueFactory = $this->createStub(ValueFactory::class);
+        $valueFactory->method('createString')->willReturnCallback(
+            fn (string $string): StringValue => $this->createConfiguredStub(StringValue::class, [
+                'getValue' => $string,
+                '__toString' => $string,
+            ])
+        );
+
+        return new AssertIsNormal($agent, $valueFactory);
+    }
+
     #[Test]
     public function throwsWhenProvidedValueIsNeitherThrowCompletionNorNormalCompletion(): void
     {
         $this->expectExceptionObject(new AssertionFailedException('Expected `NormalCompletion`'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isNormalCompletion' => false,
-            'isThrowCompletion' => false
-        ]);
+        $assertion = $this->createAssertIsNormal();
 
-        $assertion = new AssertIsNormal($facadeMock);
         $assertion->assert('AbruptCompletion');
     }
 
@@ -48,14 +61,14 @@ final class AssertIsNormalTest extends TestCase
     {
         $this->expectExceptionObject(new AssertionFailedException('123.1'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isNormalCompletion' => false,
-            'isThrowCompletion' => true,
-            'completionGetValue' => 123.1
+        $assertion = $this->createAssertIsNormal();
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $this->createConfiguredStub(NumberValue::class, [
+                'getValue' => 123.1,
+            ]),
         ]);
 
-        $assertion = new AssertIsNormal($facadeMock);
-        $assertion->assert('ThrowCompletion');
+        $assertion->assert($value);
     }
 
     #[Test]
@@ -63,16 +76,17 @@ final class AssertIsNormalTest extends TestCase
     {
         $this->expectExceptionObject(new EngineException('Object property `message` was empty'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isThrowCompletion' => true,
-            'isNormalCompletion' => false,
-            'isObject' => true,
-            'completionGetValue' => 'ObjectValue',
-            'objectGetAsString' => null
+        $assertion = $this->createAssertIsNormal();
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+                'get' => $this->createConfiguredStub(StringValue::class, [
+                    'getValue' => '',
+                    '__toString' => '',
+                ])
+            ]),
         ]);
 
-        $assertion = new AssertIsNormal($facadeMock);
-        $assertion->assert('ThrowCompletion');
+        $assertion->assert($value);
     }
 
     #[Test]
@@ -80,29 +94,25 @@ final class AssertIsNormalTest extends TestCase
     {
         $this->expectExceptionObject(new EngineException('Could not convert object property `message` to string'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isNormalCompletion' => false,
-            'isThrowCompletion' => true,
-            'isObject' => true,
-            'completionGetValue' => 'ObjectValue'
-        ]);
-        $facadeMock->method('objectGetAsString')->willThrowException(
-            $this->createMock(Throwable::class)
+        $assertion = $this->createAssertIsNormal();
+        $object = $this->createStub(ObjectValue::class);
+        $object->method('get')->willThrowException(
+            $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class])
         );
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $object
+        ]);
 
-        $assertion = new AssertIsNormal($facadeMock);
-        $assertion->assert('ThrowCompletion');
+        $assertion->assert($value);
     }
 
     #[Test]
     public function returnsWhenProvidedValueIsNotAnAbruptCompletion(): void
     {
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isNormalCompletion' => true
-        ]);
+        $assertion = $this->createAssertIsNormal();
+        $value = $this->createStub(StringValue::class);
 
-        $assertion = new AssertIsNormal($facadeMock);
-        $actual = $assertion->assert('UndefinedValue');
+        $actual = $assertion->assert($value);
 
         $this->assertNull($actual);
     }
@@ -110,17 +120,18 @@ final class AssertIsNormalTest extends TestCase
     #[Test]
     public function throwsWithTheContainedMessageInProvidedThrowCompletion(): void
     {
-        $expectedMessage = 'Error message';
-        $this->expectExceptionObject(new AssertionFailedException($expectedMessage));
+        $expectedMessage = 12345678.9;
+        $this->expectExceptionObject(new AssertionFailedException((string) $expectedMessage));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isNormalCompletion' => false,
-            'isThrowCompletion' => true,
-            'isObject' => true,
-            'objectGetAsString' => $expectedMessage
+        $assertion = $this->createAssertIsNormal();
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+                'get' => $this->createConfiguredStub(NumberValue::class, [
+                    'getValue' => $expectedMessage,
+                ])
+            ]),
         ]);
 
-        $assertion = new AssertIsNormal($facadeMock);
-        $assertion->assert('ThrowCompletion');
+        $assertion->assert($value);
     }
 }

@@ -19,4 +19,16 @@
     <plugins>
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin" />
     </plugins>
+    <issueHandlers>
+        <InvalidCatch>
+            <errorLevel type="suppress">
+                <directory name="./src"></directory>
+            </errorLevel>
+        </InvalidCatch>
+        <InvalidThrow>
+            <errorLevel type="suppress">
+                <directory name="./src"></directory>
+            </errorLevel>
+        </InvalidThrow>
+    </issueHandlers>
 </psalm>

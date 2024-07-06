@@ -4,7 +4,7 @@ Feature: stop on
     I can use the `--stop-on-*` cli options
 
     Background: Configuration is correct
-        Given a Facade
+        Given an Engine
         And a file named "empty.js" with:
             """
             // Copyright section

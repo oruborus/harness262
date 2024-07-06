@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -18,11 +18,13 @@ namespace Tests\Unit\TestRunner;
 use Closure;
 use Exception;
 use Generator;
+use Oru\EcmaScript\Core\Contracts\Engine;
+use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
+use Oru\EcmaScript\Core\Contracts\Values\UnusedValue;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Assertion\Exception\EngineException;
 use Oru\Harness\Contracts\Assertion;
 use Oru\Harness\Contracts\AssertionFactory;
-use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\Frontmatter;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\FrontmatterInclude;
@@ -54,9 +56,9 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
     #[Test]
     public function skipsTestExecutionWhenRequiredFeatureIsNotImplemented(): void
     {
-        $facadeStub = $this->createStub(Facade::class);
-        $facadeStub->method('engineSupportedFeatures')->willReturn(['supportedFeature1', 'supportedFeature2']);
-        $facadeStub->method('engineRun')->willThrowException($this->createStub(Throwable::class));
+        $engineStub = $this->createStub(Engine::class);
+        $engineStub->method('getSupportedFeatures')->willReturn(['supportedFeature1', 'supportedFeature2']);
+        $engineStub->method('run')->willThrowException($this->createStub(Throwable::class));
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->exactly(2))->method('step');
         $testResultStub = $this->createConfiguredStub(TestResult::class, ['state' => TestResultState::Skip]);
@@ -72,7 +74,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         ]);
 
         $testRunner = new LinearTestRunner(
-            $facadeStub,
+            $engineStub,
             $this->createMock(AssertionFactory::class),
             $printerMock,
             $testResultFactoryMock,
@@ -101,8 +103,9 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         ]);
 
         $testRunner = new LinearTestRunner(
-            $this->createConfiguredStub(Facade::class, [
-                'engineSupportedFeatures' => ['supportedFeature1', 'supportedFeature2']
+            $this->createConfiguredStub(Engine::class, [
+                'getSupportedFeatures' => ['supportedFeature1', 'supportedFeature2'],
+                'run' => $this->createStub(UnusedValue::class),
             ]),
             $this->createStub(AssertionFactory::class),
             $printerMock,
@@ -114,37 +117,14 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
     }
 
     #[Test]
-    public function initializesFacadeBeforeRunningTest(): void
-    {
-        $facadeMock = $this->createMock(Facade::class);
-        $facadeMock->expects($this->once())->method('initialize');
-        $testResultFactoryStub = $this->createTestResultFactoryStub();
-        $testCaseStub = $this->createConfiguredStub(TestCase::class, [
-            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
-                'stopOnCharacteristic' => StopOnCharacteristic::Nothing
-            ])
-        ]);
-
-        $testRunner = new LinearTestRunner(
-            $facadeMock,
-            $this->createStub(AssertionFactory::class),
-            $this->createStub(Printer::class),
-            $testResultFactoryStub
-        );
-
-        $testRunner->add($testCaseStub);
-        $testRunner->run();
-    }
-
-    #[Test]
     public function addsIncludesFromConfigToEngine(): void
     {
-        $facadeMock = $this->createMock(Facade::class);
-        $facadeMock->expects($this->exactly(2))->method('engineAddFiles')->willReturnMap([
+        $engineMock = $this->createMock(Engine::class);
+        $engineMock->expects($this->exactly(2))->method('addFiles')->willReturnMap([
             [FrontmatterInclude::assert->value],
             [FrontmatterInclude::sta->value]
         ]);
-        $facadeMock->method('engineRun')->willReturn('UndefinedValue');
+        $engineMock->method('run')->willReturn($this->createStub(UnusedValue::class));
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('step');
         $testResultFactoryStub = $this->createTestResultFactoryStub();
@@ -158,7 +138,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         ]);
 
         $testRunner = new LinearTestRunner(
-            $facadeMock,
+            $engineMock,
             $this->createStub(AssertionFactory::class),
             $printerMock,
             $testResultFactoryStub,
@@ -171,9 +151,9 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
     #[Test]
     public function addsCodeFromConfigToEngine(): void
     {
-        $facadeMock = $this->createMock(Facade::class);
-        $facadeMock->expects($this->once())->method('engineAddCode')->with('CODE');
-        $facadeMock->method('engineRun')->willReturn('UndefinedValue');
+        $engineMock = $this->createMock(Engine::class);
+        $engineMock->expects($this->once())->method('addCode')->with('CODE');
+        $engineMock->method('run')->willReturn($this->createStub(UnusedValue::class));
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('step');
         $testResultFactoryStub = $this->createTestResultFactoryStub();
@@ -185,7 +165,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         ]);
 
         $testRunner = new LinearTestRunner(
-            $facadeMock,
+            $engineMock,
             $this->createStub(AssertionFactory::class),
             $printerMock,
             $testResultFactoryStub,
@@ -199,8 +179,8 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
     public function returnsAnErrorResultContainingTheThrowableWhenEngineThrows(): void
     {
         $expected = new RuntimeException();
-        $facadeMock = $this->createMock(Facade::class);
-        $facadeMock->expects($this->exactly(2))->method('engineRun')->willThrowException($expected);
+        $engineMock = $this->createMock(Engine::class);
+        $engineMock->expects($this->exactly(2))->method('run')->willThrowException($expected);
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->exactly(2))->method('step');
         $assertionStub = $this->createStub(Assertion::class);
@@ -216,7 +196,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         ]);
 
         $testRunner = new LinearTestRunner(
-            $facadeMock,
+            $engineMock,
             $assertionFactoryStub,
             $printerMock,
             $testResultFactoryMock
@@ -245,8 +225,8 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         ]);
 
         $testRunner = new LinearTestRunner(
-            $this->createConfiguredMock(Facade::class, [
-                'engineRun' => 'UndefinedValue'
+            $this->createConfiguredMock(Engine::class, [
+                'run' => $this->createStub(UnusedValue::class),
             ]),
             $this->createConfiguredMock(AssertionFactory::class, [
                 'make' => $assertionStub
@@ -278,8 +258,8 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         ]);
 
         $testRunner = new LinearTestRunner(
-            $this->createConfiguredStub(Facade::class, [
-                'engineRun' => 'UndefinedValue'
+            $this->createConfiguredStub(Engine::class, [
+                'run' => $this->createStub(UnusedValue::class),
             ]),
             $this->createConfiguredStub(AssertionFactory::class, [
                 'make' => $assertionStub
@@ -308,8 +288,8 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         ]);
 
         $testRunner = new LinearTestRunner(
-            $this->createConfiguredStub(Facade::class, [
-                'engineRun' => 'UndefinedValue'
+            $this->createConfiguredStub(Engine::class, [
+                'run' => $this->createStub(UnusedValue::class),
             ]),
             $this->createStub(AssertionFactory::class),
             $printerMock,
@@ -324,11 +304,12 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
     public function capturesAndPerformsAssertionOnEngineOutputForAsyncTestWhenTestCaseReturnsANormalCompletion(): void
     {
         $expected = 'TEST OUTPUT';
-        $facadeStub = $this->createStub(Facade::class);
-        $facadeStub->method('engineRun')->willReturnCallback(static function () use ($expected): void {
+        $engineStub = $this->createStub(Engine::class);
+        $engineStub->method('run')->willReturnCallback(function () use ($expected): UnusedValue {
             echo $expected;
+
+            return $this->createStub(UnusedValue::class);
         });
-        $facadeStub->method('isNormalCompletion')->willReturn(true);
         $assertionMock = $this->createMock(Assertion::class);
         $assertionMock->expects($this->once())->method('assert')->with($this->identicalTo($expected));
         $assertionFactoryMock = $this->createConfiguredMock(AssertionFactory::class, [
@@ -345,7 +326,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         ]);
 
         $testRunner = new LinearTestRunner(
-            $facadeStub,
+            $engineStub,
             $assertionFactoryMock,
             $this->createStub(Printer::class),
             $testResultFactoryStub,
@@ -358,14 +339,13 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
     #[Test]
     public function capturesAndPerformsAssertionOnEngineOutputForAsyncTestWhenTestCaseReturnsAnAbruptCompletion(): void
     {
-        $expected = (object) [];
-        $facadeStub = $this->createStub(Facade::class);
-        $facadeStub->method('engineRun')->willReturnCallback(static function () use ($expected): mixed {
+        $expected = $this->createStubForIntersectionOfInterfaces([Throwable::class, AbruptCompletion::class]);
+        $engineStub = $this->createStub(Engine::class);
+        $engineStub->method('run')->willReturnCallback(static function () use ($expected): mixed {
             echo 'SOME OUTPUT';
 
             return $expected;
         });
-        $facadeStub->method('isNormalCompletion')->willReturn(false);
         $assertionMock = $this->createMock(Assertion::class);
         $assertionMock->expects($this->once())->method('assert')->with($this->identicalTo($expected));
         $assertionFactoryMock = $this->createConfiguredMock(AssertionFactory::class, [
@@ -382,7 +362,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         ]);
 
         $testRunner = new LinearTestRunner(
-            $facadeStub,
+            $engineStub,
             $assertionFactoryMock,
             $this->createStub(Printer::class),
             $testResultFactoryStub,
@@ -396,14 +376,16 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
     #[DataProvider('provideStopOnCharacteristicForEngineDefects')]
     public function stopsTestExecutionWhenEngineThrowsAndAccordingStopOnCharacteristicIsSet(StopOnCharacteristic $stopOnCharacteristic, array $expected): void
     {
-        $facadeStub = $this->createStub(Facade::class);
-        $facadeStub->method('engineRun')->willReturnCallback(function (): void {
+        $engineStub = $this->createStub(Engine::class);
+        $engineStub->method('run')->willReturnCallback(function (): UnusedValue {
             static $callCount = 0;
             $callCount++;
 
             if ($callCount === 2) {
                 throw $this->createStub(Throwable::class);
             }
+
+            return $this->createStub(UnusedValue::class);
         });
         $testCaseStub = $this->createConfiguredStub(TestCase::class, [
             'testSuite' => $this->createConfiguredStub(TestSuite::class, [
@@ -411,7 +393,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             ])
         ]);
         $testRunner = new LinearTestRunner(
-            $facadeStub,
+            $engineStub,
             $this->createStub(AssertionFactory::class),
             $this->createStub(Printer::class),
             $this->createTestResultFactoryStub(),
@@ -425,7 +407,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         } catch (StopOnCharacteristicMetException) {
         }
 
-        $actual = array_map(static fn(TestResult $result): TestResultState => $result->state(), $testRunner->results());
+        $actual = array_map(static fn (TestResult $result): TestResultState => $result->state(), $testRunner->results());
 
         $this->assertSame($expected, $actual);
     }
@@ -456,7 +438,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
             ])
         ]);
         $testRunner = new LinearTestRunner(
-            $this->createStub(Facade::class),
+            $this->createConfiguredStub(Engine::class, ['run' => $this->createStub(UnusedValue::class)]),
             $this->createConfiguredStub(AssertionFactory::class, ['make' => $assertionStub]),
             $this->createStub(Printer::class),
             $this->createTestResultFactoryStub(),
@@ -472,7 +454,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         } catch (StopOnCharacteristicMetException) {
         }
 
-        $actual = array_map(static fn(TestResult $result): TestResultState => $result->state(), $testRunner->results());
+        $actual = array_map(static fn (TestResult $result): TestResultState => $result->state(), $testRunner->results());
 
         $this->assertSame($expected, $actual);
     }
@@ -488,10 +470,12 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
 
     private function createTestResultFactoryStub(): TestResultFactory
     {
-        return new class ($this->createConfiguredStub(...)) implements TestResultFactory {
+        return new class($this->createConfiguredStub(...)) implements TestResultFactory
+        {
             public function __construct(
                 private Closure $createConfiguredStub,
-            ) {}
+            ) {
+            }
 
             /**
              * @template TOriginal

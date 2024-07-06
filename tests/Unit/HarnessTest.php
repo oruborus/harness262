@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -16,8 +16,8 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Generator;
+use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\Harness\Cli\Exception\InvalidOptionException;
-use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Harness;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -37,7 +37,7 @@ final class HarnessTest extends TestCase
     {
         $this->expectExceptionObject(new InvalidOptionException("Invalid option `{$invalidOption}` provided"));
 
-        $harness = new Harness($this->createStub(Facade::class));
+        $harness = new Harness($this->createStub(Engine::class), '');
 
         $harness->run(['harness.php', $invalidOption]);
     }
@@ -57,7 +57,7 @@ final class HarnessTest extends TestCase
                 PHP_EOL . 'The following warning was issued:' .
                 PHP_EOL . '"Compilation failed: missing closing parenthesis at offset 1"' . PHP_EOL
         );
-        $harness = new Harness($this->createStub(Facade::class));
+        $harness = new Harness($this->createStub(Engine::class), '');
 
         $actual = $harness->run(['harness.php', './tests/Unit/Fixtures/TestCase/basic.js', '--include', '(']);
 
@@ -72,7 +72,7 @@ final class HarnessTest extends TestCase
             PHP_EOL . 'EcmaScript Test Harness' . PHP_EOL .
                 PHP_EOL . "Provided path `{$expected}` does not exist" . PHP_EOL
         );
-        $harness = new Harness($this->createStub(Facade::class));
+        $harness = new Harness($this->createStub(Engine::class), '');
 
         $actual = $harness->run(['harness.php', $expected]);
 
@@ -86,7 +86,7 @@ final class HarnessTest extends TestCase
             PHP_EOL . 'EcmaScript Test Harness' . PHP_EOL .
                 PHP_EOL . 'No test path specified. Aborting.' . PHP_EOL
         );
-        $harness = new Harness($this->createStub(Facade::class));
+        $harness = new Harness($this->createStub(Engine::class), '');
 
         $actual = $harness->run(['harness.php']);
 

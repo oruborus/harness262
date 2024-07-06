@@ -55,20 +55,20 @@ final class FeatureContext implements Context
         array_unshift($this->temporaries, new NamedTemporaryFileHelper($name, $data));
     }
 
-    #[Given('a Facade')]
-    public function aFacade(): void
+    #[Given('an Engine')]
+    public function anEngine(): void
     {
         $content = <<<EOF
         <?php
 
         declare(strict_types=1);
-
-        use Oru\Harness\Contracts\Facade;
-        use Tests\Utility\Facade\TestFacade;
         
         require './vendor/autoload.php';
 
-        return static fn(): Facade => new TestFacade();
+        return [
+            'engine' => new \Tests\Utility\Engine\TestEngine(),
+            'path'   => __FILE__,
+        ];
         EOF;
 
         $this->aFileNamedWith('Harness.php', $content);
@@ -112,7 +112,7 @@ final class FeatureContext implements Context
 
         $offset = 0;
         $parts = [];
-        for($i = 1; $i <= $matchResult; $i++) {
+        for ($i = 1; $i <= $matchResult; $i++) {
             /**
              * @psalm-suppress PossiblyUndefinedArrayOffset
              * @var string $match
@@ -132,7 +132,7 @@ final class FeatureContext implements Context
             }
 
             $found = false;
-            foreach($this->generatePermutations($match) as $permutation) {
+            foreach ($this->generatePermutations($match) as $permutation) {
                 if ($actual === $permutation) {
                     $parts[] = $permutation;
                     $found = true;

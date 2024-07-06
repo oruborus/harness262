@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -96,6 +96,7 @@ final readonly class GenericFrontmatter implements Frontmatter
         $keys = array_keys($data);
         $data['flags'] ??= [];
         $data['includes'] ??= [];
+        $data['info'] ??= null;
 
         if ($missingRequiredFields = array_diff(static::REQUIRED_KEYS, $keys)) {
             throw new MissingRequiredKeyException('Required frontmatter fields where not provided: ' . implode(', ', $missingRequiredFields));
@@ -145,6 +146,7 @@ final readonly class GenericFrontmatter implements Frontmatter
             }
         }
 
+        /** @psalm-suppress InvalidPropertyAssignmentValue */
         $this->data = $data;
     }
 
@@ -160,7 +162,7 @@ final readonly class GenericFrontmatter implements Frontmatter
 
     public function info(): ?string
     {
-        return $this->data['info'] ?? null;
+        return $this->data['info'];
     }
 
     public function negative(): ?FrontmatterNegative

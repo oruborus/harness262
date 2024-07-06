@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -46,7 +46,8 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
     public function __construct(
         private Storage $storage,
         private TestSuite $testSuite
-    ) {}
+    ) {
+    }
 
     /**
      * @return TestCase[]
@@ -60,7 +61,7 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
     public function make(string ...$paths): array
     {
         $testCases = [];
-        foreach($paths as $path) {
+        foreach ($paths as $path) {
             $testCases = [...$testCases, ...$this->makeFromSinglePath($path)];
         }
 
@@ -89,6 +90,7 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
             throw new MissingFrontmatterException("Provided test file does not contain a frontmatter section: {$path}");
         }
 
+        /** @psalm-suppress RiskyTruthyFalsyComparison */
         $meta = preg_split(
             pattern: '/[\x{000A}\x{000D}\x{2028}\x{2029}]/u',
             subject: $match[$index],
@@ -96,10 +98,11 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
         ) ?: [];
 
         $rawFrontmatter = '';
+        /** @psalm-suppress RiskyTruthyFalsyComparison */
         if ($line = reset($meta)) {
             $identSize = strlen($line) - strlen(ltrim($line));
 
-            $meta = array_map(static fn(string $line): string => substr($line, $identSize), $meta);
+            $meta = array_map(static fn (string $line): string => substr($line, $identSize), $meta);
             $rawFrontmatter = implode(PHP_EOL, $meta);
         }
 

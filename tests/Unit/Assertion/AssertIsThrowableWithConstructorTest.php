@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -15,10 +15,18 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assertion;
 
+use Oru\EcmaScript\Core\Contracts\Agent;
+use Oru\EcmaScript\Core\Contracts\Values\BooleanValue;
+use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
+use Oru\EcmaScript\Core\Contracts\Values\NumberValue;
+use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
+use Oru\EcmaScript\Core\Contracts\Values\StringValue;
+use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
+use Oru\EcmaScript\Core\Contracts\Values\UnusedValue;
+use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 use Oru\Harness\Assertion\AssertIsThrowableWithConstructor;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Assertion\Exception\EngineException;
-use Oru\Harness\Contracts\Facade;
 use Oru\Harness\Contracts\FrontmatterNegative;
 use Oru\Harness\Contracts\FrontmatterNegativePhase;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -29,38 +37,45 @@ use Throwable;
 #[CoversClass(AssertIsThrowableWithConstructor::class)]
 final class AssertIsThrowableWithConstructorTest extends TestCase
 {
+    private function createAssertIsThrowableWithConstructor(?FrontmatterNegative $frontmatterNegative = null): AssertIsThrowableWithConstructor
+    {
+        $agent = $this->createStub(Agent::class);
+        $valueFactory = $this->createStub(ValueFactory::class);
+        $valueFactory->method('createString')->willReturnCallback(
+            fn (string $string): StringValue => $this->createConfiguredStub(StringValue::class, [
+                'getValue' => $string,
+                '__toString' => $string,
+            ])
+        );
+
+        $frontmatterNegative ??= $this->createStub(FrontmatterNegative::class);
+
+        return new AssertIsThrowableWithConstructor($agent, $valueFactory, $frontmatterNegative);
+    }
+
     #[Test]
     public function throwsWhenProvidedValueIsNotAThrowCompletion(): void
     {
         $this->expectExceptionObject(new AssertionFailedException('Expected `ThrowCompletion`'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isThrowCompletion' => false,
-        ]);
+        $assertion = $this->createAssertIsThrowableWithConstructor();
 
-        $assertion = new AssertIsThrowableWithConstructor(
-            $facadeMock,
-            $this->createMock(FrontmatterNegative::class)
-        );
         $assertion->assert('NOT ThrowCompletion');
     }
 
     #[Test]
     public function throwsWhenProvidedThrowCompletionDoesNotContainAnObject(): void
     {
-        $this->expectExceptionObject(new AssertionFailedException("`ThrowCompletion` does not contain an `ObjectValue`, got 'StringValue'"));
+        $this->expectExceptionObject(new AssertionFailedException("`ThrowCompletion` does not contain an `ObjectValue`, got '12345678.9'"));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isThrowCompletion' => true,
-            'isObject' => false,
-            'toString' => 'StringValue'
+        $assertion = $this->createAssertIsThrowableWithConstructor();
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $this->createConfiguredStub(NumberValue::class, [
+                'getValue' => 12345678.9,
+            ])
         ]);
 
-        $assertion = new AssertIsThrowableWithConstructor(
-            $facadeMock,
-            $this->createMock(FrontmatterNegative::class)
-        );
-        $assertion->assert('StringValue');
+        $assertion->assert($value);
     }
 
     #[Test]
@@ -68,19 +83,16 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
     {
         $this->expectExceptionObject(new EngineException('Could not use `get()` to retrieve `constructor`'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isThrowCompletion' => true,
-            'isObject' => true,
+        $assertion = $this->createAssertIsThrowableWithConstructor();
+        $object = $this->createStub(ObjectValue::class);
+        $object->method('get')->willThrowException(
+            $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class])
+        );
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $object
         ]);
-        $facadeMock->method('objectGet')->willThrowException(
-            $this->createMock(Throwable::class)
-        );
 
-        $assertion = new AssertIsThrowableWithConstructor(
-            $facadeMock,
-            $this->createMock(FrontmatterNegative::class)
-        );
-        $assertion->assert('ThrowCompletion');
+        $assertion->assert($value);
     }
 
     #[Test]
@@ -88,38 +100,33 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
     {
         $this->expectExceptionObject(new AssertionFailedException('Constructor value is not an `ObjectValue`'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isThrowCompletion' => true,
-            'objectGet' => 'UndefinedValue'
+        $assertion = $this->createAssertIsThrowableWithConstructor();
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+                'get' => $this->createStub(StringValue::class),
+            ])
         ]);
-        $facadeMock->method('isObject')->willReturn(true, false);
 
-        $assertion = new AssertIsThrowableWithConstructor(
-            $facadeMock,
-            $this->createMock(FrontmatterNegative::class)
-        );
-        $assertion->assert('ThrowCompletion');
+        $assertion->assert($value);
     }
 
     #[Test]
     public function throwsExceptionWhenConstructorPropertyCheckThrows(): void
     {
-        $this->expectExceptionObject(new EngineException('Could not use `hasName()` to check existence of `name`'));
+        $this->expectExceptionObject(new EngineException('Could not use `hasProperty()` to check existence of `name`'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isThrowCompletion' => true,
-            'isObject' => true,
-            'objectGet' => 'ObjectValue'
+        $assertion = $this->createAssertIsThrowableWithConstructor();
+        $object = $this->createStub(ObjectValue::class);
+        $object->method('hasProperty')->willThrowException(
+            $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class])
+        );
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+                'get' => $object,
+            ])
         ]);
-        $facadeMock->method('objectHasProperty')->willThrowException(
-            $this->createMock(Throwable::class)
-        );
 
-        $assertion = new AssertIsThrowableWithConstructor(
-            $facadeMock,
-            $this->createMock(FrontmatterNegative::class)
-        );
-        $assertion->assert('ThrowCompletion');
+        $assertion->assert($value);
     }
 
     #[Test]
@@ -127,18 +134,18 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
     {
         $this->expectExceptionObject(new AssertionFailedException('Constructor does not have a name'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isThrowCompletion' => true,
-            'isObject' => true,
-            'objectGet' => 'ObjectValue',
-            'objectHasProperty' => false
+        $assertion = $this->createAssertIsThrowableWithConstructor();
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+                'get' => $this->createConfiguredStub(ObjectValue::class, [
+                    'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
+                        'getValue' => false,
+                    ]),
+                ])
+            ])
         ]);
 
-        $assertion = new AssertIsThrowableWithConstructor(
-            $facadeMock,
-            $this->createMock(FrontmatterNegative::class)
-        );
-        $assertion->assert('ThrowCompletion');
+        $assertion->assert($value);
     }
 
     #[Test]
@@ -146,26 +153,22 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
     {
         $this->expectExceptionObject(new EngineException('Could not use `get()` to retrieve `constructor.name`'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isThrowCompletion' => true,
-            'isObject' => true,
-            'objectHasProperty' => true
+        $assertion = $this->createAssertIsThrowableWithConstructor();
+        $object = $this->createConfiguredStub(ObjectValue::class, [
+            'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
+                'getValue' => true,
+            ]),
         ]);
-        $facadeMock->method('objectGet')->willReturnCallback(
-            function (): string {
-                static $count = 0;
-                return match ($count++) {
-                    0 => 'ObjectValue',
-                    default => throw $this->createMock(Throwable::class)
-                };
-            }
+        $object->method('get')->willThrowException(
+            $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class])
         );
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+                'get' => $object,
+            ]),
+        ]);
 
-        $assertion = new AssertIsThrowableWithConstructor(
-            $facadeMock,
-            $this->createMock(FrontmatterNegative::class)
-        );
-        $assertion->assert('ThrowCompletion');
+        $assertion->assert($value);
     }
 
     #[Test]
@@ -173,21 +176,24 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
     {
         $this->expectExceptionObject(new AssertionFailedException('Expected `SyntaxError` but got ``'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isThrowCompletion' => true,
-            'isObject' => true,
-            'objectGet' => 'ObjectValue',
-            'objectHasProperty' => true
-        ]);
-
-        $assertion = new AssertIsThrowableWithConstructor(
-            $facadeMock,
-            $this->createConfiguredMock(FrontmatterNegative::class, [
+        $assertion = $this->createAssertIsThrowableWithConstructor(
+            frontmatterNegative: $this->createConfiguredMock(FrontmatterNegative::class, [
                 'phase' => FrontmatterNegativePhase::parse,
                 'type' => 'SyntaxError'
-            ])
+            ]),
         );
-        $assertion->assert('ThrowCompletion');
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+                'get' => $this->createConfiguredStub(ObjectValue::class, [
+                    'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
+                        'getValue' => true,
+                    ]),
+                    'get' => $this->createStub(StringValue::class),
+                ]),
+            ]),
+        ]);
+
+        $assertion->assert($value);
     }
 
     #[Test]
@@ -195,42 +201,48 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
     {
         $this->expectExceptionObject(new EngineException('Could not convert `name` to string'));
 
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isThrowCompletion' => true,
-            'isObject' => true,
-            'objectGet' => 'ObjectValue',
-            'objectHasProperty' => true
+        $assertion = $this->createAssertIsThrowableWithConstructor();
+        $name = $this->createConfiguredStub(LanguageValue::class, [
+            'getValue' => $this->createStub(UnusedValue::class),
         ]);
-        $facadeMock->method('toString')->willThrowException(
-            $this->createMock(Throwable::class)
-        );
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+                'get' => $this->createConfiguredStub(ObjectValue::class, [
+                    'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
+                        'getValue' => true,
+                    ]),
+                    'get' => $name,
+                ]),
+            ]),
+        ]);
 
-        $assertion = new AssertIsThrowableWithConstructor(
-            $facadeMock,
-            $this->createMock(FrontmatterNegative::class)
-        );
-        $assertion->assert('ThrowCompletion');
+        $assertion->assert($value);
     }
 
     #[Test]
     public function returnsNullWhenConstructorNameMatches(): void
     {
-        $facadeMock = $this->createConfiguredMock(Facade::class, [
-            'isThrowCompletion' => true,
-            'isObject' => true,
-            'objectGet' => 'ObjectValue',
-            'objectHasProperty' => true,
-            'toString' => 'SyntaxError'
-        ]);
-
-        $assertion = new AssertIsThrowableWithConstructor(
-            $facadeMock,
-            $this->createConfiguredMock(FrontmatterNegative::class, [
+        $assertion = $this->createAssertIsThrowableWithConstructor(
+            frontmatterNegative: $this->createConfiguredMock(FrontmatterNegative::class, [
                 'phase' => FrontmatterNegativePhase::parse,
                 'type' => 'SyntaxError'
-            ])
+            ]),
         );
-        $actual = $assertion->assert('ThrowCompletion');
+        $value = $this->createConfiguredStub(ThrowCompletion::class, [
+            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+                'get' => $this->createConfiguredStub(ObjectValue::class, [
+                    'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
+                        'getValue' => true,
+                    ]),
+                    'get' => $this->createConfiguredStub(StringValue::class, [
+                        'getValue' => 'SyntaxError',
+                        '__toString' => 'SyntaxError',
+                    ]),
+                ]),
+            ]),
+        ]);
+
+        $actual = $assertion->assert($value);
 
         $this->assertNull($actual);
     }

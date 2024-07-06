@@ -4,7 +4,7 @@ Feature: harness
     I need to collect the test cases from files and execute them
 
     Background: Configuration is correct
-        Given a Facade
+        Given an Engine
 
     Scenario: Single test excecution
         Given a file named "test.js" with:

@@ -4,7 +4,7 @@ Feature: regex filtering
     I can use the `--include` and `--exclude` cli options to filter using regex.
 
     Background: Configuration is correct
-        Given a Facade
+        Given an Engine
         And a directory named "directory"
         And a file named "directory/empty.js" with:
             """
