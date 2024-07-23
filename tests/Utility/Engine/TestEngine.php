@@ -21,9 +21,6 @@ use Oru\EcmaScript\Core\Contracts\Agent;
 use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
 use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
-use Oru\EcmaScript\Core\Contracts\Values\EmptyValue;
-use Oru\EcmaScript\Core\Contracts\Values\StringValue;
-use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\UnusedValue;
 
 use function array_filter;
@@ -69,18 +66,7 @@ final class TestEngine implements Engine
         }
 
         if ($this->fails) {
-            return new class implements ThrowCompletion
-            {
-                public function getValue(): LanguageValue
-                {
-                    return new TestStringValue('Planned failure');
-                }
-
-                public function getTarget(): StringValue|EmptyValue
-                {
-                    throw new \RuntimeException('`ThrowCompletion::getTarget()` should not be called');
-                }
-            };
+            return new TestThrowCompletion();
         }
 
         return new class implements UnusedValue
