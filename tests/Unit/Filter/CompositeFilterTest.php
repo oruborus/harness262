@@ -30,11 +30,11 @@ final class CompositeFilterTest extends PHPUnitTestCase
     {
         $count = 5;
         $testCases = [];
-        for($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $testCases[] = $this->createStub(TestCase::class);
         }
         $filterMocks = [];
-        for($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $filterMock = $this->createMock(Filter::class);
             $filterMock->expects($this->once())->method('apply')->with(...$testCases)->willReturn($testCases);
             $filterMocks[] = $filterMock;

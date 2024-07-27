@@ -29,7 +29,7 @@ use Tests\Acceptance\Bootstrap\Utility\TemporaryDirectoryHelper;
 use function array_unshift;
 use function implode;
 use function preg_match_all;
-use function shell_exec;
+use function str_replace;
 use function str_split;
 use function strlen;
 use function sort;
@@ -85,7 +85,9 @@ final class FeatureContext implements Context
         $actual = shell_exec($command);
         Assert::assertIsString($actual);
 
-        $this->actual = $actual;
+        // NOTE: Normalize line ending sequence to <LF>, as the actual is
+        //       captured via the shell in behat which might be using <cr><lf>.
+        $this->actual = str_replace("\r\n", "\n", $actual);
     }
 
     /**

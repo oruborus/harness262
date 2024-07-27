@@ -29,7 +29,7 @@ final class PassthroughFilterTest extends PHPUnitTestCase
     {
         $count = 5;
         $expected = [];
-        for($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $expected[] = $this->createStub(TestCase::class);
         }
 

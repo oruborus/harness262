@@ -26,7 +26,8 @@ final readonly class FrontmatterFlagFilter implements Filter
 {
     public function __construct(
         private FrontmatterFlag $flag
-    ) {}
+    ) {
+    }
 
     /**
      * @param TestCase ...$values
@@ -37,7 +38,7 @@ final readonly class FrontmatterFlagFilter implements Filter
     {
         return array_filter(
             $testCases,
-            fn(TestCase $testCase): bool => in_array($this->flag, $testCase->frontmatter()->flags())
+            fn (TestCase $testCase): bool => in_array($this->flag, $testCase->frontmatter()->flags())
         );
     }
 }

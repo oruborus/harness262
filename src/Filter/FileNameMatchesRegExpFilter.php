@@ -30,8 +30,7 @@ final class FileNameMatchesRegExpFilter extends BaseRegExpFilter
     {
         return array_filter(
             $testCases,
-            fn(TestCase $testCase): bool => (bool) preg_match($this->pattern, $testCase->path())
+            fn (TestCase $testCase): bool => (bool) preg_match($this->pattern, $testCase->path())
         );
     }
-
 }

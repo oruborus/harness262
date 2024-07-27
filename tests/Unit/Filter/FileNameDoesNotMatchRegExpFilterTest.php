@@ -30,7 +30,7 @@ final class FileNameDoesNotMatchRegExpFilterTest extends PHPUnitTestCase
         $count = 5;
         $testCaseStubs = [];
         $expected = [];
-        for($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $testCaseStub = $this->createConfiguredStub(TestCase::class, ['path' => "path{$i}"]);
             $testCaseStubs[] = $testCaseStub;
             if ($i !== 2 && $i !== 3) {

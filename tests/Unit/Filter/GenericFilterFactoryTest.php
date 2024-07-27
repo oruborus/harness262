@@ -47,7 +47,7 @@ final class GenericFilterFactoryTest extends TestCase
     public function createsFileNameDoesNotMatchRegExpFilterWhenIncludeOptionIsProvided(): void
     {
         $argumentsParserStub = $this->createStub(ArgumentsParser::class);
-        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn(string $option): bool => $option === 'include');
+        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn (string $option): bool => $option === 'include');
 
         $factory = new GenericFilterFactory($argumentsParserStub);
         $actual = $factory->make();
@@ -59,7 +59,7 @@ final class GenericFilterFactoryTest extends TestCase
     public function createsFileNameMatchesRegExpFilterWhenExcludeOptionIsProvided(): void
     {
         $argumentsParserStub = $this->createStub(ArgumentsParser::class);
-        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn(string $option): bool => $option === 'exclude');
+        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn (string $option): bool => $option === 'exclude');
 
         $factory = new GenericFilterFactory($argumentsParserStub);
         $actual = $factory->make();
@@ -72,7 +72,7 @@ final class GenericFilterFactoryTest extends TestCase
     public function createsFrontmatterFlagFilterWhenFrontmatterOptionIsProvided(string $input): void
     {
         $argumentsParserStub = $this->createStub(ArgumentsParser::class);
-        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn(string $option): bool => $option === $input);
+        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn (string $option): bool => $option === $input);
 
         $factory = new GenericFilterFactory($argumentsParserStub);
         $actual = $factory->make();
@@ -94,7 +94,7 @@ final class GenericFilterFactoryTest extends TestCase
     public function createsImplicitStrictFilterWhenStrictnessOptionIsProvided(string $input): void
     {
         $argumentsParserStub = $this->createStub(ArgumentsParser::class);
-        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn(string $option): bool => $option === $input);
+        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn (string $option): bool => $option === $input);
 
         $factory = new GenericFilterFactory($argumentsParserStub);
         $actual = $factory->make();
@@ -112,7 +112,7 @@ final class GenericFilterFactoryTest extends TestCase
     public function createsCompositeFilterWhenMultipleOptionsAreProvided(): void
     {
         $argumentsParserStub = $this->createStub(ArgumentsParser::class);
-        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn(): bool => true);
+        $argumentsParserStub->method('hasOption')->willReturnCallback(static fn (): bool => true);
 
         $factory = new GenericFilterFactory($argumentsParserStub);
         $actual = $factory->make();

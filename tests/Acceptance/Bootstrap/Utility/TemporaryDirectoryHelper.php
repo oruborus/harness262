@@ -33,8 +33,8 @@ final class TemporaryDirectoryHelper
         $parts = preg_split('/[\/\\\\]/', $path);
 
         $dir = '.';
-        foreach($parts as $part) {
-            if(!is_dir($dir .= "/{$part}")) {
+        foreach ($parts as $part) {
+            if (!is_dir($dir .= "/{$part}")) {
                 array_unshift($this->parts, $dir);
                 mkdir($dir);
             }

@@ -17,4 +17,6 @@ namespace Oru\Harness\Frontmatter\Exception;
 
 use RuntimeException;
 
-final class ParseException extends RuntimeException {}
+final class ParseException extends RuntimeException
+{
+}

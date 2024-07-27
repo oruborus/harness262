@@ -25,7 +25,8 @@ final readonly class ImplicitStrictFilter implements Filter
 {
     public function __construct(
         private ImplicitStrictness $implicitStrictness
-    ) {}
+    ) {
+    }
 
     /**
      * @param TestCase ...$values
@@ -36,7 +37,7 @@ final readonly class ImplicitStrictFilter implements Filter
     {
         return array_filter(
             $testCases,
-            fn(TestCase $testCase): bool => $testCase->implicitStrictness() === $this->implicitStrictness
+            fn (TestCase $testCase): bool => $testCase->implicitStrictness() === $this->implicitStrictness
         );
     }
 }

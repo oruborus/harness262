@@ -28,7 +28,8 @@ final readonly class GenericFilterFactory implements FilterFactory
 {
     public function __construct(
         private ArgumentsParser $argumentsParser
-    ) {}
+    ) {
+    }
 
     /**
      * @throws MalformedRegularExpressionPatternException

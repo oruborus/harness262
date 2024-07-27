@@ -26,7 +26,8 @@ final readonly class CompositeFilter implements Filter
      */
     public function __construct(
         private array $filters
-    ) {}
+    ) {
+    }
 
     /**
      * @param TestCase ...$values
@@ -41,5 +42,4 @@ final readonly class CompositeFilter implements Filter
 
         return $testCases;
     }
-
 }

@@ -29,7 +29,8 @@ final class BaseRegExpFilterTest extends PHPUnitTestCase
     public function failsWhenProvidedRegularExpressionPatternIsNotValid(): void
     {
         try {
-            new class ('(') extends BaseRegExpFilter {
+            new class('(') extends BaseRegExpFilter
+            {
                 /**
                  * @param TestCase ...$values
                  *
@@ -46,6 +47,5 @@ final class BaseRegExpFilterTest extends PHPUnitTestCase
         }
 
         $this->fail('Failed to assert that exception of type "MalformedRegularExpressionPatternException" is thrown');
-
     }
 }
