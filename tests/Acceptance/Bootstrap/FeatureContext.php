@@ -25,12 +25,22 @@ use PHPUnit\Framework\Exception;
 use PHPUnit\Framework\ExpectationFailedException;
 use Tests\Acceptance\Bootstrap\Utility\NamedTemporaryFileHelper;
 use Tests\Acceptance\Bootstrap\Utility\TemporaryDirectoryHelper;
+use Tests\Utility\Engine\Exception\ObjectIdExtractionException;
+use Tests\Utility\Engine\Exception\PidExtractionException;
 
+use function array_unique;
 use function array_unshift;
+use function fclose;
 use function implode;
+use function preg_match;
 use function preg_match_all;
+use function preg_quote;
+use function proc_close;
+use function proc_get_status;
+use function proc_open;
 use function str_replace;
 use function str_split;
+use function stream_get_contents;
 use function strlen;
 use function sort;
 use function substr;
@@ -40,6 +50,8 @@ use const PREG_OFFSET_CAPTURE;
 final class FeatureContext implements Context
 {
     private string $actual = '';
+
+    private int $lastProcessId = 0;
 
     private array $temporaries = [];
 
@@ -65,10 +77,7 @@ final class FeatureContext implements Context
         
         require './vendor/autoload.php';
 
-        return [
-            'engine' => new \Tests\Utility\Engine\TestEngine(),
-            'path'   => __FILE__,
-        ];
+        return new \Tests\Utility\Engine\TestEngine();
         EOF;
 
         $this->aFileNamedWith('Harness.php', $content);
@@ -81,8 +90,15 @@ final class FeatureContext implements Context
     #[When('I run :command')]
     public function iRun(string $command): void
     {
-        /** @psalm-suppress ForbiddenCode */
-        $actual = shell_exec($command);
+        $process = proc_open($command, [1 => ["pipe", "w"]], $pipes, options: ['bypass_shell' => true]);
+
+        $this->lastProcessId = proc_get_status($process)['pid'];
+
+        $actual = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+
+        proc_close($process);
+
         Assert::assertIsString($actual);
 
         // NOTE: Normalize line ending sequence to <LF>, as the actual is
@@ -178,5 +194,33 @@ final class FeatureContext implements Context
             yield from $this->generatePermutations($string, $start + 1, $end);
             [$string[$start], $string[$i]] = [$string[$i], $string[$start]];
         }
+    }
+
+    /**
+     * @throws Exception
+     * @throws ExpectationFailedException
+     */
+    #[Then('a new process gets spawned')]
+    public function aNewProcessGetsSpawned(): void
+    {
+        $pattern = '/' . preg_quote(PidExtractionException::class, '/') . ': (?<pid>[+-]?\d+)/';
+        $found = preg_match($pattern, $this->actual, $matches);
+
+        Assert::assertSame(1, $found, 'Could not extract PID from child process');
+        Assert::assertNotSame($this->lastProcessId, (int) $matches['pid'], 'Could not detect the creation of another process');
+    }
+
+    /**
+     * @throws Exception
+     * @throws ExpectationFailedException
+     */
+    #[Then('a new engine is used')]
+    public function aNewEngineIsUsed(): void
+    {
+        $pattern = '/' . preg_quote(ObjectIdExtractionException::class, '/') . ': (?<oid>[+-]?\d+)/';
+        $found = preg_match_all($pattern, $this->actual, $matches);
+
+        Assert::assertGreaterThan(1, $found, 'Could not extract more than one engine object id');
+        Assert::assertSame($matches['oid'], array_unique($matches['oid']), 'Could not verify the use of a new engine for each test case as the list of engine object ids is not unique');
     }
 }

@@ -15,9 +15,9 @@ declare(strict_types=1);
 
 namespace Oru\Harness\Assertion;
 
-use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\Harness\Contracts\Assertion;
 use Oru\Harness\Contracts\AssertionFactory;
+use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\TestCase;
 
@@ -26,14 +26,15 @@ use function in_array;
 final readonly class GenericAssertionFactory implements AssertionFactory
 {
     public function __construct(
-        private Engine $engine
+        private EngineFactory $engineFactory,
     ) {
     }
 
     public function make(TestCase $testCase): Assertion
     {
-        $agent = $this->engine->getAgent();
-        $valueFactory = $this->engine->getAgent()->getInterpreter()->getValueFactory();
+        $engine       = $this->engineFactory->make();
+        $agent        = $engine->getAgent();
+        $valueFactory = $agent->getInterpreter()->getValueFactory();
 
         if ($negative = $testCase->frontmatter()->negative()) {
             return new AssertIsThrowableWithConstructor($agent, $valueFactory, $negative);

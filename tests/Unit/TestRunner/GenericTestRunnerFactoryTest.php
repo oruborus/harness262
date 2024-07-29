@@ -16,10 +16,10 @@ declare(strict_types=1);
 namespace Tests\Unit\TestRunner;
 
 use Generator;
-use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\CacheRepository;
 use Oru\Harness\Contracts\Command;
+use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestResultFactory;
@@ -49,7 +49,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
             'stopOnCharacteristic' => StopOnCharacteristic::Nothing
         ]);
         $factory = new GenericTestRunnerFactory(
-            $this->createStub(Engine::class),
+            $this->createStub(EngineFactory::class),
             $this->createStub(AssertionFactory::class),
             $this->createStub(Printer::class),
             $this->createStub(Command::class),
@@ -83,7 +83,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
             'stopOnCharacteristic' => StopOnCharacteristic::Nothing
         ]);
         $factory = new GenericTestRunnerFactory(
-            $this->createStub(Engine::class),
+            $this->createStub(EngineFactory::class),
             $this->createStub(AssertionFactory::class),
             $this->createStub(Printer::class),
             $this->createStub(Command::class),
@@ -102,7 +102,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
     public function createsCacheTestRunnerWhenCachingIsEnabledForNonDebugModes(TestRunnerMode $mode): void
     {
         $factory = new GenericTestRunnerFactory(
-            $this->createStub(Engine::class),
+            $this->createStub(EngineFactory::class),
             $this->createStub(AssertionFactory::class),
             $this->createStub(Printer::class),
             $this->createStub(Command::class),

@@ -13,8 +13,11 @@
 
 declare(strict_types=1);
 
+use Oru\Harness\EngineFactory\GenericEngineFactory;
 use Oru\Harness\Harness;
 
 include './vendor/autoload.php';
 
-(new Harness(...(require './Harness.php')))->run($argv);
+$engineFactory = new GenericEngineFactory(realpath('./Harness.php'));
+
+(new Harness($engineFactory))->run($argv);

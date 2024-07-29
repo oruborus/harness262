@@ -15,7 +15,6 @@ declare(strict_types=1);
 
 namespace Oru\Harness;
 
-use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Cache\GenericCacheRepositoryFactory;
 use Oru\Harness\Cli\CliArgumentsParser;
@@ -24,6 +23,7 @@ use Oru\Harness\Cli\Exception\UnknownOptionException;
 use Oru\Harness\Command\ClonedPhpCommand;
 use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
+use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Filter\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Filter\GenericFilterFactory;
 use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
@@ -76,12 +76,11 @@ final readonly class Harness
     private TemporaryFileHandler $temporaryFileHandler;
 
     public function __construct(
-        private Engine $engine,
-        string $path,
+        private EngineFactory $engineFactory,
     ) {
         $contents = str_replace(
             '{{CONFIG_PATH}}',
-            $path,
+            $engineFactory->path(),
             file_get_contents(realpath(static::TEMPLATE_PATH))
         );
         $this->temporaryFileHandler = new TemporaryFileHandler($contents);
@@ -106,7 +105,7 @@ final readonly class Harness
         $argumentsParser        = new CliArgumentsParser($arguments, static::CLI_OPTIONS);
         $printerFactory         = new GenericPrinterFactory();
         $outputFactory          = new GenericOutputFactory();
-        $assertionFactory       = new GenericAssertionFactory($this->engine);
+        $assertionFactory       = new GenericAssertionFactory($this->engineFactory);
         $command                = new ClonedPhpCommand(realpath($this->temporaryFileHandler->path()));
 
         $outputConfigFactory    = new OutputConfigFactory($argumentsParser);
@@ -142,7 +141,7 @@ final readonly class Harness
         $cacheRepository        = $cacheRepositoryFactory->make($testSuite);
 
         $testResultFactory      = new GenericTestResultFactory();
-        $testRunnerFactory      = new GenericTestRunnerFactory($this->engine, $assertionFactory, $printer, $command, $cacheRepository, $testResultFactory);
+        $testRunnerFactory      = new GenericTestRunnerFactory($this->engineFactory, $assertionFactory, $printer, $command, $cacheRepository, $testResultFactory);
         $testRunner             = $testRunnerFactory->make($testSuite);
 
         try {

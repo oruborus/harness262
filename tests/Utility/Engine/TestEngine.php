@@ -22,6 +22,8 @@ use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
 use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\UnusedValue;
+use Tests\Utility\Engine\Exception\ObjectIdExtractionException;
+use Tests\Utility\Engine\Exception\PidExtractionException;
 
 use function array_filter;
 use function strpos;
@@ -31,6 +33,10 @@ final class TestEngine implements Engine
     private bool $fails = false;
 
     private bool $errors = false;
+
+    private bool $emitsPid = false;
+
+    private bool $emitsObjectId = false;
 
     public function container(): Container
     {
@@ -52,6 +58,8 @@ final class TestEngine implements Engine
     {
         $this->fails = strpos($source, 'fail') !== false;
         $this->errors = strpos($source, 'error') !== false;
+        $this->emitsPid = strpos($source, 'pid') !== false;
+        $this->emitsObjectId = strpos($source, 'oid') !== false;
     }
 
     public function addJob(callable $job): void
@@ -67,6 +75,14 @@ final class TestEngine implements Engine
 
         if ($this->fails) {
             return new TestThrowCompletion();
+        }
+
+        if ($this->emitsPid) {
+            throw new PidExtractionException();
+        }
+
+        if ($this->emitsObjectId) {
+            throw new ObjectIdExtractionException();
         }
 
         return new class implements UnusedValue

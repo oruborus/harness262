@@ -19,6 +19,7 @@ use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Contracts\AssertionFactory;
+use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
@@ -46,7 +47,7 @@ final class LinearTestRunner implements TestRunner
     private array $results = [];
 
     public function __construct(
-        private readonly Engine $engine,
+        private readonly EngineFactory $engineFactory,
         private readonly AssertionFactory $assertionFactory,
         private readonly Printer $printer,
         private readonly TestResultFactory $testResultFactory,
@@ -64,7 +65,9 @@ final class LinearTestRunner implements TestRunner
     public function run(): array
     {
         foreach ($this->testCases as $testCase) {
-            $testResult = $this->runTestCase($testCase);
+            $engine = $this->engineFactory->make();
+
+            $testResult = $this->runTestCase($engine, $testCase);
 
             $this->results[] = $testResult;
             $this->printer->step($testResult->state());
@@ -83,22 +86,22 @@ final class LinearTestRunner implements TestRunner
         return $this->results;
     }
 
-    private function hasUnsupportedFeatures(TestCase $testCase): bool
+    private function hasUnsupportedFeatures(Engine $engine, TestCase $testCase): bool
     {
-        return (bool) array_diff($testCase->frontmatter()->features(), $this->engine->getSupportedFeatures());
+        return (bool) array_diff($testCase->frontmatter()->features(), $engine->getSupportedFeatures());
     }
 
-    private function runTestCase(TestCase $testCase): TestResult
+    private function runTestCase(Engine $engine, TestCase $testCase): TestResult
     {
-        if ($this->hasUnsupportedFeatures($testCase)) {
+        if ($this->hasUnsupportedFeatures($engine, $testCase)) {
             return $this->testResultFactory->makeSkipped($testCase->path());
         }
 
         foreach ($testCase->frontmatter()->includes() as $include) {
-            $this->engine->addFiles($include->value);
+            $engine->addFiles($include->value);
         }
 
-        $this->engine->addCode($testCase->content());
+        $engine->addCode($testCase->content());
 
         $assertion = $this->assertionFactory->make($testCase);
 
@@ -106,7 +109,7 @@ final class LinearTestRunner implements TestRunner
             /**
              * @psalm-suppress MixedAssignment  Test outcomes intentionally return `mixed`
              */
-            $actual = $this->runTestCodeInEngine($testCase);
+            $actual = $this->runTestCodeInEngine($engine, $testCase);
             $assertion->assert($actual);
             return $this->testResultFactory->makeSuccessful($testCase->path(), [], 0);
         } catch (AssertionFailedException $assertionFailedException) {
@@ -116,11 +119,11 @@ final class LinearTestRunner implements TestRunner
         }
     }
 
-    private function runTestCodeInEngine(TestCase $testCase): mixed
+    private function runTestCodeInEngine(Engine $engine, TestCase $testCase): mixed
     {
         $outputBuffer = new OutputBuffer();
 
-        $returnValue = $this->engine->run();
+        $returnValue = $engine->run();
 
         if (
             in_array(FrontmatterFlag::async, $testCase->frontmatter()->flags())

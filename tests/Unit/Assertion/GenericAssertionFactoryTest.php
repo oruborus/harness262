@@ -15,12 +15,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assertion;
 
-use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\Harness\Assertion\AssertAsync;
 use Oru\Harness\Assertion\AssertIsNormal;
 use Oru\Harness\Assertion\AssertIsThrowableWithConstructor;
 use Oru\Harness\Assertion\AssertMultiple;
 use Oru\Harness\Assertion\GenericAssertionFactory;
+use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Contracts\Frontmatter;
 use Oru\Harness\Contracts\FrontmatterFlag;
 use Oru\Harness\Contracts\FrontmatterNegative;
@@ -35,7 +35,7 @@ final class GenericAssertionFactoryTest extends PHPUnitTestCase
     #[Test]
     public function returnsCorrectAssertionWithoutNegativeFrontmatter(): void
     {
-        $factory = new GenericAssertionFactory($this->createStub(Engine::class));
+        $factory = new GenericAssertionFactory($this->createStub(EngineFactory::class));
 
         $actual = $factory->make(
             $this->createConfiguredMock(TestCase::class, [
@@ -51,7 +51,7 @@ final class GenericAssertionFactoryTest extends PHPUnitTestCase
     #[Test]
     public function returnsCorrectAssertionWithNegativeFrontmatter(): void
     {
-        $factory = new GenericAssertionFactory($this->createStub(Engine::class));
+        $factory = new GenericAssertionFactory($this->createStub(EngineFactory::class));
 
         $actual = $factory->make(
             $this->createConfiguredMock(TestCase::class, [
@@ -67,7 +67,7 @@ final class GenericAssertionFactoryTest extends PHPUnitTestCase
     #[Test]
     public function returnsCorrectAssertionWithAsyncFrontmatterFlag(): void
     {
-        $factory = new GenericAssertionFactory($this->createStub(Engine::class));
+        $factory = new GenericAssertionFactory($this->createStub(EngineFactory::class));
 
         $actual = $factory->make(
             $this->createConfiguredMock(TestCase::class, [

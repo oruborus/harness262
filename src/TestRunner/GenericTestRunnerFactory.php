@@ -15,10 +15,10 @@ declare(strict_types=1);
 
 namespace Oru\Harness\TestRunner;
 
-use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\CacheRepository;
 use Oru\Harness\Contracts\Command;
+use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\TestResultFactory;
 use Oru\Harness\Contracts\TestRunner;
@@ -30,7 +30,7 @@ use Oru\Harness\Loop\TaskLoop;
 final class GenericTestRunnerFactory implements TestRunnerFactory
 {
     public function __construct(
-        private Engine $engine,
+        private EngineFactory $engineFactory,
         private AssertionFactory $assertionFactory,
         private Printer $printer,
         private Command $command,
@@ -42,7 +42,7 @@ final class GenericTestRunnerFactory implements TestRunnerFactory
     public function make(TestSuite $testSuite): TestRunner
     {
         $testRunner = match ($testSuite->testRunnerMode()) {
-            TestRunnerMode::Linear   => new LinearTestRunner($this->engine, $this->assertionFactory, $this->printer, $this->testResultFactory),
+            TestRunnerMode::Linear   => new LinearTestRunner($this->engineFactory, $this->assertionFactory, $this->printer, $this->testResultFactory),
             TestRunnerMode::Parallel => new ParallelTestRunner($this->assertionFactory, $this->printer, $this->command),
             TestRunnerMode::Async    => new AsyncTestRunner($this->printer, $this->command, new TaskLoop($testSuite->concurrency()))
         };
