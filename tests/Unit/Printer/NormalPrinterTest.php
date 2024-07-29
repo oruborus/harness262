@@ -34,7 +34,8 @@ final class NormalPrinterTest extends TestCase
 {
     private function createOutput(): Output&Stringable
     {
-        return new class () implements Output, Stringable {
+        return new class() implements Output, Stringable
+        {
             private string $storage = '';
 
             public function write(string $content): void
@@ -59,28 +60,28 @@ final class NormalPrinterTest extends TestCase
     {
         $expected = 'Expected output';
         $output = $this->createOutput();
-        $exptectedOutput = $this->createOutput();
-        $exptectedOutput->writeLn($expected);
+        $expectedOutput = $this->createOutput();
+        $expectedOutput->writeLn($expected);
         $printer = new NormalPrinter($output);
 
         $printer->writeLn($expected);
 
-        $this->assertSame((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $expectedOutput, (string) $output);
     }
 
     #[Test]
     public function printsSomethingOnStart(): void
     {
         $output = $this->createOutput();
-        $exptectedOutput = $this->createOutput();
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('EcmaScript Test Harness');
-        $exptectedOutput->writeLn('');
+        $expectedOutput = $this->createOutput();
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('EcmaScript Test Harness');
+        $expectedOutput->writeLn('');
         $printer = new NormalPrinter($output);
 
         $printer->start();
 
-        $this->assertSame((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $expectedOutput, (string) $output);
     }
 
     #[Test]
@@ -111,25 +112,25 @@ final class NormalPrinterTest extends TestCase
     public function printsNewLineAfterStepWithoutCount(): void
     {
         $output = $this->createOutput();
-        $exptectedOutput = $this->createOutput();
-        $exptectedOutput->writeLn('............................................................... 63');
-        $exptectedOutput->write('.....');
+        $expectedOutput = $this->createOutput();
+        $expectedOutput->writeLn('............................................................... 63');
+        $expectedOutput->write('.....');
         $printer = new NormalPrinter($output);
 
         for ($i = 0; $i < NormalPrinter::STEPS_PER_LINE + 5; $i++) {
             $printer->step(TestResultState::Success);
         }
 
-        $this->assertSame((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $expectedOutput, (string) $output);
     }
 
     #[Test]
     public function printsNewLineAfterStepWithCount(): void
     {
         $output = $this->createOutput();
-        $exptectedOutput = $this->createOutput();
-        $exptectedOutput->writeLn('............................................................... 63 / 68 ( 92%)');
-        $exptectedOutput->write('.....');
+        $expectedOutput = $this->createOutput();
+        $expectedOutput->writeLn('............................................................... 63 / 68 ( 92%)');
+        $expectedOutput->write('.....');
         $printer = new NormalPrinter($output);
         $printer->setStepCount(68);
 
@@ -137,7 +138,7 @@ final class NormalPrinterTest extends TestCase
             $printer->step(TestResultState::Success);
         }
 
-        $this->assertSame((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $expectedOutput, (string) $output);
     }
 
     #[Test]
@@ -145,15 +146,15 @@ final class NormalPrinterTest extends TestCase
     public function printsDurationOnEnd(int $duration, string $expected): void
     {
         $output = $this->createOutput();
-        $exptectedOutput = $this->createOutput();
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->write('Duration: ');
-        $exptectedOutput->writeLn($expected);
+        $expectedOutput = $this->createOutput();
+        $expectedOutput->writeLn('');
+        $expectedOutput->write('Duration: ');
+        $expectedOutput->writeLn($expected);
 
         $printer = new NormalPrinter($output);
         $printer->end([], $duration);
 
-        $this->assertSame((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $expectedOutput, (string) $output);
     }
 
     /**
@@ -170,27 +171,27 @@ final class NormalPrinterTest extends TestCase
     public function printsLastStepOnEnd(): void
     {
         $output = $this->createOutput();
-        $exptectedOutput = $this->createOutput();
-        $exptectedOutput->writeLn('.                                                               1 / 1 (100%)');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('Duration: 00:00');
+        $expectedOutput = $this->createOutput();
+        $expectedOutput->writeLn('.                                                               1 / 1 (100%)');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('Duration: 00:00');
 
         $printer = new NormalPrinter($output);
         $printer->setStepCount(1);
         $printer->step(TestResultState::Success);
         $printer->end([], 0);
 
-        $this->assertSame((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $expectedOutput, (string) $output);
     }
 
     #[Test]
     public function doesNotPrintLastStepOnEndIfLineWasFull(): void
     {
         $output = $this->createOutput();
-        $exptectedOutput = $this->createOutput();
-        $exptectedOutput->writeLn('............................................................... 63 / 63 (100%)');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('Duration: 00:00');
+        $expectedOutput = $this->createOutput();
+        $expectedOutput->writeLn('............................................................... 63 / 63 (100%)');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('Duration: 00:00');
         $printer = new NormalPrinter($output);
         $printer->setStepCount(63);
 
@@ -199,7 +200,7 @@ final class NormalPrinterTest extends TestCase
         }
         $printer->end([], 0);
 
-        $this->assertSame((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $expectedOutput, (string) $output);
     }
 
     #[Test]
@@ -208,22 +209,22 @@ final class NormalPrinterTest extends TestCase
         $output = $this->createOutput();
         $exception1 = new RuntimeException();
         $exception2 = new RuntimeException();
-        $exptectedOutput = $this->createOutput();
+        $expectedOutput = $this->createOutput();
 
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('Duration: 00:00');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('There where failure(s)!');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('FAILURES:');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('1: path1');
-        $exptectedOutput->writeLn((string) $exception1);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('2: path2');
-        $exptectedOutput->writeLn((string) $exception2);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('Duration: 00:00');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('There where failure(s)!');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('FAILURES:');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('1: path1');
+        $expectedOutput->writeLn((string) $exception1);
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('2: path2');
+        $expectedOutput->writeLn((string) $exception2);
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('');
 
         $printer = new NormalPrinter($output);
         $printer->end([
@@ -243,7 +244,7 @@ final class NormalPrinterTest extends TestCase
             ])
         ], 0);
 
-        $this->assertSame((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $expectedOutput, (string) $output);
     }
 
     #[Test]
@@ -252,22 +253,22 @@ final class NormalPrinterTest extends TestCase
         $output = $this->createOutput();
         $error1 = new RuntimeException();
         $error2 = new RuntimeException();
-        $exptectedOutput = $this->createOutput();
+        $expectedOutput = $this->createOutput();
 
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('Duration: 00:00');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('There where error(s)!');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('ERRORS:');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('1: path1');
-        $exptectedOutput->writeLn((string) $error1);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('2: path2');
-        $exptectedOutput->writeLn((string) $error2);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('Duration: 00:00');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('There where error(s)!');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('ERRORS:');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('1: path1');
+        $expectedOutput->writeLn((string) $error1);
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('2: path2');
+        $expectedOutput->writeLn((string) $error2);
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('');
 
         $printer = new NormalPrinter($output);
         $printer->end([
@@ -287,7 +288,7 @@ final class NormalPrinterTest extends TestCase
             ])
         ], 0);
 
-        $this->assertSame((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $expectedOutput, (string) $output);
     }
 
     #[Test]
@@ -299,30 +300,30 @@ final class NormalPrinterTest extends TestCase
         $error1 = new RuntimeException();
         $error2 = new RuntimeException();
 
-        $exptectedOutput = $this->createOutput();
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('Duration: 00:00');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('There where error(s) and failure(s)!');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('FAILURES:');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('1: path1');
-        $exptectedOutput->writeLn((string) $exception1);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('2: path2');
-        $exptectedOutput->writeLn((string) $exception2);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('ERRORS:');
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('1: path3');
-        $exptectedOutput->writeLn((string) $error1);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('2: path4');
-        $exptectedOutput->writeLn((string) $error2);
-        $exptectedOutput->writeLn('');
-        $exptectedOutput->writeLn('');
+        $expectedOutput = $this->createOutput();
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('Duration: 00:00');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('There where error(s) and failure(s)!');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('FAILURES:');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('1: path1');
+        $expectedOutput->writeLn((string) $exception1);
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('2: path2');
+        $expectedOutput->writeLn((string) $exception2);
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('ERRORS:');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('1: path3');
+        $expectedOutput->writeLn((string) $error1);
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('2: path4');
+        $expectedOutput->writeLn((string) $error2);
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('');
 
         $printer = new NormalPrinter($output);
         $printer->end([
@@ -356,6 +357,6 @@ final class NormalPrinterTest extends TestCase
             ])
         ], 0);
 
-        $this->assertSame((string) $exptectedOutput, (string) $output);
+        $this->assertSame((string) $expectedOutput, (string) $output);
     }
 }
