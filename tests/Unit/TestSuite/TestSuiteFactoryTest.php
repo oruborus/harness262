@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -217,5 +217,52 @@ final class TestSuiteFactoryTest extends TestCase
         yield 'stop on error'              => [['stop-on-error' => null], StopOnCharacteristic::Error];
         yield 'stop on failure'            => [['stop-on-failure' => null], StopOnCharacteristic::Failure];
         yield 'stop on error and failure'  => [['stop-on-error' => null, 'stop-on-failure' => null], StopOnCharacteristic::Defect];
+    }
+
+    #[Test]
+    public function defaultTimeoutValueIsSet(): void
+    {
+        $factory = new TestSuiteFactory(
+            new ArgumentsParserStub([], [__DIR__ . '/../Fixtures/Basic']),
+            $this->createStub(CoreCounter::class)
+        );
+
+        $actual = $factory->make();
+
+        $this->assertSame(TestSuiteFactory::DEFAULT_TIMEOUT, $actual->timeout());
+    }
+
+    #[Test]
+    public function timeoutValueCanBeSet(): void
+    {
+        $factory = new TestSuiteFactory(
+            new ArgumentsParserStub(['timeout' => '123'], [__DIR__ . '/../Fixtures/Basic']),
+            $this->createStub(CoreCounter::class)
+        );
+
+        $actual = $factory->make();
+
+        $this->assertSame(123, $actual->timeout());
+    }
+
+    #[Test]
+    #[DataProvider('provideInvalidTimeoutValues')]
+    public function anInvalidTimeoutValueResultsInTheUsageOfTheDefaultValue(string $timeout): void
+    {
+        $factory = new TestSuiteFactory(
+            new ArgumentsParserStub(['timeout' => $timeout], [__DIR__ . '/../Fixtures/Basic']),
+            $this->createStub(CoreCounter::class)
+        );
+
+        $actual = $factory->make();
+
+        $this->assertSame(TestSuiteFactory::DEFAULT_TIMEOUT, $actual->timeout());
+    }
+
+    public static function provideInvalidTimeoutValues(): Generator
+    {
+        yield 'zero' => ['0'];
+        yield 'negative' => ['-5'];
+        yield 'letter' => ['a'];
     }
 }

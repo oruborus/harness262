@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -25,9 +25,21 @@ use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunner;
 use Oru\Harness\Loop\FiberTask;
+use Oru\Harness\TestResult\GenericTestResult;
 use Oru\Harness\TestRunner\Exception\StopOnCharacteristicMetException;
 use RuntimeException;
 use Throwable;
+
+use function assert;
+use function fclose;
+use function fwrite;
+use function proc_close;
+use function proc_get_status;
+use function proc_open;
+use function serialize;
+use function stream_get_contents;
+use function time;
+use function unserialize;
 
 final class AsyncTestRunner implements TestRunner
 {
@@ -40,12 +52,13 @@ final class AsyncTestRunner implements TestRunner
         private readonly Printer $printer,
         private readonly Command $command,
         private readonly Loop $loop
-    ) {}
+    ) {
+    }
 
     public function add(TestCase $testCase): void
     {
         $task = new FiberTask(
-            new Fiber(fn(): TestResult => $this->runTest($testCase)),
+            new Fiber(fn (): TestResult => $this->runTest($testCase)),
             function (TestResult $testResult) use ($testCase): void {
                 $this->results[] = $testResult;
                 $this->printer->step($testResult->state());
@@ -118,14 +131,23 @@ final class AsyncTestRunner implements TestRunner
         fwrite($pipes[0], $serializedConfig);
         fclose($pipes[0]);
 
+        $start = time();
+        $timeout = $testCase->testSuite()->timeout();
+
         if (Fiber::getCurrent()) {
             while (proc_get_status($process)['running']) {
+                $elapsedTime = time() - $start;
+                if ($elapsedTime > $timeout) {
+                    return new GenericTestResult(TestResultState::Timeout, $testCase->path(), [], $elapsedTime);
+                }
+
                 Fiber::suspend();
             }
         }
 
         $output = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
+        $err = stream_get_contents($pipes[2]);
         fclose($pipes[2]);
 
         $exitCode = proc_close($process);

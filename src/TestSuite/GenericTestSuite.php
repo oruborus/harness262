@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -22,15 +22,16 @@ use Oru\Harness\Contracts\TestSuite;
 final class GenericTestSuite implements TestSuite
 {
     public function __construct(
-        /**
-         * @var string[] $paths
-         */
+        /** @var string[] $paths */
         private array $paths,
         private bool $cache,
         private int $concurrency,
         private TestRunnerMode $testRunnerMode,
         private StopOnCharacteristic $stopOnCharacteristic,
-    ) {}
+        /** @var non-negative-int */
+        private int $timeout,
+    ) {
+    }
 
     /**
      * @return string[]
@@ -58,5 +59,11 @@ final class GenericTestSuite implements TestSuite
     public function StopOnCharacteristic(): StopOnCharacteristic
     {
         return $this->stopOnCharacteristic;
+    }
+
+    /** @return non-negative-int */
+    public function timeout(): int
+    {
+        return $this->timeout;
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -27,8 +27,10 @@ use Oru\Harness\Contracts\Task;
 use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResultState;
 use Oru\Harness\Contracts\TestRunnerMode;
+use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\Frontmatter\GenericFrontmatter;
 use Oru\Harness\Loop\FiberTask;
+use Oru\Harness\Loop\TaskLoop;
 use Oru\Harness\TestCase\GenericTestCase;
 use Oru\Harness\TestRunner\AsyncTestRunner;
 use Oru\Harness\TestSuite\GenericTestSuite;
@@ -147,7 +149,7 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
             '',
             '',
             new GenericFrontmatter('description: x'),
-            new GenericTestSuite([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing),
+            new GenericTestSuite([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing, 123),
             ImplicitStrictness::Unknown,
         );
         $testRunner = new AsyncTestRunner(
@@ -170,10 +172,12 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
         $testRunner = new AsyncTestRunner(
             $this->createMock(Printer::class),
             $commandStub,
-            new class ($this->assertFalse(...)) implements Loop {
+            new class($this->assertFalse(...)) implements Loop
+            {
                 public function __construct(
                     private Closure $assertFalse
-                ) {}
+                ) {
+                }
 
                 /**
                  * @var Task[] $tasks
@@ -207,11 +211,11 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
             '__toString' => 'php tests/Utility/Template/BasedOnContentTestCase.php',
         ]);
         $testCases = array_map(
-            static fn(string $content): TestCase => new GenericTestCase(
+            static fn (string $content): TestCase => new GenericTestCase(
                 '',
                 $content,
                 new GenericFrontmatter('description: x'),
-                new GenericTestSuite([], false, 4, TestRunnerMode::Async, $stopOnCharacteristic),
+                new GenericTestSuite([], false, 4, TestRunnerMode::Async, $stopOnCharacteristic, 123),
                 ImplicitStrictness::Unknown,
             ),
             $contents
@@ -237,5 +241,28 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
         yield 'failure'  => [StopOnCharacteristic::Failure, ['success', 'success', 'failure', 'error', 'success', 'success'], 3];
         yield 'defect 1' => [StopOnCharacteristic::Defect, ['success', 'success', 'failure', 'error', 'success', 'success'], 3];
         yield 'defect 2' => [StopOnCharacteristic::Defect, ['success', 'success', 'error', 'failure', 'success', 'success'], 3];
+    }
+
+    #[Test]
+    public function stopsExecutionAfterTimeoutWasReached(): void
+    {
+        $testCaseStub = $this->createConfiguredStub(TestCase::class, [
+            'testSuite' => $this->createConfiguredStub(TestSuite::class, [
+                'timeout' => 1,
+            ]),
+        ]);
+        $commandStub = $this->createConfiguredStub(Command::class, [
+            '__toString' => 'php tests/Utility/Template/TimeoutTestCase.php',
+        ]);
+        $testRunner = new AsyncTestRunner(
+            $this->createStub(Printer::class),
+            $commandStub,
+            new TaskLoop(1),
+        );
+
+        $testRunner->add($testCaseStub);
+        [$actual] = $testRunner->run();
+
+        $this->assertSame(TestResultState::Timeout, $actual->state());
     }
 }

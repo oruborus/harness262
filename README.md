@@ -15,7 +15,7 @@ $ harness ./vendor/tc39/test262/test
 
 #### `--debug`
 Runs the testsuite in sequence and allows for step-debugging using xdebug or similar solutions.  
-Caching is disabled for this setting.
+Caching and test timeouts are disabled for this setting.
 
 #### `--no-cache`, `-n`
 Disables caching of test results.
@@ -54,6 +54,10 @@ Stops the execution of the test suite after the first occurring error or failure
 #### `--only-strict`, `--no-strict`, `--module`, `--async` and `--raw`
 Providing one of these options will only execute test cases with the corresponding frontmatter flag. The `onlyStrict` and `noStrict` might be set implicitly (see [Interpreting Test262 Tests - strict mode](https://github.com/tc39/test262/blob/main/INTERPRETING.md#strict-mode)).
 The options are mutually exclusive - providing two of those options will result in an empty test suite!
+
+#### `--timeout <seconds>`
+Changes the maximum execution time to `<seconds>`. The default value is 10 seconds.
+This option has no effect if the `--debug` option is set.
 
 ### Testing
 

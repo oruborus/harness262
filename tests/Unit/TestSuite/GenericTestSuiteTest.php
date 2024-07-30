@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -33,13 +33,15 @@ final class GenericTestSuiteTest extends TestCase
         $expectedConcurrency    = 123;
         $expectedTestRunnerMode = TestRunnerMode::Linear;
         $expectedStopOnCharacteristic = StopOnCharacteristic::Defect;
+        $expectedTimeout        = 123;
 
         $actual = new GenericTestSuite(
             $expectedPaths,
             $expectedCache,
             $expectedConcurrency,
             $expectedTestRunnerMode,
-            $expectedStopOnCharacteristic
+            $expectedStopOnCharacteristic,
+            $expectedTimeout,
         );
 
         $this->assertSame($expectedPaths, $actual->paths());
@@ -47,5 +49,6 @@ final class GenericTestSuiteTest extends TestCase
         $this->assertSame($expectedConcurrency, $actual->concurrency());
         $this->assertSame($expectedTestRunnerMode, $actual->testRunnerMode());
         $this->assertSame($expectedStopOnCharacteristic, $actual->StopOnCharacteristic());
+        $this->assertSame($expectedTimeout, $actual->timeout());
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -106,6 +106,7 @@ final class NormalPrinterTest extends TestCase
         yield 'error'   => [TestResultState::Error, 'E'];
         yield 'cache'   => [TestResultState::Cache, '·'];
         yield 'skip'    => [TestResultState::Skip, 'S'];
+        yield 'timeout' => [TestResultState::Timeout, 'T'];
     }
 
     #[Test]
@@ -355,6 +356,34 @@ final class NormalPrinterTest extends TestCase
                 'duration' => 0,
                 'throwable' => $error2
             ])
+        ], 0);
+
+        $this->assertSame((string) $expectedOutput, (string) $output);
+    }
+
+    #[Test]
+    public function printsTimeoutsListOnEnd(): void
+    {
+        $output = $this->createOutput();
+        $expectedOutput = $this->createOutput();
+
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('Duration: 00:00');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('TIMEOUTS:');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('1: path1');
+        $expectedOutput->writeLn('');
+        $expectedOutput->writeLn('');
+
+        $printer = new NormalPrinter($output);
+        $printer->end([
+            $this->createConfiguredMock(TestResult::class, [
+                'state' => TestResultState::Timeout,
+                'path' => 'path1',
+                'usedFiles' => [],
+                'duration' => 0,
+            ]),
         ], 0);
 
         $this->assertSame((string) $expectedOutput, (string) $output);

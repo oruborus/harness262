@@ -26,7 +26,9 @@ use Tests\Utility\Engine\Exception\ObjectIdExtractionException;
 use Tests\Utility\Engine\Exception\PidExtractionException;
 
 use function array_filter;
+use function preg_match;
 use function strpos;
+use function usleep;
 
 final class TestEngine implements Engine
 {
@@ -37,6 +39,8 @@ final class TestEngine implements Engine
     private bool $emitsPid = false;
 
     private bool $emitsObjectId = false;
+
+    private int $runsFor = 0;
 
     public function container(): Container
     {
@@ -60,6 +64,9 @@ final class TestEngine implements Engine
         $this->errors = strpos($source, 'error') !== false;
         $this->emitsPid = strpos($source, 'pid') !== false;
         $this->emitsObjectId = strpos($source, 'oid') !== false;
+        if (preg_match('/run for (?<timeout>\d+) seconds?/', $source, $matches) === 1) {
+            $this->runsFor = (int) $matches['timeout'];
+        }
     }
 
     public function addJob(callable $job): void
@@ -83,6 +90,10 @@ final class TestEngine implements Engine
 
         if ($this->emitsObjectId) {
             throw new ObjectIdExtractionException();
+        }
+
+        if ($this->runsFor > 0) {
+            usleep($this->runsFor * 1_000_000);
         }
 
         return new class implements UnusedValue

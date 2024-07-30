@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -139,7 +139,7 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
             '',
             '',
             new GenericFrontmatter('description: x'),
-            new GenericTestSuite([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing),
+            new GenericTestSuite([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing, 123),
             ImplicitStrictness::Unknown,
         );
 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -41,7 +41,8 @@ final class NormalPrinter implements Printer
 
     public function __construct(
         private Output $output
-    ) {}
+    ) {
+    }
 
     public function setStepCount(int $stepCount): void
     {
@@ -69,7 +70,8 @@ final class NormalPrinter implements Printer
             TestResultState::Fail    => 'F',
             TestResultState::Error   => 'E',
             TestResultState::Cache   => '·',
-            TestResultState::Skip    => 'S'
+            TestResultState::Skip    => 'S',
+            TestResultState::Timeout => 'T',
         };
 
         $this->output->write($short);
@@ -104,23 +106,29 @@ final class NormalPrinter implements Printer
         $this->printLastStep();
         $this->printDuration($duration);
 
-        $failures = array_filter($testResults, static fn(TestResult $r): bool => $r->state() === TestResultState::Fail);
-        $errors   = array_filter($testResults, static fn(TestResult $r): bool => $r->state() === TestResultState::Error);
+        $failures = array_filter($testResults, static fn (TestResult $r): bool => $r->state() === TestResultState::Fail);
+        $errors   = array_filter($testResults, static fn (TestResult $r): bool => $r->state() === TestResultState::Error);
+        $timeouts = array_filter($testResults, static fn (TestResult $r): bool => $r->state() === TestResultState::Timeout);
 
-        if (count($failures) === 0 && count($errors) === 0) {
+        if (
+            count($failures) === 0
+            && count($errors) === 0
+            && count($timeouts) === 0
+        ) {
             return;
         }
 
         $this->output->writeLn('');
         if (count($failures) > 0 && count($errors) > 0) {
             $this->output->writeLn('There where error(s) and failure(s)!');
+            $this->output->writeLn('');
         } elseif (count($failures) > 0) {
             $this->output->writeLn('There where failure(s)!');
-        } else {
+            $this->output->writeLn('');
+        } elseif (count($errors) > 0) {
             $this->output->writeLn('There where error(s)!');
+            $this->output->writeLn('');
         }
-
-        $this->output->writeLn('');
 
         if (count($failures) > 0) {
             $this->output->writeLn('FAILURES:');
@@ -133,6 +141,13 @@ final class NormalPrinter implements Printer
             $this->output->writeLn('ERRORS:');
             $this->output->writeLn('');
             $this->printList($errors);
+            $this->output->writeLn('');
+        }
+
+        if (count($timeouts) > 0) {
+            $this->output->writeLn('TIMEOUTS:');
+            $this->output->writeLn('');
+            $this->printList($timeouts);
             $this->output->writeLn('');
         }
     }
@@ -167,10 +182,11 @@ final class NormalPrinter implements Printer
         $count = 0;
         foreach ($testResults as $testResult) {
             $throwable = $testResult->throwable();
-            assert(!is_null($throwable));
             $count++;
             $this->output->writeLn("{$count}: {$testResult->path()}");
-            $this->output->writeLn($throwable->__toString());
+            if (!is_null($throwable)) {
+                $this->output->writeLn($throwable->__toString());
+            }
             $this->output->writeLn('');
         }
     }

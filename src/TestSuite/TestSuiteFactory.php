@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -35,10 +35,13 @@ use function min;
 
 final readonly class TestSuiteFactory
 {
+    public const int DEFAULT_TIMEOUT = 10;
+
     public function __construct(
         private ArgumentsParser $argumentsParser,
         private CoreCounter $coreCounter,
-    ) {}
+    ) {
+    }
 
     /**
      * @throws InvalidPathException
@@ -112,12 +115,23 @@ final readonly class TestSuiteFactory
             $concurrency = max(1, min((int) $this->argumentsParser->getOption('concurrency'), $concurrency));
         }
 
+        $timeout = static::DEFAULT_TIMEOUT;
+        if ($this->argumentsParser->hasOption('timeout')) {
+            $timeout = (int) $this->argumentsParser->getOption('timeout');
+        }
+
+        if ($timeout <= 0) {
+            // TODO: Emit a notice to indicate that the default timeout will be used.
+            $timeout = static::DEFAULT_TIMEOUT;
+        }
+
         return new GenericTestSuite(
             $paths,
             $cache,
             $concurrency,
             $testRunnerMode,
-            $stopOnCharacteristic
+            $stopOnCharacteristic,
+            $timeout,
         );
     }
 }
