@@ -1,7 +1,7 @@
 Feature: regex filtering
     In order to not execute all tests in a given set
     As a user
-    I can use the `--include` and `--exclude` cli options to filter using regex.
+    I can use the `--include` cli option to filter using regex.
 
     Background: Configuration is correct
         Given an Engine
@@ -62,36 +62,3 @@ Feature: regex filtering
             "Compilation failed: missing closing parenthesis at offset 1"
 
             """
-
-    Scenario: Exclude files from a given list
-        When I run 'php bin/harness --no-cache --debug --exclude "e(?:mpty)|(?:rror).*\.js" directory"'
-        Then I should see:
-            """
-
-            EcmaScript Test Harness
-
-            F                                                               1 / 1 (100%)
-
-            Duration: %d:%d
-
-            There where failure(s)!
-
-            FAILURES:
-
-            1: directory/fail.js
-            %A
-            """
-
-    Scenario: Invalid regex pattern for exclude leads to error message
-        When I run 'php bin/harness --exclude "(" directory'
-        Then I should see:
-            """
-
-            EcmaScript Test Harness
-
-            The provided regular expression pattern is malformed.
-            The following warning was issued:
-            "Compilation failed: missing closing parenthesis at offset 1"
-
-            """
-
