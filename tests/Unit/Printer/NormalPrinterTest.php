@@ -70,6 +70,19 @@ final class NormalPrinterTest extends TestCase
     }
 
     #[Test]
+    public function printsNewLineToProvidedOutput(): void
+    {
+        $output = $this->createOutput();
+        $expectedOutput = $this->createOutput();
+        $expectedOutput->writeLn('');
+        $printer = new NormalPrinter($output);
+
+        $printer->newLine();
+
+        $this->assertSame((string) $expectedOutput, (string) $output);
+    }
+
+    #[Test]
     public function printsSomethingOnStart(): void
     {
         $output = $this->createOutput();

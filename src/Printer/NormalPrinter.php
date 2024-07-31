@@ -54,6 +54,11 @@ final class NormalPrinter implements Printer
         $this->output->writeLn($line);
     }
 
+    public function newLine(): void
+    {
+        $this->output->writeLn('');
+    }
+
     public function start(): void
     {
         $this->output->writeLn('');

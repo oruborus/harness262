@@ -24,6 +24,8 @@ final class SilentPrinter implements Printer
 
     public function writeLn(string $line): void {}
 
+    public function newLine(): void {}
+
     public function start(): void {}
 
     public function step(TestResultState $state): void {}
