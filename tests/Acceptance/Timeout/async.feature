@@ -110,3 +110,18 @@ Feature: harness
             Duration: %d:%d
 
             """
+
+    Scenario: Resets to default value and prints notice when invalid timeout is specified
+        When I run "php bin/harness --no-cache --timeout NOTAPOSITIVEINT test.js"
+        Then I should see:
+            """
+
+            EcmaScript Test Harness
+
+            [NOTICE] Invalid timeout value provided - defaulting to 10 seconds
+
+            .                                                               1 / 1 (100%)
+
+            Duration: %d:%d
+
+            """

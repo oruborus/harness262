@@ -18,6 +18,7 @@ namespace Tests\Unit\TestSuite;
 use Generator;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\CoreCounter;
+use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuite;
@@ -36,10 +37,12 @@ final class TestSuiteFactoryTest extends TestCase
     private function createTestSuiteFactory(
         ?ArgumentsParser $argumentsParser = null,
         ?CoreCounter $coreCounter = null,
+        ?Printer $printer = null,
     ): TestSuiteFactory {
         return new TestSuiteFactory(
             $argumentsParser ?? $this->createStub(ArgumentsParser::class),
             $coreCounter ?? $this->createStub(CoreCounter::class),
+            $printer ?? $this->createStub(Printer::class),
         );
     }
 
@@ -271,6 +274,29 @@ final class TestSuiteFactoryTest extends TestCase
         $actual = $factory->make();
 
         $this->assertSame(TestSuiteFactory::DEFAULT_TIMEOUT, $actual->timeout());
+    }
+
+    #[Test]
+    #[DataProvider('provideInvalidTimeoutValues')]
+    public function informsAboutInvalidTimeoutValue(string $timeout): void
+    {
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('writeln')
+            ->with('[NOTICE] Invalid timeout value provided - defaulting to 10 seconds');
+        $printerMock->expects($this->once())->method('newLine');
+
+        $factory = $this->createTestSuiteFactory(
+            argumentsParser: new ArgumentsParserStub(['timeout' => $timeout], [__DIR__ . '/../Fixtures/Basic']),
+            printer: $printerMock,
+        );
+
+        $factory->make();
+    }
+
+    private function consecutive(mixed ...$arguments): callable
+    {
+        $count = 0;
+        return static fn (mixed $argument): bool => $argument === $arguments[$count++];
     }
 
     public static function provideInvalidTimeoutValues(): Generator

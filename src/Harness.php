@@ -126,7 +126,7 @@ final readonly class Harness
         $printer->start();
 
         try {
-            $testSuiteFactory = new TestSuiteFactory($argumentsParser, $coreCounter);
+            $testSuiteFactory = new TestSuiteFactory($argumentsParser, $coreCounter, $printer);
             $testSuite        = $testSuiteFactory->make();
         } catch (InvalidPathException $exception) {
             $printer->writeLn($exception->getMessage());

@@ -19,6 +19,7 @@ use FilesystemIterator;
 use Iterator;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\CoreCounter;
+use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuite;
@@ -40,6 +41,7 @@ final readonly class TestSuiteFactory
     public function __construct(
         private ArgumentsParser $argumentsParser,
         private CoreCounter $coreCounter,
+        private Printer $printer,
     ) {
     }
 
@@ -121,8 +123,9 @@ final readonly class TestSuiteFactory
         }
 
         if ($timeout <= 0) {
-            // TODO: Emit a notice to indicate that the default timeout will be used.
             $timeout = static::DEFAULT_TIMEOUT;
+            $this->printer->writeLn("[NOTICE] Invalid timeout value provided - defaulting to {$timeout} seconds");
+            $this->printer->newLine();
         }
 
         return new GenericTestSuite(
