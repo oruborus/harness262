@@ -24,9 +24,6 @@ use Oru\Harness\Subprocess\Exception\InvalidReturnValueException;
 use function array_shift;
 use function count;
 
-/**
- * @implements Subprocess<TestResult>
- */
 final class SingleTestSubprocess implements Subprocess
 {
     public function __construct(
