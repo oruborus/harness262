@@ -32,7 +32,7 @@ use Oru\Harness\Frontmatter\GenericFrontmatter;
 use Oru\Harness\Loop\FiberTask;
 use Oru\Harness\Loop\TaskLoop;
 use Oru\Harness\TestCase\GenericTestCase;
-use Oru\Harness\TestRunner\AsyncTestRunner;
+use Oru\Harness\TestRunner\PhpSubprocessTestRunner;
 use Oru\Harness\TestSuite\GenericTestSuite;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -42,7 +42,7 @@ use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use RuntimeException;
 use Tests\Utility\Loop\SimpleLoop;
 
-#[CoversClass(AsyncTestRunner::class)]
+#[CoversClass(PhpSubprocessTestRunner::class)]
 #[UsesClass(FiberTask::class)]
 final class AsyncTestRunnerTest extends PHPUnitTestCase
 {
@@ -55,7 +55,7 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
         $commandStub = $this->createMock(Command::class);
         $testCaseStub = $this->createMock(TestCase::class);
 
-        $testRunner = new AsyncTestRunner($printerStub, $commandStub, $loopMock);
+        $testRunner = new PhpSubprocessTestRunner($printerStub, $commandStub, $loopMock);
         $testRunner->add($testCaseStub);
     }
 
@@ -63,10 +63,10 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
     public function canRunASingleSucceedingTest(): void
     {
         $commandStub = $this->createConfiguredStub(Command::class, [
-            '__toString' => 'php tests/Utility/Template/SuccessfulTestCase.php',
+            '__toString' => 'tests/Utility/Template/SuccessfulTestCase.php',
         ]);
         $testCaseStub = $this->createStub(TestCase::class);
-        $testRunner = new AsyncTestRunner(
+        $testRunner = new PhpSubprocessTestRunner(
             $this->createStub(Printer::class),
             $commandStub,
             new SimpleLoop(),
@@ -85,10 +85,10 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
         $this->expectExceptionObject(new ErrorException('THROWN IN TEST'));
 
         $commandStub = $this->createConfiguredStub(Command::class, [
-            '__toString' => 'php tests/Utility/Template/FailingTestCase.php',
+            '__toString' => 'tests/Utility/Template/FailingTestCase.php',
         ]);
         $testCaseStub = $this->createStub(TestCase::class);
-        $testRunner = new AsyncTestRunner(
+        $testRunner = new PhpSubprocessTestRunner(
             $this->createStub(Printer::class),
             $commandStub,
             new SimpleLoop(),
@@ -105,10 +105,10 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
         $this->expectExceptionObject(new RuntimeException("Subprocess did not return a `TestResult` - Returned: {$output}"));
 
         $commandStub = $this->createConfiguredStub(Command::class, [
-            '__toString' => 'php tests/Utility/Template/NonTestResultReturningTestCase.php',
+            '__toString' => 'tests/Utility/Template/NonTestResultReturningTestCase.php',
         ]);
         $testCaseStub = $this->createStub(TestCase::class);
-        $testRunner = new AsyncTestRunner(
+        $testRunner = new PhpSubprocessTestRunner(
             $this->createStub(Printer::class),
             $commandStub,
             new SimpleLoop(),
@@ -122,12 +122,12 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
     public function informsProvidedPrinterAboutCompletedTestCase(): void
     {
         $commandStub = $this->createConfiguredStub(Command::class, [
-            '__toString' => 'php tests/Utility/Template/SuccessfulTestCase.php',
+            '__toString' => 'tests/Utility/Template/SuccessfulTestCase.php',
         ]);
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('step');
         $testCaseStub = $this->createStub(TestCase::class);
-        $testRunner = new AsyncTestRunner(
+        $testRunner = new PhpSubprocessTestRunner(
             $printerMock,
             $commandStub,
             new SimpleLoop(),
@@ -143,7 +143,7 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
         $this->expectExceptionObject(new RuntimeException('SUCCESS'));
 
         $commandStub = $this->createConfiguredStub(Command::class, [
-            '__toString' => 'php tests/Utility/Template/FailsOnMissingInputTestCase.php',
+            '__toString' => 'tests/Utility/Template/FailsOnMissingInputTestCase.php',
         ]);
         $testCaseMock = new GenericTestCase(
             '',
@@ -152,7 +152,7 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
             new GenericTestSuite([], false, 4, TestRunnerMode::Async, StopOnCharacteristic::Nothing, 123),
             ImplicitStrictness::Unknown,
         );
-        $testRunner = new AsyncTestRunner(
+        $testRunner = new PhpSubprocessTestRunner(
             $this->createMock(Printer::class),
             $commandStub,
             new SimpleLoop(),
@@ -166,18 +166,17 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
     public function resumesFromLongRunningTestCase(): void
     {
         $commandStub = $this->createConfiguredStub(Command::class, [
-            '__toString' => 'php tests/Utility/Template/DelayedTestCase.php',
+            '__toString' => 'tests/Utility/Template/DelayedTestCase.php',
         ]);
         $testCaseStub = $this->createStub(TestCase::class);
-        $testRunner = new AsyncTestRunner(
+        $testRunner = new PhpSubprocessTestRunner(
             $this->createMock(Printer::class),
             $commandStub,
             new class($this->assertFalse(...)) implements Loop
             {
                 public function __construct(
                     private Closure $assertFalse
-                ) {
-                }
+                ) {}
 
                 /**
                  * @var Task[] $tasks
@@ -208,10 +207,10 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
     public function stopsExecutionWhenStopOnCharacteristicIsMet(StopOnCharacteristic $stopOnCharacteristic, array $contents, int $expectedCount): void
     {
         $commandStub = $this->createConfiguredStub(Command::class, [
-            '__toString' => 'php tests/Utility/Template/BasedOnContentTestCase.php',
+            '__toString' => 'tests/Utility/Template/BasedOnContentTestCase.php',
         ]);
         $testCases = array_map(
-            static fn (string $content): TestCase => new GenericTestCase(
+            static fn(string $content): TestCase => new GenericTestCase(
                 '',
                 $content,
                 new GenericFrontmatter('description: x'),
@@ -220,7 +219,7 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
             ),
             $contents
         );
-        $testRunner = new AsyncTestRunner(
+        $testRunner = new PhpSubprocessTestRunner(
             $this->createMock(Printer::class),
             $commandStub,
             new SimpleLoop(),
@@ -252,9 +251,9 @@ final class AsyncTestRunnerTest extends PHPUnitTestCase
             ]),
         ]);
         $commandStub = $this->createConfiguredStub(Command::class, [
-            '__toString' => 'php tests/Utility/Template/TimeoutTestCase.php',
+            '__toString' => 'tests/Utility/Template/TimeoutTestCase.php',
         ]);
-        $testRunner = new AsyncTestRunner(
+        $testRunner = new PhpSubprocessTestRunner(
             $this->createStub(Printer::class),
             $commandStub,
             new TaskLoop(1),

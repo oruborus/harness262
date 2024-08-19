@@ -28,20 +28,15 @@ use Oru\Harness\Loop\FiberTask;
 use Oru\Harness\TestResult\GenericTestResult;
 use Oru\Harness\TestRunner\Exception\StopOnCharacteristicMetException;
 use RuntimeException;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
+use Symfony\Component\Process\PhpSubprocess;
 use Throwable;
 
 use function assert;
-use function fclose;
-use function fwrite;
-use function proc_close;
-use function proc_get_status;
-use function proc_open;
 use function serialize;
-use function stream_get_contents;
-use function time;
 use function unserialize;
 
-final class AsyncTestRunner implements TestRunner
+final class PhpSubprocessTestRunner implements TestRunner
 {
     /**
      * @var TestResult[] $results
@@ -52,13 +47,12 @@ final class AsyncTestRunner implements TestRunner
         private readonly Printer $printer,
         private readonly Command $command,
         private readonly Loop $loop
-    ) {
-    }
+    ) {}
 
     public function add(TestCase $testCase): void
     {
         $task = new FiberTask(
-            new Fiber(fn (): TestResult => $this->runTest($testCase)),
+            new Fiber(fn(): TestResult => $this->runTest($testCase)),
             function (TestResult $testResult) use ($testCase): void {
                 $this->results[] = $testResult;
                 $this->printer->step($testResult->state());
@@ -112,55 +106,81 @@ final class AsyncTestRunner implements TestRunner
      */
     private function runTest(TestCase $testCase): TestResult
     {
-        $serializedConfig = serialize($testCase);
+        $process = new Process($this->command, $testCase, $testCase->testSuite()->timeout());
+        $process->start();
 
-        $descriptorspec = [
-            0 => ["pipe", "r"],
-            1 => ["pipe", "w"],
-            2 => ["pipe", "w"]
-        ];
-
-        $cwd = '.';
-        $env = [];
-
-        $options = ['bypass_shell' => true];
-
-        $process = @proc_open((string) $this->command, $descriptorspec, $pipes, $cwd, $env, $options)
-            ?: throw new RuntimeException('Could not open process');
-
-        fwrite($pipes[0], $serializedConfig);
-        fclose($pipes[0]);
-
-        $start = time();
-        $timeout = $testCase->testSuite()->timeout();
-
-        if (Fiber::getCurrent()) {
-            while (proc_get_status($process)['running']) {
-                $elapsedTime = time() - $start;
-                if ($elapsedTime > $timeout) {
-                    return new GenericTestResult(TestResultState::Timeout, $testCase->path(), [], $elapsedTime);
-                }
-
-                Fiber::suspend();
-            }
+        while ($process->isRunning()) {
+            Fiber::suspend();
         }
 
-        $output = stream_get_contents($pipes[1]);
-        fclose($pipes[1]);
-        $err = stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
+        return $process->result();
+    }
+}
 
-        $exitCode = proc_close($process);
-        assert($exitCode === 0, $output);
+/** @internal */
+final class Process
+{
+    private readonly PhpSubprocess $phpSubprocess;
 
-        $result = unserialize($output);
+    private bool $timedOut = false;
+
+    public function __construct(
+        Command $command,
+        private readonly TestCase $testCase,
+        private readonly int $timeout,
+    ) {
+        $phpSubprocess = new PhpSubprocess([(string) $command]);
+
+        $phpSubprocess->setInput(serialize($testCase));
+
+        $phpSubprocess->setTimeout($timeout);
+
+        $this->phpSubprocess = $phpSubprocess;
+    }
+
+    public function start(): void
+    {
+        $this->phpSubprocess->start();
+    }
+
+    public function isRunning(): bool
+    {
+        return $this->phpSubprocess->isRunning() && !$this->timedOut();
+    }
+
+    public function timedOut(): bool
+    {
+        if ($this->timedOut) {
+            return $this->timedOut;
+        }
+
+        try {
+            $this->phpSubprocess->checkTimeout();
+        } catch (ProcessTimedOutException) {
+            return ($this->timedOut = true);
+        }
+
+        return false;
+    }
+
+    public function result(): TestResult
+    {
+        if ($this->timedOut) {
+            return new GenericTestResult(TestResultState::Timeout, $this->testCase->path(), [], $this->timeout);
+        }
+
+        // TODO: Add subprocess error handling
+        assert($this->phpSubprocess->getExitCode() === 0, $this->phpSubprocess->getOutput());
+
+        $result = unserialize($this->phpSubprocess->getOutput());
 
         if ($result instanceof Throwable) {
             throw $result;
         }
 
         if (!$result instanceof TestResult) {
-            throw new RuntimeException("Subprocess did not return a `TestResult` - Returned: {$output}");
+            // TODO: Throw a distinct exception describing the concrete nature
+            throw new RuntimeException("Subprocess did not return a `TestResult` - Returned: {$this->phpSubprocess->getOutput()}");
         }
 
         return $result;

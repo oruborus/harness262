@@ -25,7 +25,7 @@ use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestResultFactory;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuite;
-use Oru\Harness\TestRunner\AsyncTestRunner;
+use Oru\Harness\TestRunner\PhpSubprocessTestRunner;
 use Oru\Harness\TestRunner\CacheTestRunner;
 use Oru\Harness\TestRunner\GenericTestRunnerFactory;
 use Oru\Harness\TestRunner\LinearTestRunner;
@@ -70,7 +70,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
     public static function provideNonDebugTestRunnerMode(): Generator
     {
         yield 'parallel' => [TestRunnerMode::Parallel, ParallelTestRunner::class];
-        yield 'async'    => [TestRunnerMode::Async, AsyncTestRunner::class];
+        yield 'async'    => [TestRunnerMode::Async, PhpSubprocessTestRunner::class];
     }
 
     #[Test]

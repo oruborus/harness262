@@ -20,7 +20,7 @@ use Oru\Harness\Cache\GenericCacheRepositoryFactory;
 use Oru\Harness\Cli\CliArgumentsParser;
 use Oru\Harness\Cli\Exception\InvalidOptionException;
 use Oru\Harness\Cli\Exception\UnknownOptionException;
-use Oru\Harness\Command\ClonedPhpCommand;
+use Oru\Harness\Command\FileCommand;
 use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
 use Oru\Harness\Contracts\EngineFactory;
@@ -107,7 +107,7 @@ final readonly class Harness
         $printerFactory         = new GenericPrinterFactory();
         $outputFactory          = new GenericOutputFactory();
         $assertionFactory       = new GenericAssertionFactory($this->engineFactory);
-        $command                = new ClonedPhpCommand(realpath($this->temporaryFileHandler->path()));
+        $command                = new FileCommand(realpath($this->temporaryFileHandler->path()));
 
         $outputConfigFactory    = new OutputConfigFactory($argumentsParser);
         $outputConfig           = $outputConfigFactory->make();
