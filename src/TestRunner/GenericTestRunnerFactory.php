@@ -26,6 +26,7 @@ use Oru\Harness\Contracts\TestRunnerFactory;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\Loop\TaskLoop;
+use Oru\Harness\Subprocess\PhpSubprocessFactory;
 
 final class GenericTestRunnerFactory implements TestRunnerFactory
 {
@@ -43,7 +44,7 @@ final class GenericTestRunnerFactory implements TestRunnerFactory
         $testRunner = match ($testSuite->testRunnerMode()) {
             TestRunnerMode::Linear   => new LinearTestRunner($this->engineFactory, $this->assertionFactory, $this->printer, $this->testResultFactory),
             TestRunnerMode::Parallel => new ParallelTestRunner($this->assertionFactory, $this->printer, $this->command),
-            TestRunnerMode::Async    => new PhpSubprocessTestRunner($this->printer, $this->command, new TaskLoop($testSuite->concurrency()))
+            TestRunnerMode::Async    => new PhpSubprocessTestRunner($this->printer, $this->command, new TaskLoop($testSuite->concurrency()), new PhpSubprocessFactory($this->command, $this->testResultFactory))
         };
 
         if (!$testSuite->cache()) {

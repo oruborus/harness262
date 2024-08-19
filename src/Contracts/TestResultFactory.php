@@ -41,4 +41,6 @@ interface TestResultFactory
      * @param string[] $usedFiles
      */
     public function makeSuccessful(string $path, array $usedFiles, int $duration): TestResult;
+
+    public function makeTimedOut(string $path, int $duration): TestResult;
 }

@@ -15,7 +15,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\TestRunner;
 
-use Closure;
 use Exception;
 use Generator;
 use Oru\EcmaScript\Core\Contracts\Engine;
@@ -43,9 +42,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
-use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use RuntimeException;
+use Tests\Unit\CanCreateTestResultFactoryStub;
 use Throwable;
 
 use function array_map;
@@ -54,6 +53,8 @@ use function array_map;
 #[UsesClass(GenericTestResult::class)]
 final class LinearTestRunnerTest extends PHPUnitTestCase
 {
+    use CanCreateTestResultFactoryStub;
+
     #[Test]
     public function skipsTestExecutionWhenRequiredFeatureIsNotImplemented(): void
     {
@@ -423,7 +424,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         } catch (StopOnCharacteristicMetException) {
         }
 
-        $actual = array_map(static fn (TestResult $result): TestResultState => $result->state(), $testRunner->results());
+        $actual = array_map(static fn(TestResult $result): TestResultState => $result->state(), $testRunner->results());
 
         $this->assertSame($expected, $actual);
     }
@@ -474,7 +475,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         } catch (StopOnCharacteristicMetException) {
         }
 
-        $actual = array_map(static fn (TestResult $result): TestResultState => $result->state(), $testRunner->results());
+        $actual = array_map(static fn(TestResult $result): TestResultState => $result->state(), $testRunner->results());
 
         $this->assertSame($expected, $actual);
     }
@@ -486,64 +487,5 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         yield 'stop on error'   => [StopOnCharacteristic::Error, [2, 3], [TestResultState::Success, TestResultState::Fail, TestResultState::Error]];
         yield 'stop on failure' => [StopOnCharacteristic::Failure, [2, 3], [TestResultState::Success, TestResultState::Fail]];
         yield 'stop on nothing' => [StopOnCharacteristic::Nothing, [2, 3], [TestResultState::Success, TestResultState::Fail, TestResultState::Error, TestResultState::Success]];
-    }
-
-    private function createTestResultFactoryStub(): TestResultFactory
-    {
-        return new class($this->createConfiguredStub(...)) implements TestResultFactory
-        {
-            public function __construct(
-                private Closure $createConfiguredStub,
-            ) {
-            }
-
-            /**
-             * @template TOriginal
-             * @param class-string<TOriginal> $originalClassName
-             * @param array<string, mixed> $configuration
-             * @return Stub&TOriginal
-             */
-            private function createConfiguredStub(string $originalClassName, array $configuration): Stub
-            {
-                return ($this->createConfiguredStub)($originalClassName, $configuration);
-            }
-
-            public function makeSkipped(string $path): TestResult
-            {
-                return $this->createConfiguredStub(TestResult::class, ['state' => TestResultState::Skip]);
-            }
-
-            /**
-             * @param string[] $usedFiles
-             */
-            public function makeCached(string $path, array $usedFiles): TestResult
-            {
-                return $this->createConfiguredStub(TestResult::class, ['state' => TestResultState::Cache]);
-            }
-
-            /**
-             * @param string[] $usedFiles
-             */
-            public function makeErrored(string $path, array $usedFiles, int $duration, Throwable $throwable): TestResult
-            {
-                return $this->createConfiguredStub(TestResult::class, ['state' => TestResultState::Error]);
-            }
-
-            /**
-             * @param string[] $usedFiles
-             */
-            public function makeFailed(string $path, array $usedFiles, int $duration, Throwable $throwable): TestResult
-            {
-                return $this->createConfiguredStub(TestResult::class, ['state' => TestResultState::Fail]);
-            }
-
-            /**
-             * @param string[] $usedFiles
-             */
-            public function makeSuccessful(string $path, array $usedFiles, int $duration): TestResult
-            {
-                return $this->createConfiguredStub(TestResult::class, ['state' => TestResultState::Success]);
-            }
-        };
     }
 }

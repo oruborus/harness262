@@ -59,4 +59,9 @@ final class GenericTestResultFactory implements TestResultFactory
     {
         return new GenericTestResult(TestResultState::Success, $path, $usedFiles, $duration);
     }
+
+    public function makeTimedOut(string $path, int $duration): TestResult
+    {
+        return new GenericTestResult(TestResultState::Timeout, $path, [], $duration);
+    }
 }
