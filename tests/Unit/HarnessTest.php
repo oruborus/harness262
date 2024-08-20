@@ -37,9 +37,12 @@ final class HarnessTest extends TestCase
     {
         $this->expectExceptionObject(new InvalidOptionException("Invalid option `{$invalidOption}` provided"));
 
-        $harness = new Harness($this->createStub(EngineFactory::class));
+        $harness = new Harness(
+            $this->createStub(EngineFactory::class),
+            ['harness.php', $invalidOption],
+        );
 
-        $harness->run(['harness.php', $invalidOption]);
+        $harness->run();
     }
 
     public static function provideInvalidOptions(): Generator
@@ -57,9 +60,12 @@ final class HarnessTest extends TestCase
                 PHP_EOL . 'The following warning was issued:' .
                 PHP_EOL . '"Compilation failed: missing closing parenthesis at offset 1"' . PHP_EOL
         );
-        $harness = new Harness($this->createStub(EngineFactory::class));
+        $harness = new Harness(
+            $this->createStub(EngineFactory::class),
+            ['harness.php', './tests/Unit/Fixtures/TestCase/basic.js', '--include', '('],
+        );
 
-        $actual = $harness->run(['harness.php', './tests/Unit/Fixtures/TestCase/basic.js', '--include', '(']);
+        $actual = $harness->run();
 
         $this->assertSame(1, $actual);
     }
@@ -72,9 +78,12 @@ final class HarnessTest extends TestCase
             PHP_EOL . 'EcmaScript Test Harness' . PHP_EOL .
                 PHP_EOL . "Provided path `{$expected}` does not exist" . PHP_EOL
         );
-        $harness = new Harness($this->createStub(EngineFactory::class));
+        $harness = new Harness(
+            $this->createStub(EngineFactory::class),
+            ['harness.php', $expected],
+        );
 
-        $actual = $harness->run(['harness.php', $expected]);
+        $actual = $harness->run();
 
         $this->assertSame(1, $actual);
     }
@@ -86,9 +95,12 @@ final class HarnessTest extends TestCase
             PHP_EOL . 'EcmaScript Test Harness' . PHP_EOL .
                 PHP_EOL . 'No test path specified. Aborting.' . PHP_EOL
         );
-        $harness = new Harness($this->createStub(EngineFactory::class));
+        $harness = new Harness(
+            $this->createStub(EngineFactory::class),
+            ['harness.php'],
+        );
 
-        $actual = $harness->run(['harness.php']);
+        $actual = $harness->run();
 
         $this->assertSame(1, $actual);
     }

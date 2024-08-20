@@ -23,6 +23,7 @@ use Oru\Harness\Cli\Exception\UnknownOptionException;
 use Oru\Harness\Command\FileCommand;
 use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
+use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Filter\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Filter\GenericFilterFactory;
@@ -76,8 +77,17 @@ final readonly class Harness
 
     private TemporaryFileHandler $temporaryFileHandler;
 
+    private ArgumentsParser $argumentsParser;
+
+    /** 
+     * @param list<string> $arguments
+     *
+     * @throws InvalidOptionException
+     * @throws UnknownOptionException
+     */
     public function __construct(
         private EngineFactory $engineFactory,
+        array $arguments,
     ) {
         $contents = str_replace(
             '{{CONFIG_PATH}}',
@@ -85,35 +95,32 @@ final readonly class Harness
             file_get_contents(realpath(static::TEMPLATE_PATH))
         );
         $this->temporaryFileHandler = new TemporaryFileHandler($contents);
+
+        array_shift($arguments);
+
+        $this->argumentsParser = new CliArgumentsParser($arguments, static::CLI_OPTIONS);
     }
 
     /**
-     * @param list<string> $arguments
-     *
-     * @throws InvalidOptionException
-     * @throws UnknownOptionException
      * @throws MissingFrontmatterException
      * @throws MissingRequiredKeyException
      * @throws UnrecognizedKeyException
      * @throws UnrecognizedNegativePhaseException
      * @throws ParseException
      */
-    public function run(array $arguments): int
+    public function run(): int
     {
-        array_shift($arguments);
-
         $testStorage            = new FileStorage(static::TEST_STORAGE_PATH);
-        $argumentsParser        = new CliArgumentsParser($arguments, static::CLI_OPTIONS);
         $printerFactory         = new GenericPrinterFactory();
         $outputFactory          = new GenericOutputFactory();
         $assertionFactory       = new GenericAssertionFactory($this->engineFactory);
         $command                = new FileCommand(realpath($this->temporaryFileHandler->path()));
 
-        $outputConfigFactory    = new OutputConfigFactory($argumentsParser);
+        $outputConfigFactory    = new OutputConfigFactory($this->argumentsParser);
         $outputConfig           = $outputConfigFactory->make();
         $output                 = $outputFactory->make($outputConfig);
 
-        $printerConfigFactory   = new PrinterConfigFactory($argumentsParser);
+        $printerConfigFactory   = new PrinterConfigFactory($this->argumentsParser);
         $printerConfig          = $printerConfigFactory->make();
         $printer                = $printerFactory->make($printerConfig, $output);
 
@@ -126,7 +133,7 @@ final readonly class Harness
         $printer->start();
 
         try {
-            $testSuiteFactory = new TestSuiteFactory($argumentsParser, $coreCounter, $printer);
+            $testSuiteFactory = new TestSuiteFactory($this->argumentsParser, $coreCounter, $printer);
             $testSuite        = $testSuiteFactory->make();
         } catch (InvalidPathException $exception) {
             $printer->writeLn($exception->getMessage());
@@ -146,7 +153,7 @@ final readonly class Harness
         $testRunner             = $testRunnerFactory->make($testSuite);
 
         try {
-            $filterFactory      = new GenericFilterFactory($argumentsParser);
+            $filterFactory      = new GenericFilterFactory($this->argumentsParser);
             $filter             = $filterFactory->make();
         } catch (MalformedRegularExpressionPatternException $exception) {
             $printer->writeLn('The provided regular expression pattern is malformed.');

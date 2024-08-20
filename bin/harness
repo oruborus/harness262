@@ -44,6 +44,6 @@ include './vendor/autoload.php';
     ->setCode(
         function () use ($argv): int {
             $engineFactory = new GenericEngineFactory(realpath('./Harness.php'));
-            return (new Harness($engineFactory))->run($argv);
+            return (new Harness($engineFactory, $argv))->run();
         }
     )->run();
