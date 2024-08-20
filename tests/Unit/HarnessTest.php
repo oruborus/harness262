@@ -15,12 +15,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use Generator;
-use Oru\Harness\Cli\Exception\InvalidOptionException;
+use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Harness;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -32,26 +30,6 @@ final class HarnessTest extends TestCase
     public const TEMPLATE_PATH = __DIR__ . '/../../src/Template/ExecuteTest.php';
 
     #[Test]
-    #[DataProvider('provideInvalidOptions')]
-    public function failsWhenInvalidOptionIsProvided(string $invalidOption): void
-    {
-        $this->expectExceptionObject(new InvalidOptionException("Invalid option `{$invalidOption}` provided"));
-
-        $harness = new Harness(
-            $this->createStub(EngineFactory::class),
-            ['harness.php', $invalidOption],
-        );
-
-        $harness->run();
-    }
-
-    public static function provideInvalidOptions(): Generator
-    {
-        yield '-'  => ['-'];
-        yield '--' => ['--'];
-    }
-
-    #[Test]
     public function informsTheUserThatProvidedRegularExpressionPatternIsMalFormed(): void
     {
         $this->expectOutputString(
@@ -60,9 +38,12 @@ final class HarnessTest extends TestCase
                 PHP_EOL . 'The following warning was issued:' .
                 PHP_EOL . '"Compilation failed: missing closing parenthesis at offset 1"' . PHP_EOL
         );
+        $argumentsParserStub = $this->createConfiguredStub(ArgumentsParser::class, ['rest' => ['./tests/Unit/Fixtures/TestCase/basic.js']]);
+        $argumentsParserStub->method('getOption')->willReturnCallback(fn(string $option): string => $option === 'include' ? '(' : '');
+        $argumentsParserStub->method('hasOption')->willReturnCallback(fn(string $option): bool => $option === 'include');
         $harness = new Harness(
             $this->createStub(EngineFactory::class),
-            ['harness.php', './tests/Unit/Fixtures/TestCase/basic.js', '--include', '('],
+            $argumentsParserStub,
         );
 
         $actual = $harness->run();
@@ -80,7 +61,7 @@ final class HarnessTest extends TestCase
         );
         $harness = new Harness(
             $this->createStub(EngineFactory::class),
-            ['harness.php', $expected],
+            $this->createConfiguredStub(ArgumentsParser::class, ['rest' => [$expected]]),
         );
 
         $actual = $harness->run();
@@ -97,7 +78,7 @@ final class HarnessTest extends TestCase
         );
         $harness = new Harness(
             $this->createStub(EngineFactory::class),
-            ['harness.php'],
+            $this->createStub(ArgumentsParser::class),
         );
 
         $actual = $harness->run();

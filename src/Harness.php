@@ -17,9 +17,6 @@ namespace Oru\Harness;
 
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Cache\GenericCacheRepositoryFactory;
-use Oru\Harness\Cli\CliArgumentsParser;
-use Oru\Harness\Cli\Exception\InvalidOptionException;
-use Oru\Harness\Cli\Exception\UnknownOptionException;
 use Oru\Harness\Command\FileCommand;
 use Oru\Harness\Config\OutputConfigFactory;
 use Oru\Harness\Config\PrinterConfigFactory;
@@ -44,7 +41,6 @@ use Oru\Harness\TestSuite\Exception\InvalidPathException;
 use Oru\Harness\TestSuite\Exception\MissingPathException;
 use Oru\Harness\TestSuite\TestSuiteFactory;
 
-use function array_shift;
 use function count;
 use function file_get_contents;
 use function realpath;
@@ -54,40 +50,12 @@ final readonly class Harness
 {
     private const TEMPLATE_PATH     = __DIR__ . '/Template/ExecuteTest';
     private const TEST_STORAGE_PATH = '.';
-    private const CLI_OPTIONS       = [
-        'no-cache'        => 'n',
-        'silent'          => 's',
-        'verbose'         => 'v',
-        'debug'           => null,
-        'include'         => ':',
-        'exclude'         => ':',
-        'stop-on-defect'  => null,
-        'stop-on-error'   => null,
-        'stop-on-failure' => null,
-        'concurrency'     => 'c:',
-        'strict'          => null,
-        'timeout'         => ':',
-        'loose'           => null,
-        'only-strict'     => null,
-        'no-strict'       => null,
-        'module'          => null,
-        'async'           => null,
-        'raw'             => null,
-    ];
 
     private TemporaryFileHandler $temporaryFileHandler;
 
-    private ArgumentsParser $argumentsParser;
-
-    /** 
-     * @param list<string> $arguments
-     *
-     * @throws InvalidOptionException
-     * @throws UnknownOptionException
-     */
     public function __construct(
         private EngineFactory $engineFactory,
-        array $arguments,
+        private ArgumentsParser $argumentsParser,
     ) {
         $contents = str_replace(
             '{{CONFIG_PATH}}',
@@ -95,10 +63,6 @@ final readonly class Harness
             file_get_contents(realpath(static::TEMPLATE_PATH))
         );
         $this->temporaryFileHandler = new TemporaryFileHandler($contents);
-
-        array_shift($arguments);
-
-        $this->argumentsParser = new CliArgumentsParser($arguments, static::CLI_OPTIONS);
     }
 
     /**
