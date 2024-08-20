@@ -30,7 +30,8 @@
         "symfony/yaml": "^6.2",
         "tc39/test262": "^5.0",
         "fidry/cpu-core-counter": "*",
-        "symfony/process": "*"
+        "symfony/process": "*",
+        "symfony/console": "*"
     },
     "require-dev": {
         "oru/ecma262core": "dev-main",
