@@ -18,10 +18,9 @@ namespace Oru\Harness;
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Cache\GenericCacheRepositoryFactory;
 use Oru\Harness\Command\FileCommand;
-use Oru\Harness\Config\OutputConfigFactory;
-use Oru\Harness\Config\PrinterConfigFactory;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\EngineFactory;
+use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Filter\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Filter\GenericFilterFactory;
 use Oru\Harness\Frontmatter\Exception\MissingRequiredKeyException;
@@ -30,8 +29,6 @@ use Oru\Harness\Frontmatter\Exception\UnrecognizedKeyException;
 use Oru\Harness\Frontmatter\Exception\UnrecognizedNegativePhaseException;
 use Oru\Harness\Helpers\LogicalCoreCounter;
 use Oru\Harness\Helpers\TemporaryFileHandler;
-use Oru\Harness\Output\GenericOutputFactory;
-use Oru\Harness\Printer\GenericPrinterFactory;
 use Oru\Harness\Storage\FileStorage;
 use Oru\Harness\TestCase\Exception\MissingFrontmatterException;
 use Oru\Harness\TestCase\GenericTestCaseFactory;
@@ -56,6 +53,7 @@ final readonly class Harness
     public function __construct(
         private EngineFactory $engineFactory,
         private ArgumentsParser $argumentsParser,
+        private Printer $printer,
     ) {
         $contents = str_replace(
             '{{CONFIG_PATH}}',
@@ -75,18 +73,8 @@ final readonly class Harness
     public function run(): int
     {
         $testStorage            = new FileStorage(static::TEST_STORAGE_PATH);
-        $printerFactory         = new GenericPrinterFactory();
-        $outputFactory          = new GenericOutputFactory();
         $assertionFactory       = new GenericAssertionFactory($this->engineFactory);
         $command                = new FileCommand(realpath($this->temporaryFileHandler->path()));
-
-        $outputConfigFactory    = new OutputConfigFactory($this->argumentsParser);
-        $outputConfig           = $outputConfigFactory->make();
-        $output                 = $outputFactory->make($outputConfig);
-
-        $printerConfigFactory   = new PrinterConfigFactory($this->argumentsParser);
-        $printerConfig          = $printerConfigFactory->make();
-        $printer                = $printerFactory->make($printerConfig, $output);
 
         $coreCounter            = new LogicalCoreCounter();
 
@@ -94,17 +82,17 @@ final readonly class Harness
         $testSuiteStartTime = time();
 
         // 2. Perform **printer**.start().
-        $printer->start();
+        $this->printer->start();
 
         try {
-            $testSuiteFactory = new TestSuiteFactory($this->argumentsParser, $coreCounter, $printer);
+            $testSuiteFactory = new TestSuiteFactory($this->argumentsParser, $coreCounter, $this->printer);
             $testSuite        = $testSuiteFactory->make();
         } catch (InvalidPathException $exception) {
-            $printer->writeLn($exception->getMessage());
+            $this->printer->writeLn($exception->getMessage());
             return 1;
         } catch (MissingPathException $exception) {
             // TODO: Print command usage here.
-            $printer->writeLn($exception->getMessage());
+            $this->printer->writeLn($exception->getMessage());
             return 1;
         }
 
@@ -113,16 +101,16 @@ final readonly class Harness
         $cacheRepository        = $cacheRepositoryFactory->make($testSuite);
 
         $testResultFactory      = new GenericTestResultFactory();
-        $testRunnerFactory      = new GenericTestRunnerFactory($this->engineFactory, $assertionFactory, $printer, $command, $cacheRepository, $testResultFactory);
+        $testRunnerFactory      = new GenericTestRunnerFactory($this->engineFactory, $assertionFactory, $this->printer, $command, $cacheRepository, $testResultFactory);
         $testRunner             = $testRunnerFactory->make($testSuite);
 
         try {
             $filterFactory      = new GenericFilterFactory($this->argumentsParser);
             $filter             = $filterFactory->make();
         } catch (MalformedRegularExpressionPatternException $exception) {
-            $printer->writeLn('The provided regular expression pattern is malformed.');
-            $printer->writeLn('The following warning was issued:');
-            $printer->writeLn("\"{$exception->getMessage()}\"");
+            $this->printer->writeLn('The provided regular expression pattern is malformed.');
+            $this->printer->writeLn('The following warning was issued:');
+            $this->printer->writeLn("\"{$exception->getMessage()}\"");
             return 1;
         }
 
@@ -133,7 +121,7 @@ final readonly class Harness
         $filteredTestCases = $filter->apply(...$preparedTestCases);
 
         // 5. Perform **printer**.setStepCount(count(**preparedTestCases**)).
-        $printer->setStepCount(count($filteredTestCases));
+        $this->printer->setStepCount(count($filteredTestCases));
 
         // 6. For each **testCase** of **filteredTestCases**, do
         foreach ($filteredTestCases as $testCase) {
@@ -145,7 +133,7 @@ final readonly class Harness
         $testSuiteEndTime = time();
 
         // 8. Perform **printer**.end(**testRunner**.run(), **testSuiteEndTime** - **testSuiteStartTime**).
-        $printer->end($testRunner->run(), $testSuiteEndTime - $testSuiteStartTime);
+        $this->printer->end($testRunner->run(), $testSuiteEndTime - $testSuiteStartTime);
 
         return 0;
     }

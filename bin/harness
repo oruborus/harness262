@@ -14,8 +14,12 @@
 declare(strict_types=1);
 
 use Oru\Harness\ArgumentsParser\InputArgumentsParser;
+use Oru\Harness\Config\OutputConfigFactory;
+use Oru\Harness\Config\PrinterConfigFactory;
 use Oru\Harness\EngineFactory\GenericEngineFactory;
 use Oru\Harness\Harness;
+use Oru\Harness\Output\GenericOutputFactory;
+use Oru\Harness\Printer\GenericPrinterFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -45,9 +49,20 @@ include './vendor/autoload.php';
     ->addOption('raw', null)
     ->setCode(
         function (InputInterface $input): int {
-            $engineFactory   = new GenericEngineFactory(realpath('./Harness.php'));
-            $argumentsParser = new InputArgumentsParser($input);
+            $engineFactory        = new GenericEngineFactory(realpath('./Harness.php'));
+            $argumentsParser      = new InputArgumentsParser($input);
 
-            return (new Harness($engineFactory, $argumentsParser))->run();
+            $printerFactory       = new GenericPrinterFactory();
+            $outputFactory        = new GenericOutputFactory();
+
+            $outputConfigFactory  = new OutputConfigFactory($argumentsParser);
+            $outputConfig         = $outputConfigFactory->make();
+            $output               = $outputFactory->make($outputConfig);
+
+            $printerConfigFactory = new PrinterConfigFactory($argumentsParser);
+            $printerConfig        = $printerConfigFactory->make();
+            $printer              = $printerFactory->make($printerConfig, $output);
+
+            return (new Harness($engineFactory, $argumentsParser, $printer))->run();
         }
     )->run();

@@ -17,33 +17,52 @@ namespace Tests\Unit;
 
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\EngineFactory;
+use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Harness;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-
-use const PHP_EOL;
 
 #[CoversClass(Harness::class)]
 final class HarnessTest extends TestCase
 {
     public const TEMPLATE_PATH = __DIR__ . '/../../src/Template/ExecuteTest.php';
 
+    private function createHarness(
+        ?EngineFactory $engineFactory = null,
+        ?ArgumentsParser $argumentsParser = null,
+        ?Printer $printer = null,
+    ): Harness {
+        return new Harness(
+            $engineFactory ?? $this->createStub(EngineFactory::class),
+            $argumentsParser ?? $this->createStub(ArgumentsParser::class),
+            $printer ?? $this->createStub(Printer::class),
+        );
+    }
+
     #[Test]
     public function informsTheUserThatProvidedRegularExpressionPatternIsMalFormed(): void
     {
-        $this->expectOutputString(
-            PHP_EOL . 'EcmaScript Test Harness' . PHP_EOL .
-                PHP_EOL . 'The provided regular expression pattern is malformed.' .
-                PHP_EOL . 'The following warning was issued:' .
-                PHP_EOL . '"Compilation failed: missing closing parenthesis at offset 1"' . PHP_EOL
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('start');
+        $printerMock->expects($this->exactly(3))->method('writeLn')->willReturnCallback(
+            function (string $actual): void {
+                static $count = 0;
+                $expected  = match ($count++) {
+                    0 => 'The provided regular expression pattern is malformed.',
+                    1 => 'The following warning was issued:',
+                    2 => '"Compilation failed: missing closing parenthesis at offset 1"',
+                };
+
+                $this->assertSame($expected, $actual);
+            }
         );
         $argumentsParserStub = $this->createConfiguredStub(ArgumentsParser::class, ['rest' => ['./tests/Unit/Fixtures/TestCase/basic.js']]);
         $argumentsParserStub->method('getOption')->willReturnCallback(fn(string $option): string => $option === 'include' ? '(' : '');
         $argumentsParserStub->method('hasOption')->willReturnCallback(fn(string $option): bool => $option === 'include');
-        $harness = new Harness(
-            $this->createStub(EngineFactory::class),
-            $argumentsParserStub,
+        $harness = $this->createHarness(
+            argumentsParser: $argumentsParserStub,
+            printer: $printerMock,
         );
 
         $actual = $harness->run();
@@ -55,13 +74,16 @@ final class HarnessTest extends TestCase
     public function informsTheUserThatProvidedPathIsInvalid(): void
     {
         $expected = '###this/path/does/not/exist###';
-        $this->expectOutputString(
-            PHP_EOL . 'EcmaScript Test Harness' . PHP_EOL .
-                PHP_EOL . "Provided path `{$expected}` does not exist" . PHP_EOL
-        );
-        $harness = new Harness(
-            $this->createStub(EngineFactory::class),
-            $this->createConfiguredStub(ArgumentsParser::class, ['rest' => [$expected]]),
+
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('start');
+        $printerMock->expects($this->once())->method('writeLn')->with("Provided path `{$expected}` does not exist");
+        $harness = $this->createHarness(
+            argumentsParser: $this->createConfiguredStub(
+                ArgumentsParser::class,
+                ['rest' => [$expected]],
+            ),
+            printer: $printerMock,
         );
 
         $actual = $harness->run();
@@ -72,13 +94,12 @@ final class HarnessTest extends TestCase
     #[Test]
     public function informsTheUserThatNoPathsWhereProvided(): void
     {
-        $this->expectOutputString(
-            PHP_EOL . 'EcmaScript Test Harness' . PHP_EOL .
-                PHP_EOL . 'No test path specified. Aborting.' . PHP_EOL
-        );
-        $harness = new Harness(
-            $this->createStub(EngineFactory::class),
-            $this->createStub(ArgumentsParser::class),
+        $printerMock = $this->createMock(Printer::class);
+        $printerMock->expects($this->once())->method('start');
+        $printerMock->expects($this->once())->method('writeLn')->with('No test path specified. Aborting.');
+
+        $harness = $this->createHarness(
+            printer: $printerMock,
         );
 
         $actual = $harness->run();
