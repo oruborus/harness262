@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -13,12 +13,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Cli;
+namespace Tests\Unit\ArgumentsParser;
 
-use Oru\Harness\Cli\CliArgumentsParser;
-use Oru\Harness\Cli\Exception\InvalidOptionException;
-use Oru\Harness\Cli\Exception\MissingArgumentException;
-use Oru\Harness\Cli\Exception\UnknownOptionException;
+use Oru\Harness\ArgumentsParser\CliArgumentsParser;
+use Oru\Harness\ArgumentsParser\Exception\InvalidOptionException;
+use Oru\Harness\ArgumentsParser\Exception\MissingArgumentException;
+use Oru\Harness\ArgumentsParser\Exception\UnknownOptionException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

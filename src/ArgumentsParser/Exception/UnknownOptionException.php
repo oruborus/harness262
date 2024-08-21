@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -13,7 +13,7 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Cli\Exception;
+namespace Oru\Harness\ArgumentsParser\Exception;
 
 use RuntimeException;
 

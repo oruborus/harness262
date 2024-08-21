@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -13,11 +13,11 @@
 
 declare(strict_types=1);
 
-namespace Oru\Harness\Cli;
+namespace Oru\Harness\ArgumentsParser;
 
-use Oru\Harness\Cli\Exception\InvalidOptionException;
-use Oru\Harness\Cli\Exception\MissingArgumentException;
-use Oru\Harness\Cli\Exception\UnknownOptionException;
+use Oru\Harness\ArgumentsParser\Exception\InvalidOptionException;
+use Oru\Harness\ArgumentsParser\Exception\MissingArgumentException;
+use Oru\Harness\ArgumentsParser\Exception\UnknownOptionException;
 use Oru\Harness\Contracts\ArgumentsParser;
 
 use function array_key_exists;
