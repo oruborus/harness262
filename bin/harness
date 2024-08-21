@@ -13,12 +13,11 @@
 
 declare(strict_types=1);
 
-use Oru\Harness\ArgumentsParser\CliArgumentsParser;
-use Oru\Harness\ArgumentsParser\Exception\InvalidOptionException;
-use Oru\Harness\ArgumentsParser\Exception\UnknownOptionException;
+use Oru\Harness\ArgumentsParser\InputArgumentsParser;
 use Oru\Harness\EngineFactory\GenericEngineFactory;
 use Oru\Harness\Harness;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\SingleCommandApplication;
 
@@ -45,36 +44,9 @@ include './vendor/autoload.php';
     ->addOption('async', null)
     ->addOption('raw', null)
     ->setCode(
-        /** 
-         * @throws InvalidOptionException
-         * @throws UnknownOptionException
-         */
-        function () use ($argv): int {
+        function (InputInterface $input): int {
             $engineFactory   = new GenericEngineFactory(realpath('./Harness.php'));
-
-            $arguments = $argv;
-            array_shift($arguments);
-
-            $argumentsParser = new CliArgumentsParser($arguments, [
-                'no-cache'        => 'n',
-                'silent'          => 's',
-                'verbose'         => 'v',
-                'debug'           => null,
-                'include'         => ':',
-                'exclude'         => ':',
-                'stop-on-defect'  => null,
-                'stop-on-error'   => null,
-                'stop-on-failure' => null,
-                'concurrency'     => 'c:',
-                'strict'          => null,
-                'timeout'         => ':',
-                'loose'           => null,
-                'only-strict'     => null,
-                'no-strict'       => null,
-                'module'          => null,
-                'async'           => null,
-                'raw'             => null,
-            ]);
+            $argumentsParser = new InputArgumentsParser($input);
 
             return (new Harness($engineFactory, $argumentsParser))->run();
         }
