@@ -18,7 +18,6 @@ namespace Tests\Unit\Assertion;
 use Oru\Harness\Assertion\AssertAsync;
 use Oru\Harness\Assertion\AssertIsNormal;
 use Oru\Harness\Assertion\AssertIsThrowableWithConstructor;
-use Oru\Harness\Assertion\AssertMultiple;
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Contracts\Frontmatter;
@@ -77,9 +76,6 @@ final class GenericAssertionFactoryTest extends PHPUnitTestCase
             ])
         );
 
-        $this->assertInstanceOf(AssertMultiple::class, $actual);
-        /** @var AssertMultiple $actual */
-        $this->assertInstanceOf(AssertIsNormal::class, $actual->assertions()[0]);
-        $this->assertInstanceOf(AssertAsync::class, $actual->assertions()[1]);
+        $this->assertInstanceOf(AssertAsync::class, $actual);
     }
 }

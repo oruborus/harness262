@@ -32,6 +32,8 @@ use function usleep;
 
 final class TestEngine implements Engine
 {
+    private string $print = '';
+
     private bool $fails = false;
 
     private bool $errors = false;
@@ -54,12 +56,15 @@ final class TestEngine implements Engine
 
     public function addFiles(string ...$paths): void
     {
-        $this->fails = !array_filter($paths, static fn (string $path): bool => strpos($path, 'fail') !== false);
-        $this->errors = !array_filter($paths, static fn (string $path): bool => strpos($path, 'error') !== false);
+        $this->fails = !array_filter($paths, static fn(string $path): bool => strpos($path, 'fail') !== false);
+        $this->errors = !array_filter($paths, static fn(string $path): bool => strpos($path, 'error') !== false);
     }
 
     public function addCode(string $source, ?string $file = null, bool $isModuleCode = false): void
     {
+        if (preg_match('/print\(\'(?<print>.+)\'\)/', $source, $matches) === 1) {
+            $this->print = $matches['print'];
+        }
         $this->fails = strpos($source, 'fail') !== false;
         $this->errors = strpos($source, 'error') !== false;
         $this->emitsPid = strpos($source, 'pid') !== false;
@@ -76,6 +81,11 @@ final class TestEngine implements Engine
 
     public function run(): LanguageValue|AbruptCompletion
     {
+        if ($this->print !== '') {
+            echo $this->print;
+            return $this->createUnused();
+        }
+
         if ($this->errors) {
             throw new Exception('Planned error');
         }
@@ -96,6 +106,11 @@ final class TestEngine implements Engine
             usleep($this->runsFor * 1_000_000);
         }
 
+        return $this->createUnused();
+    }
+
+    private function createUnused(): UnusedValue
+    {
         return new class implements UnusedValue
         {
             public function getValue(): never

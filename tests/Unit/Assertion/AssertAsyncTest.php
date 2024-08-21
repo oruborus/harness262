@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -40,7 +40,7 @@ final class AssertAsyncTest extends TestCase
     #[Test]
     public function throwsWhenProvidedValueIsNotAStringWithCorrectStartSequence(): void
     {
-        $this->expectExceptionObject(new EngineException('Expected string output to start with `Test262:AsyncTestFailure:` in case of failure, got: "WRONG"'));
+        $this->expectExceptionObject(new EngineException('Expected string output to start with `Test262:AsyncTestFailure: ` in case of failure, got: "WRONG"'));
         $assertionMock = $this->createMock(Assertion::class);
         $assertion = new AssertAsync($assertionMock);
 
@@ -51,11 +51,10 @@ final class AssertAsyncTest extends TestCase
     public function throwsWhenProvidedValueAssertionExceptionWhenAsyncTestFailed(): void
     {
         $expectedException = null;
-        $assertionMock = $this->createMock(Assertion::class);
-        $assertion = new AssertAsync($assertionMock);
+        $assertion = new AssertAsync();
 
         try {
-            $assertion->assert('Test262:AsyncTestFailure:Test262Error:Something went wrong');
+            $assertion->assert('Test262:AsyncTestFailure: Test262Error:Something went wrong');
         } catch (Throwable $throwable) {
             $expectedException = $throwable;
         }

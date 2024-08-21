@@ -27,8 +27,7 @@ final readonly class GenericAssertionFactory implements AssertionFactory
 {
     public function __construct(
         private EngineFactory $engineFactory,
-    ) {
-    }
+    ) {}
 
     public function make(TestCase $testCase): Assertion
     {
@@ -41,10 +40,7 @@ final readonly class GenericAssertionFactory implements AssertionFactory
         }
 
         if (in_array(FrontmatterFlag::async, $testCase->frontmatter()->flags())) {
-            return new AssertMultiple(
-                new AssertIsNormal($agent, $valueFactory),
-                new AssertAsync()
-            );
+            return new AssertAsync();
         }
 
         return new AssertIsNormal($agent, $valueFactory);

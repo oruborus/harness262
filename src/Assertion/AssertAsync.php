@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2024, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -27,9 +27,9 @@ final readonly class AssertAsync implements Assertion
 {
     private const SUCCESS_SEQUENCE = 'Test262:AsyncTestComplete';
 
-    private const FAILURE_SEQUENCE = 'Test262:AsyncTestFailure:';
+    private const FAILURE_SEQUENCE = 'Test262:AsyncTestFailure: ';
 
-    private const FAILURE_SEQUENCE_LENGTH = 25;
+    private const FAILURE_SEQUENCE_LENGTH = 26;
 
     /**
      * @throws AssertionFailedException
