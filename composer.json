@@ -61,5 +61,14 @@
     },
     "bin": [
         "bin/harness"
-    ]
+    ],
+    "scripts": {
+        "qa": [
+            "phpunit --no-coverage",
+            "behat -f progress",
+            "psalm --clear-cache",
+            "psalm",
+            "infection -j12"
+        ]
+    }
 }
