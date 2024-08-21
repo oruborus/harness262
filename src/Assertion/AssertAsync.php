@@ -27,9 +27,9 @@ final readonly class AssertAsync implements Assertion
 {
     private const SUCCESS_SEQUENCE = 'Test262:AsyncTestComplete';
 
-    private const FAILURE_SEQUENCE = 'Test262:AsyncTestFailure: ';
+    private const FAILURE_SEQUENCE = 'Test262:AsyncTestFailure:';
 
-    private const FAILURE_SEQUENCE_LENGTH = 26;
+    private const FAILURE_SEQUENCE_LENGTH = 25;
 
     /**
      * @throws AssertionFailedException
@@ -50,6 +50,7 @@ final readonly class AssertAsync implements Assertion
         }
 
         $message = substr($actual, static::FAILURE_SEQUENCE_LENGTH);
+        $message = trim($message);
 
         throw new AssertionFailedException($message);
     }
