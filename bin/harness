@@ -14,15 +14,14 @@
 declare(strict_types=1);
 
 use Oru\Harness\ArgumentsParser\InputArgumentsParser;
-use Oru\Harness\Config\OutputConfigFactory;
-use Oru\Harness\Config\PrinterConfigFactory;
 use Oru\Harness\EngineFactory\GenericEngineFactory;
 use Oru\Harness\Harness;
-use Oru\Harness\Output\GenericOutputFactory;
-use Oru\Harness\Printer\GenericPrinterFactory;
+use Oru\Harness\Output\OutputAdapter;
+use Oru\Harness\Printer\NormalPrinter;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\SingleCommandApplication;
 
 include './vendor/autoload.php';
@@ -48,20 +47,10 @@ include './vendor/autoload.php';
     ->addOption('async', null)
     ->addOption('raw', null)
     ->setCode(
-        function (InputInterface $input): int {
-            $engineFactory        = new GenericEngineFactory(realpath('./Harness.php'));
-            $argumentsParser      = new InputArgumentsParser($input);
-
-            $printerFactory       = new GenericPrinterFactory();
-            $outputFactory        = new GenericOutputFactory();
-
-            $outputConfigFactory  = new OutputConfigFactory($argumentsParser);
-            $outputConfig         = $outputConfigFactory->make();
-            $output               = $outputFactory->make($outputConfig);
-
-            $printerConfigFactory = new PrinterConfigFactory($argumentsParser);
-            $printerConfig        = $printerConfigFactory->make();
-            $printer              = $printerFactory->make($printerConfig, $output);
+        function (InputInterface $input, OutputInterface $output): int {
+            $engineFactory   = new GenericEngineFactory(realpath('./Harness.php'));
+            $argumentsParser = new InputArgumentsParser($input);
+            $printer         = new NormalPrinter(new OutputAdapter($output));
 
             return (new Harness($engineFactory, $argumentsParser, $printer))->run();
         }
