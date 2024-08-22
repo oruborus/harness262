@@ -42,7 +42,7 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
         $agent = $this->createStub(Agent::class);
         $valueFactory = $this->createStub(ValueFactory::class);
         $valueFactory->method('createString')->willReturnCallback(
-            fn (string $string): StringValue => $this->createConfiguredStub(StringValue::class, [
+            fn(string $string): StringValue => $this->createConfiguredStub(StringValue::class, [
                 'getValue' => $string,
                 '__toString' => $string,
             ])
@@ -69,11 +69,12 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
         $this->expectExceptionObject(new AssertionFailedException("`ThrowCompletion` does not contain an `ObjectValue`, got '12345678.9'"));
 
         $assertion = $this->createAssertIsThrowableWithConstructor();
-        $value = $this->createConfiguredStub(ThrowCompletion::class, [
-            'getValue' => $this->createConfiguredStub(NumberValue::class, [
+        $value = $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class]);
+        $value->method('getValue')->willReturn(
+            $this->createConfiguredStub(NumberValue::class, [
                 'getValue' => 12345678.9,
             ])
-        ]);
+        );
 
         $assertion->assert($value);
     }
@@ -101,11 +102,12 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
         $this->expectExceptionObject(new AssertionFailedException('Constructor value is not an `ObjectValue`'));
 
         $assertion = $this->createAssertIsThrowableWithConstructor();
-        $value = $this->createConfiguredStub(ThrowCompletion::class, [
-            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+        $value = $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class]);
+        $value->method('getValue')->willReturn(
+            $this->createConfiguredStub(ObjectValue::class, [
                 'get' => $this->createStub(StringValue::class),
             ])
-        ]);
+        );
 
         $assertion->assert($value);
     }
@@ -120,11 +122,12 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
         $object->method('hasProperty')->willThrowException(
             $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class])
         );
-        $value = $this->createConfiguredStub(ThrowCompletion::class, [
-            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+        $value = $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class]);
+        $value->method('getValue')->willReturn(
+            $this->createConfiguredStub(ObjectValue::class, [
                 'get' => $object,
             ])
-        ]);
+        );
 
         $assertion->assert($value);
     }
@@ -135,15 +138,16 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
         $this->expectExceptionObject(new AssertionFailedException('Constructor does not have a name'));
 
         $assertion = $this->createAssertIsThrowableWithConstructor();
-        $value = $this->createConfiguredStub(ThrowCompletion::class, [
-            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+        $value = $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class]);
+        $value->method('getValue')->willReturn(
+            $this->createConfiguredStub(ObjectValue::class, [
                 'get' => $this->createConfiguredStub(ObjectValue::class, [
                     'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
                         'getValue' => false,
                     ]),
                 ])
             ])
-        ]);
+        );
 
         $assertion->assert($value);
     }
@@ -182,8 +186,9 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
                 'type' => 'SyntaxError'
             ]),
         );
-        $value = $this->createConfiguredStub(ThrowCompletion::class, [
-            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+        $value = $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class]);
+        $value->method('getValue')->willReturn(
+            $this->createConfiguredStub(ObjectValue::class, [
                 'get' => $this->createConfiguredStub(ObjectValue::class, [
                     'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
                         'getValue' => true,
@@ -191,7 +196,7 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
                     'get' => $this->createStub(StringValue::class),
                 ]),
             ]),
-        ]);
+        );
 
         $assertion->assert($value);
     }
@@ -205,8 +210,9 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
         $name = $this->createConfiguredStub(LanguageValue::class, [
             'getValue' => $this->createStub(UnusedValue::class),
         ]);
-        $value = $this->createConfiguredStub(ThrowCompletion::class, [
-            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+        $value = $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class]);
+        $value->method('getValue')->willReturn(
+            $this->createConfiguredStub(ObjectValue::class, [
                 'get' => $this->createConfiguredStub(ObjectValue::class, [
                     'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
                         'getValue' => true,
@@ -214,7 +220,7 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
                     'get' => $name,
                 ]),
             ]),
-        ]);
+        );
 
         $assertion->assert($value);
     }
@@ -228,8 +234,9 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
                 'type' => 'SyntaxError'
             ]),
         );
-        $value = $this->createConfiguredStub(ThrowCompletion::class, [
-            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+        $value = $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class]);
+        $value->method('getValue')->willReturn(
+            $this->createConfiguredStub(ObjectValue::class, [
                 'get' => $this->createConfiguredStub(ObjectValue::class, [
                     'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
                         'getValue' => true,
@@ -240,7 +247,7 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
                     ]),
                 ]),
             ]),
-        ]);
+        );
 
         $actual = $assertion->assert($value);
 

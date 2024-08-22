@@ -51,11 +51,15 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         if (!$actual instanceof ThrowCompletion) {
             throw new AssertionFailedException('Expected `ThrowCompletion`');
         }
+        /** @var Throwable&ThrowCompletion $actual */
 
         $exception = $actual->getValue();
 
         if (!$exception instanceof ObjectValue) {
-            throw new AssertionFailedException("`ThrowCompletion` does not contain an `ObjectValue`, got '{$exception->getValue()}'");
+            throw new AssertionFailedException(
+                "`ThrowCompletion` does not contain an `ObjectValue`, got '{$exception->getValue()}'",
+                previous: $actual,
+            );
         }
 
         try {
@@ -65,7 +69,10 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         }
 
         if (!$constructor instanceof ObjectValue) {
-            throw new AssertionFailedException('Constructor value is not an `ObjectValue`');
+            throw new AssertionFailedException(
+                'Constructor value is not an `ObjectValue`',
+                previous: $actual,
+            );
         }
 
         try {
@@ -75,7 +82,7 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         }
 
         if (!$hasName->getValue()) {
-            throw new AssertionFailedException('Constructor does not have a name');
+            throw new AssertionFailedException('Constructor does not have a name', previous: $actual,);
         }
 
         try {
@@ -91,7 +98,7 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         }
 
         if ($this->negative->type() !== $name) {
-            throw new AssertionFailedException("Expected `{$this->negative->type()}` but got `{$name}`");
+            throw new AssertionFailedException("Expected `{$this->negative->type()}` but got `{$name}`", previous: $actual);
         }
     }
 }

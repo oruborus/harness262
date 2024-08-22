@@ -25,6 +25,7 @@ use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Assertion\Exception\EngineException;
 use Oru\Harness\Contracts\Assertion;
+use Throwable;
 
 final readonly class AssertIsNormal implements Assertion
 {
@@ -50,11 +51,12 @@ final readonly class AssertIsNormal implements Assertion
         if (!$actual instanceof ThrowCompletion) {
             throw new AssertionFailedException('Expected `NormalCompletion`');
         }
+        /** @var Throwable&ThrowCompletion $actual */
 
         $value = $actual->getValue();
 
         if (!$value instanceof ObjectValue) {
-            throw new AssertionFailedException((string) $value->getValue());
+            throw new AssertionFailedException((string) $value->getValue(), previous: $actual);
         }
 
         try {
@@ -67,6 +69,6 @@ final readonly class AssertIsNormal implements Assertion
             throw new EngineException('Object property `message` was empty');
         }
 
-        throw new AssertionFailedException($message);
+        throw new AssertionFailedException($message, previous: $actual);
     }
 }

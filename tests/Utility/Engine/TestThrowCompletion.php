@@ -15,12 +15,13 @@ declare(strict_types=1);
 
 namespace Tests\Utility\Engine;
 
+use Exception;
 use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
 use Oru\EcmaScript\Core\Contracts\Values\EmptyValue;
 use Oru\EcmaScript\Core\Contracts\Values\StringValue;
 use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
 
-final class TestThrowCompletion implements ThrowCompletion
+final class TestThrowCompletion extends Exception implements ThrowCompletion
 {
     public function getValue(): LanguageValue
     {

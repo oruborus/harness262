@@ -124,7 +124,7 @@ Feature: async flag
             FAILURES:
 
             1: throwing-async.js
-            %sAssertionFailedException: %s
+            %ANext %sAssertionFailedException: %s
             %A
 
             """

@@ -37,7 +37,7 @@ final class AssertIsNormalTest extends TestCase
         $agent = $this->createStub(Agent::class);
         $valueFactory = $this->createStub(ValueFactory::class);
         $valueFactory->method('createString')->willReturnCallback(
-            fn (string $string): StringValue => $this->createConfiguredStub(StringValue::class, [
+            fn(string $string): StringValue => $this->createConfiguredStub(StringValue::class, [
                 'getValue' => $string,
                 '__toString' => $string,
             ])
@@ -62,11 +62,12 @@ final class AssertIsNormalTest extends TestCase
         $this->expectExceptionObject(new AssertionFailedException('123.1'));
 
         $assertion = $this->createAssertIsNormal();
-        $value = $this->createConfiguredStub(ThrowCompletion::class, [
-            'getValue' => $this->createConfiguredStub(NumberValue::class, [
+        $value = $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class]);
+        $value->method('getValue')->willReturn(
+            $this->createConfiguredStub(NumberValue::class, [
                 'getValue' => 123.1,
             ]),
-        ]);
+        );
 
         $assertion->assert($value);
     }
@@ -77,14 +78,15 @@ final class AssertIsNormalTest extends TestCase
         $this->expectExceptionObject(new EngineException('Object property `message` was empty'));
 
         $assertion = $this->createAssertIsNormal();
-        $value = $this->createConfiguredStub(ThrowCompletion::class, [
-            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+        $value = $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class]);
+        $value->method('getValue')->willReturn(
+            $this->createConfiguredStub(ObjectValue::class, [
                 'get' => $this->createConfiguredStub(StringValue::class, [
                     'getValue' => '',
                     '__toString' => '',
                 ])
             ]),
-        ]);
+        );
 
         $assertion->assert($value);
     }
@@ -99,9 +101,9 @@ final class AssertIsNormalTest extends TestCase
         $object->method('get')->willThrowException(
             $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class])
         );
-        $value = $this->createConfiguredStub(ThrowCompletion::class, [
-            'getValue' => $object
-        ]);
+
+        $value = $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class]);
+        $value->method('getValue')->willReturn($object);
 
         $assertion->assert($value);
     }
@@ -124,13 +126,14 @@ final class AssertIsNormalTest extends TestCase
         $this->expectExceptionObject(new AssertionFailedException((string) $expectedMessage));
 
         $assertion = $this->createAssertIsNormal();
-        $value = $this->createConfiguredStub(ThrowCompletion::class, [
-            'getValue' => $this->createConfiguredStub(ObjectValue::class, [
+        $value = $this->createStubForIntersectionOfInterfaces([Throwable::class, ThrowCompletion::class]);
+        $value->method('getValue')->willReturn(
+            $this->createConfiguredStub(ObjectValue::class, [
                 'get' => $this->createConfiguredStub(NumberValue::class, [
                     'getValue' => $expectedMessage,
                 ])
             ]),
-        ]);
+        );
 
         $assertion->assert($value);
     }
