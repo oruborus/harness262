@@ -34,6 +34,8 @@ final class TestEngine implements Engine
 {
     private string $print = '';
 
+    private bool $throws = false;
+
     private bool $fails = false;
 
     private bool $errors = false;
@@ -66,6 +68,7 @@ final class TestEngine implements Engine
             $this->print = $matches['print'];
         }
         $this->fails = strpos($source, 'fail') !== false;
+        $this->throws = strpos($source, 'throw') !== false;
         $this->errors = strpos($source, 'error') !== false;
         $this->emitsPid = strpos($source, 'pid') !== false;
         $this->emitsObjectId = strpos($source, 'oid') !== false;
@@ -83,6 +86,10 @@ final class TestEngine implements Engine
     {
         if ($this->print !== '') {
             echo $this->print;
+            if ($this->throws) {
+                return new TestThrowCompletion();
+            }
+
             return $this->createUnused();
         }
 

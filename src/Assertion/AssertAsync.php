@@ -31,6 +31,10 @@ final readonly class AssertAsync implements Assertion
 
     private const FAILURE_SEQUENCE_LENGTH = 25;
 
+    public function __construct(
+        private Assertion $assertion,
+    ) {}
+
     /**
      * @throws AssertionFailedException
      * @throws EngineException
@@ -38,7 +42,13 @@ final readonly class AssertAsync implements Assertion
     public function assert(mixed $actual): void
     {
         if (!is_string($actual)) {
+            $this->assertion->assert($actual);
+
             throw new EngineException('Expected string output');
+        }
+
+        if ($actual === '') {
+            throw new AssertionFailedException('The implementation-defined `print` function has not been invoked during test execution');
         }
 
         if (str_starts_with($actual, static::SUCCESS_SEQUENCE)) {

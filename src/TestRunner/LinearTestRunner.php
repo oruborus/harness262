@@ -51,8 +51,7 @@ final class LinearTestRunner implements TestRunner
         private readonly AssertionFactory $assertionFactory,
         private readonly Printer $printer,
         private readonly TestResultFactory $testResultFactory,
-    ) {
-    }
+    ) {}
 
     public function add(TestCase $testCase): void
     {

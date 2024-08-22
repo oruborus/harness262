@@ -38,7 +38,7 @@ Feature: async flag
 
             """
 
-    Scenario: A passing test run
+    Scenario: A failing test run
         Given a file named "failing-async.js" with:
             """
             // Copyright section
@@ -64,6 +64,67 @@ Feature: async flag
 
             1: failing-async.js
             %sAssertionFailedException: Failure message%s
+            %A
+
+            """
+
+    Scenario: A test run that does not invoke `print`
+        Given a file named "empty.js" with:
+            """
+            // Copyright section
+            /*---
+            description: An async test that should pass
+            flags: [async, raw]
+            ---*/
+            """
+        When I run "php bin/harness --no-cache empty.js"
+        Then I should see:
+            """
+
+            EcmaScript Test Harness
+
+            F                                                               1 / 1 (100%)
+
+            Duration: %d:%d
+
+            There where failure(s)!
+
+            FAILURES:
+
+            1: empty.js
+            %sAssertionFailedException: %s
+            %A
+
+            """
+
+    Scenario: A test run that throws a ThrowCompletion
+        Given a file named "throwing-async.js" with:
+            """
+            // Copyright section
+            /*---
+            description: An async test that throws
+            flags: [async, raw]
+            ---*/
+            print('Test262:AsyncTestComplete');
+
+            throw new Error();
+            """
+        When I run "php bin/harness --no-cache throwing-async.js"
+        Then I should see:
+            """
+
+            EcmaScript Test Harness
+
+            F                                                               1 / 1 (100%)
+
+            Duration: %d:%d
+
+            There where failure(s)!
+
+            FAILURES:
+
+            1: throwing-async.js
+            %sAssertionFailedException: %s
             %A
 
             """
