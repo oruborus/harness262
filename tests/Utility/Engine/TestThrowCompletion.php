@@ -19,9 +19,20 @@ use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
 use Oru\EcmaScript\Core\Contracts\Values\EmptyValue;
 use Oru\EcmaScript\Core\Contracts\Values\StringValue;
 use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
+use ReflectionClass;
 
 final class TestThrowCompletion implements ThrowCompletion
 {
+    private ?ReflectionClass $reflectionClass = null;
+
+    public function __construct(
+        bool $unserializable,
+    ) {
+        if ($unserializable === true) {
+            $this->reflectionClass = new ReflectionClass($this);
+        }
+    }
+
     public function getValue(): LanguageValue
     {
         return new TestStringValue('Planned failure');

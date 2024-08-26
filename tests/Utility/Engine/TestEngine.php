@@ -34,6 +34,8 @@ final class TestEngine implements Engine
 {
     private bool $fails = false;
 
+    private bool $unserializable = false;
+
     private bool $errors = false;
 
     private bool $emitsPid = false;
@@ -54,13 +56,14 @@ final class TestEngine implements Engine
 
     public function addFiles(string ...$paths): void
     {
-        $this->fails = !array_filter($paths, static fn (string $path): bool => strpos($path, 'fail') !== false);
-        $this->errors = !array_filter($paths, static fn (string $path): bool => strpos($path, 'error') !== false);
+        $this->fails = !array_filter($paths, static fn(string $path): bool => strpos($path, 'fail') !== false);
+        $this->errors = !array_filter($paths, static fn(string $path): bool => strpos($path, 'error') !== false);
     }
 
     public function addCode(string $source, ?string $file = null, bool $isModuleCode = false): void
     {
         $this->fails = strpos($source, 'fail') !== false;
+        $this->unserializable = strpos($source, 'unserializable') !== false;
         $this->errors = strpos($source, 'error') !== false;
         $this->emitsPid = strpos($source, 'pid') !== false;
         $this->emitsObjectId = strpos($source, 'oid') !== false;
@@ -81,7 +84,7 @@ final class TestEngine implements Engine
         }
 
         if ($this->fails) {
-            return new TestThrowCompletion();
+            return new TestThrowCompletion($this->unserializable);
         }
 
         if ($this->emitsPid) {
