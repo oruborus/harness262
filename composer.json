@@ -68,7 +68,7 @@
             "behat -f progress",
             "psalm --clear-cache",
             "psalm",
-            "infection -j12"
+            "infection -j12 --no-progress"
         ]
     }
 }
