@@ -13,10 +13,10 @@
 
 declare(strict_types=1);
 
-use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Box\TestCaseFromStdinBox;
 use Oru\Harness\EngineFactory\GenericEngineFactory;
+use Oru\Harness\Helpers\SerializationSanitizer;
 use Oru\Harness\Printer\SilentPrinter;
 use Oru\Harness\Subprocess\SingleTestSubprocess;
 use Oru\Harness\TestResult\GenericTestResultFactory;
@@ -41,5 +41,7 @@ try {
 } catch (Throwable $throwable) {
     $result = $throwable;
 }
+
+$result = (new SerializationSanitizer())->sanitize($result);
 
 echo serialize($result);

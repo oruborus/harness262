@@ -98,3 +98,31 @@ Feature: harness
             %A
 
             """
+
+    Scenario: Failure with unserializable member in throwable object tree
+        Given a file named "fail.js" with:
+            """
+            // Copyright section
+            /*---
+            description: An empty test that is assumed to fail unserializable
+            flags: [raw]
+            ---*/
+            """
+        When I run "php bin/harness --no-cache fail.js"
+        Then it should pass with unordered steps:
+            """
+
+            EcmaScript Test Harness
+
+            F                                                               1 / 1 (100%)
+
+            Duration: %d:%d
+
+            There where failure(s)!
+
+            FAILURES:
+
+            1: fail.js
+            %A
+
+            """
