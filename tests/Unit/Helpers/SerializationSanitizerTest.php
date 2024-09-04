@@ -87,6 +87,10 @@ final class SerializationSanitizerTest extends TestCase
 
         yield 'defined class' => [new A(null)];
         yield 'array' => [[1, 2, 3, [4, 5, 6]]];
+
+        $a = new A(null);
+        $a->a = $a;
+        yield 'circular references' => [$a];
     }
 
     #[Test]
@@ -116,6 +120,10 @@ final class SerializationSanitizerTest extends TestCase
         yield 'first array layer reflection' => [[1, 2, 3, new ReflectionClass(new class {})]];
         yield 'second array layer reflection' => [[1, 2, 3, [1, 2, 3, new ReflectionClass(new class {})]]];
 
+        $a = new A(null);
+        $a->a = $a;
+        yield 'circular references' => [[1, 2, $a, [1, 2, $a, new ReflectionClass(new class {})]]];
+
         yield 'TestThrowCompletion' => [new TestThrowCompletion(true)];
 
         yield 'GenericTestResult' => [
@@ -130,9 +138,9 @@ final class SerializationSanitizerTest extends TestCase
     }
 }
 
-final readonly class A
+final class A
 {
     public function __construct(
-        private mixed $a,
+        public mixed $a,
     ) {}
 }

@@ -20,10 +20,15 @@ use ReflectionClass;
 use Reflector;
 use UnitEnum;
 
+use function array_key_exists;
 use function gettype;
+use function spl_object_id;
 
 final class SerializationSanitizer
 {
+    /** @var array<int, ?object> $checkedObjectIds */
+    private array $checkedObjectIds = [];
+
     /** 
      * @template T
      * @param T $value
@@ -31,9 +36,21 @@ final class SerializationSanitizer
      */
     public function sanitize(mixed $value): mixed
     {
+        $this->checkedObjectIds = [];
+
+        return $this->sanitizeValue($value);
+    }
+
+    /** 
+     * @template T
+     * @param T $value
+     * @return T
+     */
+    private function sanitizeValue(mixed $value): mixed
+    {
         return match (gettype($value)) {
             'array' => $this->sanitizeArray($value),
-            'object' => $this->sanitizeObject($value),
+            'object' => $this->sanitizeObjectCached($value),
             default => $value,
         };
     }
@@ -47,11 +64,28 @@ final class SerializationSanitizer
     {
         /** @psalm-suppress MixedAssignment */
         foreach ($value as &$element) {
-            $element = $this->sanitize($element);
+            $element = $this->sanitizeValue($element);
         }
 
         /** @var T */
         return $value;
+    }
+
+    /**
+     * @template T of object
+     * @param T $value
+     * @return ?T
+     */
+    private function sanitizeObjectCached(object $value): ?object
+    {
+        $id = spl_object_id($value);
+        if (!array_key_exists($id, $this->checkedObjectIds)) {
+            $this->checkedObjectIds[$id] = $value;
+            $this->checkedObjectIds[$id] = $this->sanitizeObject($value);
+        }
+
+        /** @var ?T */
+        return $this->checkedObjectIds[$id];
     }
 
     /**
@@ -83,7 +117,7 @@ final class SerializationSanitizer
         do {
             /** @psalm-suppress MixedAssignment */
             foreach ($reflectionClass->getProperties() as $property) {
-                $newPropertyValue = $this->sanitize($property->getValue($value));
+                $newPropertyValue = $this->sanitizeValue($property->getValue($value));
                 $property->setValue($newInstance, $newPropertyValue);
             }
         } while ($reflectionClass = $reflectionClass->getParentClass());
