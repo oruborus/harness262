@@ -15,13 +15,14 @@ declare(strict_types=1);
 
 namespace Oru\Harness\Helpers;
 
-use Closure;
 use ReflectionClass;
-use Reflector;
+use Throwable;
 use UnitEnum;
 
 use function array_key_exists;
 use function gettype;
+use function is_null;
+use function serialize;
 use function spl_object_id;
 
 final class SerializationSanitizer
@@ -79,13 +80,12 @@ final class SerializationSanitizer
     private function sanitizeObjectCached(object $value): ?object
     {
         $id = spl_object_id($value);
-        if (!array_key_exists($id, $this->checkedObjectIds)) {
-            $this->checkedObjectIds[$id] = $value;
-            $this->checkedObjectIds[$id] = $this->sanitizeObject($value);
+        if (array_key_exists($id, $this->checkedObjectIds)) {
+            /** @var ?T */
+            return $this->checkedObjectIds[$id];
         }
 
-        /** @var ?T */
-        return $this->checkedObjectIds[$id];
+        return $this->sanitizeObject($value, $id);
     }
 
     /**
@@ -93,32 +93,46 @@ final class SerializationSanitizer
      * @param T $value
      * @return ?T
      */
-    private function sanitizeObject(object $value): ?object
+    private function sanitizeObject(object $value, int $id): ?object
     {
         if ($value instanceof UnitEnum) {
+            $this->checkedObjectIds[$id] = $value;
             return $value;
-        }
-
-        if ($value instanceof Closure) {
-            return null;
-        }
-
-        if ($value instanceof Reflector) {
-            return null;
         }
 
         $reflectionClass = new ReflectionClass($value);
 
         if ($reflectionClass->isAnonymous()) {
+            $this->checkedObjectIds[$id] = null;
             return null;
         }
 
-        $newInstance = $reflectionClass->newInstanceWithoutConstructor();
+        try {
+            $newInstance = $reflectionClass->newInstanceWithoutConstructor();
+        } catch (Throwable) {
+            $this->checkedObjectIds[$id] = null;
+            return null;
+        }
+
+        try {
+            serialize($newInstance);
+        } catch (Throwable) {
+            $this->checkedObjectIds[$id] = null;
+            return null;
+        }
+
+        $this->checkedObjectIds[$id] = $newInstance;
         do {
             /** @psalm-suppress MixedAssignment */
             foreach ($reflectionClass->getProperties() as $property) {
+                if (!$property->isInitialized($value)) {
+                    continue;
+                }
+
                 $newPropertyValue = $this->sanitizeValue($property->getValue($value));
-                $property->setValue($newInstance, $newPropertyValue);
+                if (!is_null($newPropertyValue) || ($property->getType()?->allowsNull() ?? false)) {
+                    $property->setValue($newInstance, $newPropertyValue);
+                }
             }
         } while ($reflectionClass = $reflectionClass->getParentClass());
 

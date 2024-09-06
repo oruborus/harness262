@@ -15,7 +15,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Helpers;
 
+use Closure;
 use Exception;
+use Fiber;
 use Generator;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Helpers\SerializationSanitizer;
@@ -25,6 +27,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use RuntimeException;
 use Tests\Utility\Engine\TestThrowCompletion;
 use Throwable;
 
@@ -85,11 +88,14 @@ final class SerializationSanitizerTest extends TestCase
         yield 'resource (closed)' => [$resource];
         yield 'null' => [null];
 
+        yield 'enum' => [TestEnum::TEST];
+
         yield 'defined class' => [new A(null)];
         yield 'array' => [[1, 2, 3, [4, 5, 6]]];
 
         $a = new A(null);
-        $a->a = $a;
+        $b = new A($a);
+        $a->a = $b;
         yield 'circular references' => [$a];
     }
 
@@ -107,9 +113,10 @@ final class SerializationSanitizerTest extends TestCase
 
     public static function provideUnserializableTree(): Generator
     {
-        yield 'reflector' => [new ReflectionClass(new Exception())];
+        yield 'Reflector' => [new ReflectionClass(new Exception())];
         yield 'anonymous class' => [new class {}];
-        yield 'closure' => [static fn(): null => null];
+        yield 'Closure' => [static fn(): null => null];
+        yield 'Fiber' => [new Fiber(static fn(): null => null)];
 
         yield 'first object layer anonymous' => [new A(new class {})];
         yield 'second object layer anonymous' => [new A(new A(new class {}))];
@@ -120,8 +127,9 @@ final class SerializationSanitizerTest extends TestCase
         yield 'first array layer reflection' => [[1, 2, 3, new ReflectionClass(new class {})]];
         yield 'second array layer reflection' => [[1, 2, 3, [1, 2, 3, new ReflectionClass(new class {})]]];
 
-        $a = new A(null);
-        $a->a = $a;
+        $a = new A(null, fn() => null);
+        $b = new A($a);
+        $a->a = $b;
         yield 'circular references' => [[1, 2, $a, [1, 2, $a, new ReflectionClass(new class {})]]];
 
         yield 'TestThrowCompletion' => [new TestThrowCompletion(true)];
@@ -130,17 +138,54 @@ final class SerializationSanitizerTest extends TestCase
             (new GenericTestResultFactory())->makeFailed('', [], 0, new AssertionFailedException())
         ];
 
-        $x = new Exception();
+        $x = new RuntimeException();
         (new ReflectionClass(Exception::class))
             ->getProperty('trace')
-            ->setValue($x, [['args' => [new ReflectionClass(__CLASS__)]]]);
+            ->setValue($x, [['args' => [static fn(): null => null]]]);
         yield 'captured function call argument in trace' => [$x];
+
+        yield 'private property of parent class' => [new B('value')];
+
+        yield 'uninitialized property' => [new D()];
     }
 }
 
-final class A
+class A
 {
     public function __construct(
         public mixed $a,
+        private mixed $b = null,
     ) {}
+}
+
+final class B extends A
+{
+    public function __construct(
+        public mixed $a,
+        private mixed $b = null,
+    ) {
+        parent::__construct(null, static fn(): null => null);
+    }
+}
+
+final class C extends A
+{
+    public A $c;
+}
+
+final class D
+{
+    private A $a;
+
+    private Closure $b;
+
+    public function __construct()
+    {
+        $this->b  = static fn(): null => null;
+    }
+}
+
+enum TestEnum
+{
+    case TEST;
 }
