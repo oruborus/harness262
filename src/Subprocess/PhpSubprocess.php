@@ -21,6 +21,7 @@ use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestResultFactory;
 use Oru\Harness\Helpers\ErrorHandler;
+use Oru\Harness\Helpers\Serializer;
 use Oru\Harness\Subprocess\Exception\InvalidReturnValueException;
 use Oru\Harness\Subprocess\Exception\ProcessAlreadyRunningException;
 use Oru\Harness\Subprocess\Exception\ProcessFailureException;
@@ -29,9 +30,6 @@ use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Exception\RuntimeException;
 use Symfony\Component\Process\PhpSubprocess as SymfonyPhpSubprocess;
 use Throwable;
-
-use function serialize;
-use function unserialize;
 
 use const E_WARNING;
 
@@ -45,7 +43,8 @@ final class PhpSubprocess implements Subprocess
         private readonly TestResultFactory $testResultFactory,
     ) {
         // TODO: Handle serialization exceptions
-        $serializedTestCase = serialize($testCase);
+        /** @psalm-suppress MissingThrowsDocblock */
+        $serializedTestCase = (new Serializer())->serialize($testCase);
 
         /** @psalm-suppress MissingThrowsDocblock Process is not running when input is set */
         $phpSubprocess->setInput($serializedTestCase);
@@ -83,13 +82,13 @@ final class PhpSubprocess implements Subprocess
         $output = $this->phpSubprocess->getOutput();
 
         // TODO: Add subprocess error handling
-        assert($this->phpSubprocess->getExitCode() === 0, "ASSERTION FAILED: {$output}");
+        assert($this->phpSubprocess->getExitCode() === 0, "ASSERTION FAILED: {$output}, {$this->phpSubprocess->getErrorOutput()}");
 
         $_ = new ErrorHandler(
             fn(): never => throw new InvalidReturnValueException("Subprocess did not return a `TestResult` - Returned: {$output}"),
             E_WARNING
         );
-        $result = unserialize($output);
+        $result = (new Serializer())->unserialize($output);
 
         if ($result instanceof Throwable) {
             throw $result;

@@ -17,11 +17,11 @@ namespace Oru\Harness\Box;
 
 use Oru\Harness\Contracts\Box;
 use Oru\Harness\Contracts\TestCase;
+use Oru\Harness\Helpers\Serializer;
 use RuntimeException;
 
 use function fopen;
 use function stream_get_contents;
-use function unserialize;
 
 /**
  * @implements Box<TestCase>
@@ -42,7 +42,8 @@ final readonly class TestCaseFromStdinBox implements Box
         $input = stream_get_contents($input)
             ?: throw new RuntimeException('Could not get contents of STDIN');
 
-        $testCase = unserialize($input);
+        /** @psalm-suppress MissingThrowsDocblock */
+        $testCase = (new Serializer())->unserialize($input);
 
         if (!$testCase instanceof TestCase) {
             throw new RuntimeException('STDIN did not contain a serialized `TestConfig` object');
