@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -15,6 +15,8 @@ declare(strict_types=1);
 
 namespace Oru\Harness\Assertion;
 
+use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
+use Oru\Harness\Assertion\Exception\EngineException;
 use Oru\Harness\Contracts\Assertion;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\EngineFactory;
@@ -29,11 +31,13 @@ final readonly class GenericAssertionFactory implements AssertionFactory
         private EngineFactory $engineFactory,
     ) {}
 
+    /** @throws EngineException */
     public function make(TestCase $testCase): Assertion
     {
         $engine       = $this->engineFactory->make();
         $agent        = $engine->getAgent();
-        $valueFactory = $agent->getInterpreter()->getValueFactory();
+        $valueFactory = $agent->get(ValueFactory::class)
+            ?? throw new EngineException('`Agent` is not configured properly, `ValueFactory` is not bound');
 
         if ($negative = $testCase->frontmatter()->negative()) {
             return new AssertIsThrowableWithConstructor($agent, $valueFactory, $negative);

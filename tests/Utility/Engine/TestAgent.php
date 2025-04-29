@@ -28,6 +28,7 @@ use Oru\EcmaScript\Core\Contracts\Values\BooleanValue;
 use Oru\EcmaScript\Core\Contracts\Values\SourceText;
 use Oru\EcmaScript\Core\Contracts\WellKnownSymbol;
 use Oru\EcmaScript\Core\Contracts\Values\SymbolValue;
+use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 
 final class TestAgent implements Agent
 {
@@ -160,7 +161,10 @@ final class TestAgent implements Agent
 
     public function get(string $abstract, array $parameters = []): object
     {
-        throw new \RuntimeException('`TestAgent::get()` is not implemented');
+        return match ($abstract) {
+            ValueFactory::class => new TestValueFactory(),
+            default => throw new \RuntimeException('`TestAgent::get()` is not implemented'),
+        };
     }
 
     public function make(object|string $concrete, array $parameters = []): object
