@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -49,13 +49,11 @@ final class PhpSubprocessTestRunnerTest extends PHPUnitTestCase
 {
     private function createTestRunner(
         ?Printer $printer = null,
-        ?Command $command = null,
         ?Loop $loop = null,
         ?SubprocessFactory $subprocessFactory = null,
     ): TestRunner {
         return new PhpSubprocessTestRunner(
             $printer ?? $this->createStub(Printer::class),
-            $command ?? $this->createStub(Command::class),
             $loop ?? $this->createStub(Loop::class),
             $subprocessFactory ?? $this->createStub(SubprocessFactory::class),
         );

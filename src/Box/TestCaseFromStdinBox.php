@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -38,7 +38,6 @@ final readonly class TestCaseFromStdinBox implements Box
         $input = fopen('php://stdin', 'r')
             ?: throw new RuntimeException('Could not open STDIN');
 
-        /** @psalm-suppress RiskyTruthyFalsyComparison */
         $input = stream_get_contents($input)
             ?: throw new RuntimeException('Could not get contents of STDIN');
 

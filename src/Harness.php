@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -58,7 +58,7 @@ final readonly class Harness
         $contents = str_replace(
             '{{CONFIG_PATH}}',
             $engineFactory->path(),
-            file_get_contents(realpath(static::TEMPLATE_PATH))
+            (string) file_get_contents((string) realpath(static::TEMPLATE_PATH))
         );
         $this->temporaryFileHandler = new TemporaryFileHandler($contents);
     }
@@ -74,7 +74,7 @@ final readonly class Harness
     {
         $testStorage            = new FileStorage(static::TEST_STORAGE_PATH);
         $assertionFactory       = new GenericAssertionFactory($this->engineFactory);
-        $command                = new FileCommand(realpath($this->temporaryFileHandler->path()));
+        $command                = new FileCommand((string) realpath($this->temporaryFileHandler->path()));
 
         $coreCounter            = new LogicalCoreCounter();
 

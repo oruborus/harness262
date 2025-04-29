@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Tests\Utility\Engine;
 
+use Oru\EcmaScript\Core\Contracts\Grammars\ScriptsAndModules\Productions\Module as ProductionsModule;
 use Oru\EcmaScript\Core\Contracts\Values\BooleanValue;
 use Oru\EcmaScript\Core\Contracts\Values\AlreadyResolvedRecord;
 use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
@@ -71,17 +72,53 @@ use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\CyclicModuleRecord;
 use Oru\EcmaScript\Core\Contracts\Nodes\Module;
 use Oru\EcmaScript\Core\Contracts\ParameterName;
+use Oru\EcmaScript\Core\Contracts\Values\CaptureRange;
+use Oru\EcmaScript\Core\Contracts\Values\Failure;
+use Oru\EcmaScript\Core\Contracts\Values\MatchRecord;
+use Oru\EcmaScript\Core\Contracts\Values\MatchState;
 use Oru\EcmaScript\Core\Contracts\Values\SourceTextModuleRecord;
 use Oru\EcmaScript\Core\Contracts\Values\SpecifierModulePair;
 use Oru\EcmaScript\Core\Contracts\Values\State;
 use Oru\EcmaScript\Core\Contracts\Values\TypedArrayType;
 use Oru\EcmaScript\Core\Contracts\Values\UnusedValue;
 use Oru\EcmaScript\Core\Contracts\Values\ReferenceRecord;
+use Oru\EcmaScript\Core\Contracts\Values\RegExpRecord;
+use Oru\EcmaScript\Core\Contracts\Values\SourceText;
 use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 use Stringable;
 
 final class TestValueFactory implements ValueFactory
 {
+    public function createCaptureRange(NumberValue $startIndex, NumberValue $endIndex): CaptureRange
+    {
+        throw new \RuntimeException('`TestValueFactory::createCaptureRange()` is not implemented');
+    }
+
+    public function createFailure(): Failure
+    {
+        throw new \RuntimeException('`TestValueFactory::createFailure()` is not implemented');
+    }
+
+    public function createMatchRecord(NumberValue $startIndex, NumberValue $endIndex): MatchRecord
+    {
+        throw new \RuntimeException('`TestValueFactory::createMatchRecord()` is not implemented');
+    }
+
+    public function createMatchState(ListValue $input, NumberValue $endIndex, array $captures): MatchState
+    {
+        throw new \RuntimeException('`TestValueFactory::createMatchState()` is not implemented');
+    }
+
+    public function createRegExpRecord(BooleanValue $ignoreCase, BooleanValue $multiline, BooleanValue $dotAll, BooleanValue $unicode, BooleanValue $unicodeSets, NumberValue $capturingGroupsCount): RegExpRecord
+    {
+        throw new \RuntimeException('`TestValueFactory::createRegExpRecord()` is not implemented');
+    }
+
+    public function createSourceText(array $values): SourceText
+    {
+        throw new \RuntimeException('`TestValueFactory::createSourceText()` is not implemented');
+    }
+
     public function createAlreadyResolvedRecord(BooleanValue $value): AlreadyResolvedRecord
     {
         throw new \RuntimeException('`TestValueFactory::createAlreadyResolvedRecord()` is not implemented');
@@ -107,7 +144,7 @@ final class TestValueFactory implements ValueFactory
         throw new \RuntimeException('`TestValueFactory::createBreakCompletion()` is not implemented');
     }
 
-    public function createCharSet(int|array $charSet = []): CharSet
+    public function createCharSet(array|callable $characters): CharSet
     {
         throw new \RuntimeException('`TestValueFactory::createCharSet()` is not implemented');
     }
@@ -297,8 +334,31 @@ final class TestValueFactory implements ValueFactory
         throw new \RuntimeException('`TestValueFactory::createScriptRecord()` is not implemented');
     }
 
-    public function createSourceTextModuleRecord(RealmRecord $realm, EnvironmentRecord|EmptyValue $environment, ObjectValue|EmptyValue $namespace, mixed $hostDefined, Status $status, ThrowCompletion|EmptyValue $evaluationError, NumberValue|EmptyValue $dfsIndex, NumberValue|EmptyValue $dfsAncestorIndex, ListValue $requestedModules, ListValue $loadedModules, CyclicModuleRecord|EmptyValue $cycleRoot, BooleanValue $hasTLA, BooleanValue $asyncEvaluation, PromiseCapabilityRecord|EmptyValue $topLevelCapability, ListValue $asyncParentModules, NumberValue|EmptyValue $pendingAsyncDependencies, Module $ecmaScriptCode, ExecutionContext|EmptyValue $context, ObjectValue|EmptyValue $importMeta, ListValue $importEntries, ListValue $localExportEntries, ListValue $indirectExportEntries, ListValue $starExportEntries): SourceTextModuleRecord
-    {
+    public function createSourceTextModuleRecord(
+        RealmRecord $realm,
+        EnvironmentRecord|EmptyValue $environment,
+        ObjectValue|EmptyValue $namespace,
+        mixed $hostDefined,
+        Status $status,
+        ThrowCompletion|EmptyValue $evaluationError,
+        NumberValue|EmptyValue $dfsIndex,
+        NumberValue|EmptyValue $dfsAncestorIndex,
+        ListValue $requestedModules,
+        ListValue $loadedModules,
+        CyclicModuleRecord|EmptyValue $cycleRoot,
+        BooleanValue $hasTLA,
+        BooleanValue $asyncEvaluation,
+        PromiseCapabilityRecord|EmptyValue $topLevelCapability,
+        ListValue $asyncParentModules,
+        NumberValue|EmptyValue $pendingAsyncDependencies,
+        ProductionsModule $ecmaScriptCode,
+        ExecutionContext|EmptyValue $context,
+        ObjectValue|EmptyValue $importMeta,
+        ListValue $importEntries,
+        ListValue $localExportEntries,
+        ListValue $indirectExportEntries,
+        ListValue $starExportEntries
+    ): SourceTextModuleRecord {
         throw new \RuntimeException('`TestValueFactory::createSourceTextModuleRecord()` is not implemented');
     }
 

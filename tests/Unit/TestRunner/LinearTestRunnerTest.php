@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -354,7 +354,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
     #[Test]
     public function capturesAndPerformsAssertionOnEngineOutputForAsyncTestWhenTestCaseReturnsAnAbruptCompletion(): void
     {
-        $expected = $this->createStubForIntersectionOfInterfaces([Throwable::class, AbruptCompletion::class]);
+        $expected = $this->createStub(AbruptCompletion::class);
         $engineStub = $this->createStub(Engine::class);
         $engineStub->method('run')->willReturnCallback(static function () use ($expected): mixed {
             echo 'SOME OUTPUT';

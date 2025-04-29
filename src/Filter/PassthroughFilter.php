@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -21,7 +21,7 @@ use Oru\Harness\Contracts\TestCase;
 final readonly class PassthroughFilter implements Filter
 {
     /**
-     * @param TestCase ...$values
+     * @param TestCase ...$testCases
      *
      * @return TestCase[]
      */

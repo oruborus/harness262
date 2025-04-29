@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -22,15 +22,11 @@ final class GenericEngineFactory implements EngineFactory
 {
     public function __construct(
         private string $path,
-    ) {
-    }
+    ) {}
 
     public function make(): Engine
     {
-        /**
-         * @var Engine
-         * @psalm-suppress UnresolvableInclude
-         */
+        /** @var Engine */
         return require $this->path;
     }
 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -21,6 +21,7 @@ use Oru\Harness\Contracts\Task;
 
 final readonly class FiberTask implements Task
 {
+    /** @param Fiber<mixed, mixed, mixed, mixed> $fiber */
     public function __construct(
         private Fiber $fiber,
         private ?Closure $onSuccess = null,

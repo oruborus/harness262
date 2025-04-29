@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -22,7 +22,7 @@ use function preg_match;
 final class FileNameDoesNotMatchRegExpFilter extends BaseRegExpFilter
 {
     /**
-     * @param TestCase ...$values
+     * @param TestCase ...$testCases
      *
      * @return TestCase[]
      */
@@ -30,7 +30,7 @@ final class FileNameDoesNotMatchRegExpFilter extends BaseRegExpFilter
     {
         return array_filter(
             $testCases,
-            fn (TestCase $testCase): bool => !preg_match($this->pattern, $testCase->path())
+            fn(TestCase $testCase): bool => !preg_match($this->pattern, $testCase->path()),
         );
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -15,18 +15,12 @@ declare(strict_types=1);
 
 namespace Oru\Harness\Contracts;
 
-/**
- * @template TContent
- */
+/** @template TContent */
 interface Storage
 {
-    /**
-     * @param TContent $content
-     */
+    /** @param TContent $content */
     public function put(string $key, mixed $content): void;
 
-    /**
-     * @return ?TContent
-     */
+    /** @return ?TContent */
     public function get(string $key): mixed;
 }

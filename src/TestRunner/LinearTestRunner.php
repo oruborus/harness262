@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -105,9 +105,6 @@ final class LinearTestRunner implements TestRunner
         $assertion = $this->assertionFactory->make($testCase);
 
         try {
-            /**
-             * @psalm-suppress MixedAssignment  Test outcomes intentionally return `mixed`
-             */
             $actual = $this->runTestCodeInEngine($engine, $testCase);
             $assertion->assert($actual);
             return $this->testResultFactory->makeSuccessful($testCase->path(), [], 0);

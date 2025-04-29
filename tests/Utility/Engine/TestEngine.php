@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -128,6 +128,17 @@ final class TestEngine implements Engine
                 throw new \RuntimeException('`UnusedValue::getValue()` should not be called');
             }
         };
+    }
+
+    public function hostDefinedProperty(string $key): mixed
+    {
+        return null;
+    }
+
+    /** @return array<string, mixed> */
+    public function hostDefinedProperties(): array
+    {
+        return [];
     }
 
     public function getSupportedFeatures(): array

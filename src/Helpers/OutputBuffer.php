@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -35,9 +35,6 @@ final readonly class OutputBuffer implements Stringable
 
     public function __toString(): string
     {
-        /**
-         * @psalm-ignore-falsable-return  Output buffering is guaranteed to be active.
-         */
-        return ob_get_contents();
+        return (string) ob_get_contents();
     }
 }

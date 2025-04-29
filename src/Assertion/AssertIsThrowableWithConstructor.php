@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -56,8 +56,10 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         $exception = $actual->getValue();
 
         if (!$exception instanceof ObjectValue) {
+            /** @var bool|float|int|string|null $exceptionValue */
+            $exceptionValue = $exception->getValue();
             throw new AssertionFailedException(
-                "`ThrowCompletion` does not contain an `ObjectValue`, got '{$exception->getValue()}'",
+                "`ThrowCompletion` does not contain an `ObjectValue`, got '{$exceptionValue}'",
                 previous: $actual,
             );
         }
@@ -92,7 +94,9 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         }
 
         try {
-            $name = (string) $nameProperty->getValue();
+            /** @var bool|float|int|string|null $namePropertyValue */
+            $namePropertyValue = $nameProperty->getValue();
+            $name = (string) $namePropertyValue;
         } catch (Throwable $throwable) {
             throw new EngineException('Could not convert `name` to string', previous: $throwable);
         }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -45,7 +45,7 @@ final readonly class GenericFrontmatter implements Frontmatter
     private const VALID_KEYS    = ['description', 'esid', 'info', 'negative', 'includes', 'author', 'flags', 'features', 'locale', 'es5id', 'es6id'];
 
     /**
-     * @var array {
+     * @var array{
      *     description: string,
      *     esid: ?string,
      *     es5id: ?string,
@@ -71,14 +71,14 @@ final readonly class GenericFrontmatter implements Frontmatter
     {
         try {
             /**
-             * @var array {
+             * @var array{
              *     description: string,
              *     esid: ?string,
              *     es5id: ?string,
              *     es6id: ?string,
              *     info: ?string,
              *     includes: ?string[],
-             *     negative: array {
+             *     negative: ?array{
              *         phase: string,
              *         type: string
              *     },
@@ -124,9 +124,7 @@ final readonly class GenericFrontmatter implements Frontmatter
         }
         $data['flags'] = $newFlags;
 
-        /**
-         * @see https://github.com/tc39/test262/blob/main/INTERPRETING.md#test262-defined-bindings
-         */
+        /** @see https://github.com/tc39/test262/blob/main/INTERPRETING.md#test262-defined-bindings */
         assert(!in_array(FrontmatterFlag::raw, $data['flags']) || count($data['includes']) === 0);
 
         if (!in_array(FrontmatterFlag::raw, $data['flags'])) {
@@ -146,7 +144,6 @@ final readonly class GenericFrontmatter implements Frontmatter
             }
         }
 
-        /** @psalm-suppress InvalidPropertyAssignmentValue */
         $this->data = $data;
     }
 
@@ -170,12 +167,10 @@ final readonly class GenericFrontmatter implements Frontmatter
         return $this->data['negative'] ?? null;
     }
 
-    /**
-     * @return FrontmatterInclude[]
-     */
+    /** @return FrontmatterInclude[] */
     public function includes(): array
     {
-        return $this->data['includes'] ?? [];
+        return $this->data['includes'];
     }
 
     public function author(): ?string
@@ -183,25 +178,19 @@ final readonly class GenericFrontmatter implements Frontmatter
         return $this->data['author'] ?? null;
     }
 
-    /**
-     * @return FrontmatterFlag[]
-     */
+    /** @return FrontmatterFlag[] */
     public function flags(): array
     {
-        return $this->data['flags'] ?? [];
+        return $this->data['flags'];
     }
 
-    /**
-     * @return string[]
-     */
+    /** @return string[] */
     public function features(): array
     {
         return $this->data['features'] ?? [];
     }
 
-    /**
-     * @return string[]
-     */
+    /** @return string[] */
     public function locale(): array
     {
         return $this->data['locale'] ?? [];

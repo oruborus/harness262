@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -16,7 +16,6 @@ declare(strict_types=1);
 namespace Oru\Harness\TestRunner;
 
 use Fiber;
-use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\TestCase;
@@ -38,35 +37,24 @@ final class ParallelTestRunner implements TestRunner
 {
     private bool $dirty = true;
 
-    /**
-     * @var TestCase[] $testCases
-     */
+    /** @var TestCase[] $testCases */
     private array $testCases = [];
 
-    /**
-     * @var TestResult[] $results
-     */
+    /** @var TestResult[] $results */
     private array $results = [];
 
     public function __construct(
-        private readonly AssertionFactory $assertionFactory,
         private readonly Printer $printer,
         private readonly Command $command
     ) {}
 
-    /**
-     * @throws Throwable
-     * @throws RuntimeException
-     */
     public function add(TestCase $testCase): void
     {
         $this->dirty = true;
         $this->testCases[] = $testCase;
     }
 
-    /**
-     * @return TestResult[]
-     */
+    /** @return TestResult[] */
     public function run(): array
     {
         if (!$this->dirty) {
@@ -88,6 +76,7 @@ final class ParallelTestRunner implements TestRunner
 
             $options = ['bypass_shell' => true];
 
+            /** @var array{0: resource, 1: resource, 2: resource} $pipes */
             $process = @proc_open((string) $this->command, $descriptorspec, $pipes, $cwd, $env, $options)
                 ?: throw new RuntimeException('Could not open process');
 
@@ -100,7 +89,7 @@ final class ParallelTestRunner implements TestRunner
                 }
             }
 
-            $output = stream_get_contents($pipes[1]);
+            $output = stream_get_contents($pipes[1]) ?: '';
             fclose($pipes[1]);
             fclose($pipes[2]);
 
@@ -124,9 +113,7 @@ final class ParallelTestRunner implements TestRunner
         return $this->results;
     }
 
-    /**
-     * @return TestResult[]
-     */
+    /** @return TestResult[] */
     public function results(): array
     {
         return $this->results;

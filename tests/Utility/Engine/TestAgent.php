@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -20,16 +20,54 @@ use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Core\Contracts\Values\ExecutionContext;
 use Oru\EcmaScript\Core\Contracts\Parser;
 use Oru\EcmaScript\Core\Contracts\Interpreter;
+use Oru\EcmaScript\Core\Contracts\Position;
 use Oru\EcmaScript\Core\Contracts\Values\ListValue;
 use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
 use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
-use Oru\EcmaScript\Core\Contracts\PositionalInformation;
 use Oru\EcmaScript\Core\Contracts\Values\BooleanValue;
+use Oru\EcmaScript\Core\Contracts\Values\SourceText;
 use Oru\EcmaScript\Core\Contracts\WellKnownSymbol;
 use Oru\EcmaScript\Core\Contracts\Values\SymbolValue;
 
 final class TestAgent implements Agent
 {
+    public function setStrict(bool $strict): void {}
+
+    public function isStrictCode(): bool
+    {
+        return false;
+    }
+
+    public function setInEval(bool $inEval): void {}
+
+    public function inEval(): bool
+    {
+        return false;
+    }
+
+    /** @param string[] $currentLabelSet */
+    public function setCurrentLabelSet(array $currentLabelSet): void {}
+
+    /** @return string[] */
+    public function currentLabelSet(): array
+    {
+        return [];
+    }
+
+    public function setInIterationOrSwitchStatement(bool $inIterationOrSwitchStatement): void {}
+
+    public function inIterationOrSwitchStatement(): bool
+    {
+        return false;
+    }
+
+    public function setCurrentSourceText(?SourceText $sourceText = null): void {}
+
+    public function getCurrentSourceText(): ?SourceText
+    {
+        return null;
+    }
+
     public function setCurrentFile(?string $file = null): void
     {
         throw new \RuntimeException('`TestAgent::setCurrentFile()` is not implemented');
@@ -100,7 +138,7 @@ final class TestAgent implements Agent
         throw new \RuntimeException('`TestAgent::createErrorThrowCompletion()` is not implemented');
     }
 
-    public function createSyntaxError(string $message, ?PositionalInformation $positionalInformation = null): ThrowCompletion
+    public function createSyntaxError(string $message, ?Position $position = null): ThrowCompletion
     {
         throw new \RuntimeException('`TestAgent::createSyntaxError()` is not implemented');
     }
@@ -135,12 +173,12 @@ final class TestAgent implements Agent
         throw new \RuntimeException('`TestAgent::call()` is not implemented');
     }
 
-    public function bind(string $abstract, object|string $concrete): void
+    public function bind(string $abstract, object|string|callable $concrete): void
     {
         throw new \RuntimeException('`TestAgent::bind()` is not implemented');
     }
 
-    public function singleton(string $abstract, object|string $concrete): void
+    public function singleton(string $abstract, object|string|callable $concrete): void
     {
         throw new \RuntimeException('`TestAgent::singleton()` is not implemented');
     }

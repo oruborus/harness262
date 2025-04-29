@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -37,16 +37,14 @@ use const JSON_THROW_ON_ERROR;
 final readonly class SerializingFileStorage implements Storage
 {
     public function __construct(
-        private string $basePath
+        private string $basePath,
     ) {
         if (!file_exists($this->basePath)) {
             mkdir(directory: $this->basePath, recursive: true);
         }
     }
 
-    /**
-     * @param TContent $content
-     */
+    /** @param TContent $content */
     public function put(string $key, mixed $content): void
     {
         $prefixedKey = $this->basePath . DIRECTORY_SEPARATOR . $key;
@@ -58,9 +56,7 @@ final readonly class SerializingFileStorage implements Storage
         file_put_contents($prefixedKey, $stringContent);
     }
 
-    /**
-     * @return TContent
-     */
+    /** @return ?TContent */
     public function get(string $key): mixed
     {
         $prefixedKey = $this->basePath . DIRECTORY_SEPARATOR . $key;
@@ -76,9 +72,8 @@ final readonly class SerializingFileStorage implements Storage
 
         $decodedContent = json_decode($stringContent, null, JSON_THROW_ON_ERROR);
         assert(is_string($decodedContent));
-        /**
-         * @var TContent
-         */
+
+        /** @var TContent */
         return unserialize($decodedContent);
     }
 }

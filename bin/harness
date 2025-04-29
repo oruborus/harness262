@@ -30,7 +30,7 @@ include './vendor/autoload.php';
     ->addArgument('paths', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'paths')
     // FIXME: Remove the global option '--no-interaction' as it is blocking the short option '-n' from '--no-cache'
     ->addOption('no-cache', /*'n'*/ null)
-    ->addOption('silent', 's')
+    // ->addOption('silent', 's')
     ->addOption('debug', null)
     ->addOption('include', null, InputOption::VALUE_REQUIRED, 'regex pattern of the paths to include')
     ->addOption('exclude', null, InputOption::VALUE_REQUIRED, 'regex pattern of the paths to exclude')

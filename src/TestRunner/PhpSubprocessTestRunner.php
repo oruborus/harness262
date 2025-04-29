@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -16,7 +16,6 @@ declare(strict_types=1);
 namespace Oru\Harness\TestRunner;
 
 use Fiber;
-use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\Loop;
 use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
@@ -31,14 +30,11 @@ use Throwable;
 
 final class PhpSubprocessTestRunner implements TestRunner
 {
-    /**
-     * @var TestResult[] $results
-     */
+    /** @var TestResult[] $results */
     private array $results = [];
 
     public function __construct(
         private readonly Printer $printer,
-        private readonly Command $command,
         private readonly Loop $loop,
         private readonly SubprocessFactory $subprocessFactory,
     ) {}
@@ -73,9 +69,7 @@ final class PhpSubprocessTestRunner implements TestRunner
         $this->loop->add($task);
     }
 
-    /**
-     * @return TestResult[]
-     */
+    /** @return TestResult[] */
     public function run(): array
     {
         try {
@@ -86,9 +80,7 @@ final class PhpSubprocessTestRunner implements TestRunner
         return $this->results;
     }
 
-    /**
-     * @return TestResult[]
-     */
+    /** @return TestResult[] */
     public function results(): array
     {
         return $this->results;

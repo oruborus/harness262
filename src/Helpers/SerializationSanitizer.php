@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2024, Felix Jahn
+ * Copyright (c) 2024-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -33,7 +33,7 @@ final class SerializationSanitizer
     /** 
      * @template T
      * @param T $value
-     * @return T
+     * @return ?T
      */
     public function sanitize(mixed $value): mixed
     {
@@ -45,7 +45,7 @@ final class SerializationSanitizer
     /** 
      * @template T
      * @param T $value
-     * @return T
+     * @return ?T
      */
     private function sanitizeValue(mixed $value): mixed
     {
@@ -63,7 +63,6 @@ final class SerializationSanitizer
      */
     private function sanitizeArray(array $value): array
     {
-        /** @psalm-suppress MixedAssignment */
         foreach ($value as &$element) {
             $element = $this->sanitizeValue($element);
         }
@@ -123,7 +122,6 @@ final class SerializationSanitizer
 
         $this->checkedObjectIds[$id] = $newInstance;
         do {
-            /** @psalm-suppress MixedAssignment */
             foreach ($reflectionClass->getProperties() as $property) {
                 if (!$property->isInitialized($value)) {
                     continue;

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -132,7 +132,6 @@ final class FeatureContext implements Context
         $parts = [];
         for ($i = 1; $i <= $matchResult; $i++) {
             /**
-             * @psalm-suppress PossiblyUndefinedArrayOffset
              * @var string $match
              * @var int $newOffset
              */

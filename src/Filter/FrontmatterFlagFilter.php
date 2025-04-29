@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -26,11 +26,10 @@ final readonly class FrontmatterFlagFilter implements Filter
 {
     public function __construct(
         private FrontmatterFlag $flag
-    ) {
-    }
+    ) {}
 
     /**
-     * @param TestCase ...$values
+     * @param TestCase ...$testCases
      *
      * @return TestCase[]
      */
@@ -38,7 +37,7 @@ final readonly class FrontmatterFlagFilter implements Filter
     {
         return array_filter(
             $testCases,
-            fn (TestCase $testCase): bool => in_array($this->flag, $testCase->frontmatter()->flags())
+            fn(TestCase $testCase): bool => in_array($this->flag, $testCase->frontmatter()->flags()),
         );
     }
 }

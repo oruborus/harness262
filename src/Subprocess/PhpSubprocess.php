@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2024, Felix Jahn
+ * Copyright (c) 2024-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -46,10 +46,8 @@ final class PhpSubprocess implements Subprocess
         /** @psalm-suppress MissingThrowsDocblock */
         $serializedTestCase = (new Serializer())->serialize($testCase);
 
-        /** @psalm-suppress MissingThrowsDocblock Process is not running when input is set */
         $phpSubprocess->setInput($serializedTestCase);
 
-        /** @psalm-suppress MissingThrowsDocblock Timeout is non-negative-int */
         $phpSubprocess->setTimeout($testCase->testSuite()->timeout());
     }
 
@@ -62,7 +60,6 @@ final class PhpSubprocess implements Subprocess
     public function run(): TestResult
     {
         try {
-            /** @psalm-suppress MissingThrowsDocblock No callback is provided */
             $this->phpSubprocess->start();
         } catch (ProcessStartFailedException $e) {
             throw new ProcessFailureException($e->getMessage(), $e->getCode(), $e);
@@ -78,7 +75,6 @@ final class PhpSubprocess implements Subprocess
             return $this->testResultFactory->makeTimedOut($this->testCase->path(), $this->testCase->testSuite()->timeout());
         }
 
-        /** @psalm-suppress MissingThrowsDocblock */
         $output = $this->phpSubprocess->getOutput();
 
         // TODO: Add subprocess error handling

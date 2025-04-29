@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -51,7 +51,6 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
         $this->expectExceptionObject(new RuntimeException('Could not open process'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'Ê↕'])
         );
@@ -66,7 +65,6 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
         $this->expectExceptionObject(new ErrorException('THROWN IN TEST'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/FailingTestCase.php')])
         );
@@ -81,7 +79,6 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
         $this->expectExceptionObject(new RuntimeException('Subprocess did not return a `TestResult` - Returned: O:8:"stdClass":1:{s:3:"AAA";s:3:"BBB";}'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/NonTestResultReturningTestCase.php')])
         );
@@ -94,7 +91,6 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
     public function aggregatesTestResults(): void
     {
         $testRunner = new ParallelTestRunner(
-            $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/SuccessfulTestCase.php')])
         );
@@ -114,7 +110,6 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
         $printerMock->expects($this->exactly(2))->method('step')->with(TestResultState::Success);
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(AssertionFactory::class),
             $printerMock,
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/SuccessfulTestCase.php')])
         );
@@ -130,7 +125,6 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
         $this->expectExceptionObject(new RuntimeException('SUCCESS'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/FailsOnMissingInputTestCase.php')])
         );
@@ -151,7 +145,6 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
     public function willBeSuspendedWhenRunningInAFiber(): void
     {
         $testRunner = new ParallelTestRunner(
-            $this->createMock(AssertionFactory::class),
             $this->createMock(Printer::class),
             $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/DelayedTestCase.php')])
         );
