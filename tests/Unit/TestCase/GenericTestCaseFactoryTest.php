@@ -46,10 +46,9 @@ final class GenericTestCaseFactoryTest extends TestCase
 
         $factory = new GenericTestCaseFactory(
             $this->createMock(Storage::class),
-            $this->createStub(TestSuite::class)
         );
 
-        $factory->make([$path]);
+        $factory->make($this->createStub(TestSuite::class), [$path]);
     }
 
     #[Test]
@@ -59,10 +58,9 @@ final class GenericTestCaseFactoryTest extends TestCase
 
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => '']),
-            $this->createStub(TestSuite::class)
         );
 
-        $factory->make(['content']);
+        $factory->make($this->createStub(TestSuite::class), ['content']);
     }
 
     #[Test]
@@ -72,10 +70,9 @@ final class GenericTestCaseFactoryTest extends TestCase
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
-            $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make(['content']);
+        $actual = $factory->make($this->createStub(TestSuite::class), ['content']);
 
         $this->assertCount(1, $actual);
         $this->assertSame($expected, array_shift($actual)->content());
@@ -98,10 +95,9 @@ final class GenericTestCaseFactoryTest extends TestCase
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
-            $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make(['content']);
+        $actual = $factory->make($this->createStub(TestSuite::class), ['content']);
 
         $this->assertCount(1, $actual);
         $this->assertSame("\"use strict\";\n" . $expected, array_shift($actual)->content());
@@ -122,10 +118,9 @@ final class GenericTestCaseFactoryTest extends TestCase
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
-            $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make(['content']);
+        $actual = $factory->make($this->createStub(TestSuite::class), ['content']);
 
         $this->assertCount(2, $actual);
         [$first, $second] = $actual;
@@ -163,10 +158,9 @@ final class GenericTestCaseFactoryTest extends TestCase
         $expected = "/*---\n{$frontmatter}\n---*/";
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
-            $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make(['content']);
+        $actual = $factory->make($this->createStub(TestSuite::class), ['content']);
 
         $this->assertCount(1, $actual);
         $this->assertSame($expected, array_shift($actual)->content());
@@ -178,10 +172,9 @@ final class GenericTestCaseFactoryTest extends TestCase
         $expected = "/*---\n   description: required\n   flags: [noStrict]\n   includes: [doneprintHandle.js]\n---*/";
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, ['get' => $expected]),
-            $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make(['content']);
+        $actual = $factory->make($this->createStub(TestSuite::class), ['content']);
 
         $this->assertCount(1, $actual);
         $this->assertSame($expected, array_shift($actual)->content());
@@ -194,10 +187,9 @@ final class GenericTestCaseFactoryTest extends TestCase
             $this->createConfiguredMock(Storage::class, [
                 'get' => "/*---\ndescription: required\nflags: [raw]\n---*/\n// CONTENT"
             ]),
-            $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make(['path1', 'path2', 'path3']);
+        $actual = $factory->make($this->createStub(TestSuite::class), ['path1', 'path2', 'path3']);
 
         $this->assertCount(3, $actual);
     }

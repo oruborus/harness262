@@ -46,7 +46,6 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
     /** @param Storage<string> $storage */
     public function __construct(
         private Storage $storage,
-        private TestSuite $testSuite
     ) {}
 
     /**
@@ -60,11 +59,11 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
      * @throws UnrecognizedNegativePhaseException
      * @throws ParseException
      */
-    public function make(array $paths): array
+    public function make(TestSuite $testSuite, array $paths): array
     {
         $testCases = [];
         foreach ($paths as $path) {
-            $testCases = [...$testCases, ...$this->makeFromSinglePath($path)];
+            $testCases = [...$testCases, ...$this->makeFromSinglePath($testSuite, $path)];
         }
 
         return $testCases;
@@ -79,7 +78,7 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
      * @throws UnrecognizedNegativePhaseException
      * @throws ParseException
      */
-    private function makeFromSinglePath(string $path): array
+    private function makeFromSinglePath(TestSuite $testSuite, string $path): array
     {
         /** @var string $content */
         $content = $this->storage->get($path)
@@ -107,24 +106,24 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
         $frontmatter = new GenericFrontmatter($rawFrontmatter);
 
         if (in_array(FrontmatterFlag::raw, $frontmatter->flags(), true)) {
-            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuite, ImplicitStrictness::Unknown)];
+            return [new GenericTestCase($path, $content, $frontmatter, $testSuite, ImplicitStrictness::Unknown)];
         }
 
         if (in_array(FrontmatterFlag::module, $frontmatter->flags(), true)) {
-            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuite, ImplicitStrictness::Strict)];
+            return [new GenericTestCase($path, $content, $frontmatter, $testSuite, ImplicitStrictness::Strict)];
         }
 
         if (in_array(FrontmatterFlag::noStrict, $frontmatter->flags(), true)) {
-            return [new GenericTestCase($path, $content, $frontmatter, $this->testSuite, ImplicitStrictness::Loose)];
+            return [new GenericTestCase($path, $content, $frontmatter, $testSuite, ImplicitStrictness::Loose)];
         }
 
         if (in_array(FrontmatterFlag::onlyStrict, $frontmatter->flags(), true)) {
-            return [new GenericTestCase($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuite, ImplicitStrictness::Strict)];
+            return [new GenericTestCase($path, "\"use strict\";\n{$content}", $frontmatter, $testSuite, ImplicitStrictness::Strict)];
         }
 
         return [
-            new GenericTestCase($path, $content, $frontmatter, $this->testSuite, ImplicitStrictness::Loose),
-            new GenericTestCase($path, "\"use strict\";\n{$content}", $frontmatter, $this->testSuite, ImplicitStrictness::Strict)
+            new GenericTestCase($path, $content, $frontmatter, $testSuite, ImplicitStrictness::Loose),
+            new GenericTestCase($path, "\"use strict\";\n{$content}", $frontmatter, $testSuite, ImplicitStrictness::Strict)
         ];
     }
 }

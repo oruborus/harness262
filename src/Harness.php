@@ -96,7 +96,7 @@ final readonly class Harness
             return 1;
         }
 
-        $testCaseFactory        = new GenericTestCaseFactory($testStorage, $testSuite);
+        $testCaseFactory        = new GenericTestCaseFactory($testStorage);
         $cacheRepositoryFactory = new GenericCacheRepositoryFactory();
         $cacheRepository        = $cacheRepositoryFactory->make($testSuite);
 
@@ -115,7 +115,7 @@ final readonly class Harness
         }
 
         // 3. Let **preparedTestCases** be the result of **testCaseFactory**.make() for every element of **testSuite**.[[paths]].
-        $preparedTestCases = $testCaseFactory->make($testSuite->paths());
+        $preparedTestCases = $testCaseFactory->make($testSuite, $testSuite->paths());
 
         // 4. Let **filteredTestCases** be the result of **filter**.apply() for every element of **preparedTestCases**.
         $filteredTestCases = $filter->apply(...$preparedTestCases);

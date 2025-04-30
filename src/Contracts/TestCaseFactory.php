@@ -22,5 +22,5 @@ interface TestCaseFactory
      *
      * @return TestCase[]
      */
-    public function make(array $paths): array;
+    public function make(TestSuite $testSuite, array $paths): array;
 }
