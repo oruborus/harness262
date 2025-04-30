@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Tests\Utility\Engine;
 
+use DI\Container;
 use Oru\EcmaScript\Core\Contracts\Agent;
 use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Core\Contracts\Values\ExecutionContext;
@@ -28,10 +29,15 @@ use Oru\EcmaScript\Core\Contracts\Values\BooleanValue;
 use Oru\EcmaScript\Core\Contracts\Values\SourceText;
 use Oru\EcmaScript\Core\Contracts\WellKnownSymbol;
 use Oru\EcmaScript\Core\Contracts\Values\SymbolValue;
-use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
+
+use function is_string;
 
 final class TestAgent implements Agent
 {
+    public function __construct(
+        private Container $container = new Container(),
+    ) {}
+
     public function setStrict(bool $strict): void {}
 
     public function isStrictCode(): bool
@@ -161,29 +167,30 @@ final class TestAgent implements Agent
 
     public function get(string $abstract, array $parameters = []): object
     {
-        return match ($abstract) {
-            ValueFactory::class => new TestValueFactory(),
-            default => throw new \RuntimeException('`TestAgent::get()` is not implemented'),
-        };
+        return $this->container->get($abstract);
     }
 
     public function make(object|string $concrete, array $parameters = []): object
     {
-        throw new \RuntimeException('`TestAgent::make()` is not implemented');
+        return $this->container->make($concrete, $parameters);
     }
 
     public function call(callable $function, array $parameters = []): mixed
     {
-        throw new \RuntimeException('`TestAgent::call()` is not implemented');
+        return $this->container->call($function, $parameters);
     }
 
     public function bind(string $abstract, object|string|callable $concrete): void
     {
-        throw new \RuntimeException('`TestAgent::bind()` is not implemented');
+        if (is_string($concrete)) {
+            $concrete = $this->container->make($concrete);
+        }
+
+        $this->container->set($abstract, $concrete);
     }
 
     public function singleton(string $abstract, object|string|callable $concrete): void
     {
-        throw new \RuntimeException('`TestAgent::singleton()` is not implemented');
+        $this->bind($abstract, $concrete);
     }
 }

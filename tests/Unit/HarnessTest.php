@@ -16,11 +16,14 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Oru\Harness\Contracts\ArgumentsParser;
-use Oru\Harness\Contracts\EngineFactory;
+use Oru\Harness\Contracts\FilterFactory;
 use Oru\Harness\Contracts\Printer;
+use Oru\Harness\Contracts\TestCaseFactory;
+use Oru\Harness\Contracts\TestRunnerFactory;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\Contracts\TestSuiteFactory;
+use Oru\Harness\Filter\Exception\MalformedRegularExpressionPatternException;
 use Oru\Harness\Harness;
 use Oru\Harness\TestSuite\Exception\InvalidPathException;
 use Oru\Harness\TestSuite\Exception\MissingPathException;
@@ -34,10 +37,9 @@ final class HarnessTest extends TestCase
     public const TEMPLATE_PATH = __DIR__ . '/../../src/Template/ExecuteTest.php';
 
     private function createHarness(
-        ?TestSuiteFactory $testSuiteFactory = null,
-        ?EngineFactory $engineFactory = null,
-        ?ArgumentsParser $argumentsParser = null,
+        ?FilterFactory $filterFactory = null,
         ?Printer $printer = null,
+        ?TestSuiteFactory $testSuiteFactory = null,
     ): Harness {
         if (is_null($testSuiteFactory)) {
             $testSuiteFactory = $this->createConfiguredStub(TestSuiteFactory::class, [
@@ -48,35 +50,40 @@ final class HarnessTest extends TestCase
         }
 
         return new Harness(
-            $testSuiteFactory,
-            $engineFactory ?? $this->createStub(EngineFactory::class),
-            $argumentsParser ?? $this->createStub(ArgumentsParser::class),
+            $filterFactory ?? $this->createStub(FilterFactory::class),
             $printer ?? $this->createStub(Printer::class),
+            $this->createStub(TestCaseFactory::class),
+            $this->createStub(TestRunnerFactory::class),
+            $testSuiteFactory,
         );
     }
 
     #[Test]
     public function informsTheUserThatProvidedRegularExpressionPatternIsMalFormed(): void
     {
+        $expected = 'Compilation failed: missing closing parenthesis at offset 1';
+
+        $filterFactoryStub = $this->createStub(FilterFactory::class);
+        $filterFactoryStub->method('make')->willThrowException(
+            new MalformedRegularExpressionPatternException($expected),
+        );
+
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('start');
         $printerMock->expects($this->exactly(3))->method('writeLn')->willReturnCallback(
-            function (string $actual): void {
+            function (string $actual) use ($expected): void {
                 static $count = 0;
                 $expected  = match ($count++) {
                     0 => 'The provided regular expression pattern is malformed.',
                     1 => 'The following warning was issued:',
-                    2 => '"Compilation failed: missing closing parenthesis at offset 1"',
+                    2 => "\"{$expected}\"",
                 };
 
                 $this->assertSame($expected, $actual);
             }
         );
-        $argumentsParserStub = $this->createConfiguredStub(ArgumentsParser::class, ['rest' => ['./tests/Unit/Fixtures/TestCase/basic.js']]);
-        $argumentsParserStub->method('getOption')->willReturnCallback(fn(string $option): string => $option === 'include' ? '(' : '');
-        $argumentsParserStub->method('hasOption')->willReturnCallback(fn(string $option): bool => $option === 'include');
         $harness = $this->createHarness(
-            argumentsParser: $argumentsParserStub,
+            filterFactory: $filterFactoryStub,
             printer: $printerMock,
         );
 
@@ -97,12 +104,8 @@ final class HarnessTest extends TestCase
         $printerMock->expects($this->once())->method('start');
         $printerMock->expects($this->once())->method('writeLn')->with($expected);
         $harness = $this->createHarness(
-            testSuiteFactory: $testSuiteFactoryStub,
-            argumentsParser: $this->createConfiguredStub(
-                ArgumentsParser::class,
-                ['rest' => [$expected]],
-            ),
             printer: $printerMock,
+            testSuiteFactory: $testSuiteFactoryStub,
         );
 
         $actual = $harness->run();
@@ -123,8 +126,8 @@ final class HarnessTest extends TestCase
         $printerMock->expects($this->once())->method('writeLn')->with($expected);
 
         $harness = $this->createHarness(
-            testSuiteFactory: $testSuiteFactoryStub,
             printer: $printerMock,
+            testSuiteFactory: $testSuiteFactoryStub,
         );
 
         $actual = $harness->run();

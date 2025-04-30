@@ -22,6 +22,7 @@ use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
 use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\UnusedValue;
+use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 use Tests\Utility\Engine\Exception\ObjectIdExtractionException;
 use Tests\Utility\Engine\Exception\PidExtractionException;
 
@@ -32,6 +33,13 @@ use function usleep;
 
 final class TestEngine implements Engine
 {
+    public function __construct(
+        private Agent $agent = new TestAgent(),
+        private ValueFactory $valueFactory = new TestValueFactory(),
+    ) {
+        $this->agent->bind(ValueFactory::class, $this->valueFactory);
+    }
+
     private string $print = '';
 
     private bool $throws = false;
@@ -55,7 +63,7 @@ final class TestEngine implements Engine
 
     public function getAgent(): Agent
     {
-        return new TestAgent();
+        return $this->agent;
     }
 
     public function addFiles(string ...$paths): void

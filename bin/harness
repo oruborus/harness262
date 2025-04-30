@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -13,11 +13,36 @@
 
 declare(strict_types=1);
 
+use Oru\EcmaScript\Core\Contracts\Agent;
+use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 use Oru\Harness\ArgumentsParser\InputArgumentsParser;
+use Oru\Harness\Assertion\GenericAssertionFactory;
+use Oru\Harness\Cache\GenericCacheRepositoryFactory;
+use Oru\Harness\Command\FileCommand;
+use Oru\Harness\Contracts\ArgumentsParser;
+use Oru\Harness\Contracts\AssertionFactory;
+use Oru\Harness\Contracts\CacheRepositoryFactory;
+use Oru\Harness\Contracts\Command;
+use Oru\Harness\Contracts\CoreCounter;
+use Oru\Harness\Contracts\EngineFactory;
+use Oru\Harness\Contracts\FilterFactory;
+use Oru\Harness\Contracts\Printer;
+use Oru\Harness\Contracts\TestCaseFactory;
+use Oru\Harness\Contracts\TestResultFactory;
+use Oru\Harness\Contracts\TestRunnerFactory;
+use Oru\Harness\Contracts\TestSuiteFactory;
 use Oru\Harness\EngineFactory\GenericEngineFactory;
+use Oru\Harness\Filter\GenericFilterFactory;
 use Oru\Harness\Harness;
+use Oru\Harness\Helpers\LogicalCoreCounter;
+use Oru\Harness\Helpers\TemporaryFileHandler;
 use Oru\Harness\Output\OutputAdapter;
 use Oru\Harness\Printer\NormalPrinter;
+use Oru\Harness\Storage\FileStorage;
+use Oru\Harness\TestCase\GenericTestCaseFactory;
+use Oru\Harness\TestResult\GenericTestResultFactory;
+use Oru\Harness\TestRunner\GenericTestRunnerFactory;
+use Oru\Harness\TestSuite\GenericTestSuiteFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -47,11 +72,36 @@ include './vendor/autoload.php';
     ->addOption('async', null)
     ->addOption('raw', null)
     ->setCode(
-        function (InputInterface $input, OutputInterface $output): int {
-            $engineFactory   = new GenericEngineFactory(realpath('./Harness.php'));
-            $argumentsParser = new InputArgumentsParser($input);
-            $printer         = new NormalPrinter(new OutputAdapter($output));
+        static function (InputInterface $input, OutputInterface $output): int {
+            $engineFactory = new GenericEngineFactory(realpath('./Harness.php'));
 
-            return (new Harness($engineFactory, $argumentsParser, $printer))->run();
+            $initialAgent = $engineFactory->make()->getAgent();
+            $agent        = $initialAgent->make($engineFactory->make()->getAgent()::class);
+            $valueFactory = $initialAgent->get(ValueFactory::class);
+            unset($initialAgent);
+
+            $contents = str_replace(
+                '{{CONFIG_PATH}}',
+                $engineFactory->path(),
+                (string) file_get_contents((string) realpath(__DIR__ . '/../src/Template/ExecuteTest'))
+            );
+            $temporaryFileHandler = new TemporaryFileHandler($contents);
+
+            $agent->bind(Agent::class, $agent);
+            $agent->bind(ValueFactory::class, $valueFactory);
+            $agent->bind(EngineFactory::class, $engineFactory);
+            $agent->bind(ArgumentsParser::class, new InputArgumentsParser($input));
+            $agent->bind(Printer::class, new NormalPrinter(new OutputAdapter($output)));
+            $agent->bind(CoreCounter::class, LogicalCoreCounter::class);
+            $agent->bind(FilterFactory::class, GenericFilterFactory::class);
+            $agent->bind(TestSuiteFactory::class, GenericTestSuiteFactory::class);
+            $agent->bind(TestCaseFactory::class, new GenericTestCaseFactory(new FileStorage('.')));
+            $agent->bind(AssertionFactory::class, GenericAssertionFactory::class);
+            $agent->bind(TestResultFactory::class, new GenericTestResultFactory());
+            $agent->bind(CacheRepositoryFactory::class, GenericCacheRepositoryFactory::class);
+            $agent->bind(Command::class, new FileCommand((string) realpath($temporaryFileHandler->path())));
+            $agent->bind(TestRunnerFactory::class, GenericTestRunnerFactory::class);
+
+            return $agent->make(Harness::class)->run();
         }
     )->run();
