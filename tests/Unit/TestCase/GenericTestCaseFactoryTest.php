@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -49,7 +49,7 @@ final class GenericTestCaseFactoryTest extends TestCase
             $this->createStub(TestSuite::class)
         );
 
-        $factory->make($path);
+        $factory->make([$path]);
     }
 
     #[Test]
@@ -62,7 +62,7 @@ final class GenericTestCaseFactoryTest extends TestCase
             $this->createStub(TestSuite::class)
         );
 
-        $factory->make('content');
+        $factory->make(['content']);
     }
 
     #[Test]
@@ -75,7 +75,7 @@ final class GenericTestCaseFactoryTest extends TestCase
             $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make('content');
+        $actual = $factory->make(['content']);
 
         $this->assertCount(1, $actual);
         $this->assertSame($expected, array_shift($actual)->content());
@@ -101,7 +101,7 @@ final class GenericTestCaseFactoryTest extends TestCase
             $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make('content');
+        $actual = $factory->make(['content']);
 
         $this->assertCount(1, $actual);
         $this->assertSame("\"use strict\";\n" . $expected, array_shift($actual)->content());
@@ -125,7 +125,7 @@ final class GenericTestCaseFactoryTest extends TestCase
             $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make('content');
+        $actual = $factory->make(['content']);
 
         $this->assertCount(2, $actual);
         [$first, $second] = $actual;
@@ -166,7 +166,7 @@ final class GenericTestCaseFactoryTest extends TestCase
             $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make('content');
+        $actual = $factory->make(['content']);
 
         $this->assertCount(1, $actual);
         $this->assertSame($expected, array_shift($actual)->content());
@@ -181,7 +181,7 @@ final class GenericTestCaseFactoryTest extends TestCase
             $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make('content');
+        $actual = $factory->make(['content']);
 
         $this->assertCount(1, $actual);
         $this->assertSame($expected, array_shift($actual)->content());
@@ -192,11 +192,12 @@ final class GenericTestCaseFactoryTest extends TestCase
     {
         $factory = new GenericTestCaseFactory(
             $this->createConfiguredMock(Storage::class, [
-                'get' => "/*---\ndescription: required\nflags: [raw]\n---*/\n// CONTENT"]),
+                'get' => "/*---\ndescription: required\nflags: [raw]\n---*/\n// CONTENT"
+            ]),
             $this->createStub(TestSuite::class)
         );
 
-        $actual = $factory->make('path1', 'path2', 'path3');
+        $actual = $factory->make(['path1', 'path2', 'path3']);
 
         $this->assertCount(3, $actual);
     }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -18,7 +18,9 @@ namespace Oru\Harness\Contracts;
 interface TestCaseFactory
 {
     /**
+     * @param string[] $paths
+     *
      * @return TestCase[]
      */
-    public function make(string ...$paths): array;
+    public function make(array $paths): array;
 }

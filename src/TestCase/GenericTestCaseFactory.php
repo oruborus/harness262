@@ -50,6 +50,8 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
     ) {}
 
     /**
+     * @param string[] $paths
+     *
      * @return TestCase[]
      *
      * @throws MissingFrontmatterException
@@ -58,7 +60,7 @@ final readonly class GenericTestCaseFactory implements TestCaseFactory
      * @throws UnrecognizedNegativePhaseException
      * @throws ParseException
      */
-    public function make(string ...$paths): array
+    public function make(array $paths): array
     {
         $testCases = [];
         foreach ($paths as $path) {
