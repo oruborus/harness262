@@ -16,7 +16,7 @@ declare(strict_types=1);
 namespace Oru\Harness\TestRunner;
 
 use Oru\Harness\Contracts\AssertionFactory;
-use Oru\Harness\Contracts\CacheRepository;
+use Oru\Harness\Contracts\CacheRepositoryFactory;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Contracts\Printer;
@@ -35,7 +35,7 @@ final class GenericTestRunnerFactory implements TestRunnerFactory
         private AssertionFactory $assertionFactory,
         private Printer $printer,
         private Command $command,
-        private CacheRepository $cacheRepository,
+        private CacheRepositoryFactory $cacheRepositoryFactory,
         private TestResultFactory $testResultFactory,
     ) {}
 
@@ -55,6 +55,10 @@ final class GenericTestRunnerFactory implements TestRunnerFactory
             return $testRunner;
         }
 
-        return new CacheTestRunner($this->cacheRepository, $testRunner, $this->testResultFactory);
+        return new CacheTestRunner(
+            $this->cacheRepositoryFactory->make($testSuite),
+            $testRunner,
+            $this->testResultFactory,
+        );
     }
 }

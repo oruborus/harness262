@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -18,6 +18,7 @@ namespace Tests\Unit\TestRunner;
 use Generator;
 use Oru\Harness\Contracts\AssertionFactory;
 use Oru\Harness\Contracts\CacheRepository;
+use Oru\Harness\Contracts\CacheRepositoryFactory;
 use Oru\Harness\Contracts\Command;
 use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Contracts\Printer;
@@ -53,7 +54,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
             $this->createStub(AssertionFactory::class),
             $this->createStub(Printer::class),
             $this->createStub(Command::class),
-            $this->createStub(CacheRepository::class),
+            $this->createStub(CacheRepositoryFactory::class),
             $this->createStub(TestResultFactory::class),
         );
 
@@ -87,7 +88,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
             $this->createStub(AssertionFactory::class),
             $this->createStub(Printer::class),
             $this->createStub(Command::class),
-            $this->createStub(CacheRepository::class),
+            $this->createStub(CacheRepositoryFactory::class),
             $this->createStub(TestResultFactory::class),
         );
 
@@ -101,12 +102,14 @@ final class GenericTestRunnerFactoryTest extends TestCase
     #[DataProvider('provideNonDebugTestRunnerMode')]
     public function createsCacheTestRunnerWhenCachingIsEnabledForNonDebugModes(TestRunnerMode $mode): void
     {
+        $cacheRepositoryStub = $this->createStub(CacheRepository::class);
+
         $factory = new GenericTestRunnerFactory(
             $this->createStub(EngineFactory::class),
             $this->createStub(AssertionFactory::class),
             $this->createStub(Printer::class),
             $this->createStub(Command::class),
-            $this->createStub(CacheRepository::class),
+            $this->createConfiguredStub(CacheRepositoryFactory::class, ['make' => $cacheRepositoryStub]),
             $this->createStub(TestResultFactory::class),
         );
         $testSuiteStub = $this->createConfiguredStub(TestSuite::class, [
@@ -120,7 +123,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
             'stopOnCharacteristic' => StopOnCharacteristic::Nothing
         ]);
         $expected = new CacheTestRunner(
-            $this->createStub(CacheRepository::class),
+            $cacheRepositoryStub,
             $factory->make($expectedTestSuiteStub),
             $this->createStub(TestResultFactory::class),
         );
