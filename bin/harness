@@ -75,11 +75,6 @@ include './vendor/autoload.php';
         static function (InputInterface $input, OutputInterface $output): int {
             $engineFactory = new GenericEngineFactory(realpath('./Harness.php'));
 
-            $initialAgent = $engineFactory->make()->getAgent();
-            $agent        = $initialAgent->make($engineFactory->make()->getAgent()::class);
-            $valueFactory = $initialAgent->get(ValueFactory::class);
-            unset($initialAgent);
-
             $contents = str_replace(
                 '{{CONFIG_PATH}}',
                 $engineFactory->path(),
@@ -87,8 +82,7 @@ include './vendor/autoload.php';
             );
             $temporaryFileHandler = new TemporaryFileHandler($contents);
 
-            $agent->bind(Agent::class, $agent);
-            $agent->bind(ValueFactory::class, $valueFactory);
+            $agent = $engineFactory->make()->getAgent();
             $agent->bind(EngineFactory::class, $engineFactory);
             $agent->bind(ArgumentsParser::class, new InputArgumentsParser($input));
             $agent->bind(Printer::class, new NormalPrinter(new OutputAdapter($output)));
