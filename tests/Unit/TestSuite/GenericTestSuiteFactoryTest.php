@@ -24,22 +24,22 @@ use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuite;
 use Oru\Harness\TestSuite\Exception\InvalidPathException;
 use Oru\Harness\TestSuite\Exception\MissingPathException;
-use Oru\Harness\TestSuite\TestSuiteFactory;
+use Oru\Harness\TestSuite\GenericTestSuiteFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Tests\Utility\ArgumentsParser\ArgumentsParserStub;
 
-#[CoversClass(TestSuiteFactory::class)]
-final class TestSuiteFactoryTest extends TestCase
+#[CoversClass(GenericTestSuiteFactory::class)]
+final class GenericTestSuiteFactoryTest extends TestCase
 {
     private function createTestSuiteFactory(
         ?ArgumentsParser $argumentsParser = null,
         ?CoreCounter $coreCounter = null,
         ?Printer $printer = null,
-    ): TestSuiteFactory {
-        return new TestSuiteFactory(
+    ): GenericTestSuiteFactory {
+        return new GenericTestSuiteFactory(
             $argumentsParser ?? $this->createStub(ArgumentsParser::class),
             $coreCounter ?? $this->createStub(CoreCounter::class),
             $printer ?? $this->createStub(Printer::class),
@@ -248,7 +248,7 @@ final class TestSuiteFactoryTest extends TestCase
 
         $actual = $factory->make();
 
-        $this->assertSame(TestSuiteFactory::DEFAULT_TIMEOUT, $actual->timeout());
+        $this->assertSame(GenericTestSuiteFactory::DEFAULT_TIMEOUT, $actual->timeout());
     }
 
     #[Test]
@@ -273,7 +273,7 @@ final class TestSuiteFactoryTest extends TestCase
 
         $actual = $factory->make();
 
-        $this->assertSame(TestSuiteFactory::DEFAULT_TIMEOUT, $actual->timeout());
+        $this->assertSame(GenericTestSuiteFactory::DEFAULT_TIMEOUT, $actual->timeout());
     }
 
     #[Test]
@@ -296,7 +296,7 @@ final class TestSuiteFactoryTest extends TestCase
     private function consecutive(mixed ...$arguments): callable
     {
         $count = 0;
-        return static fn (mixed $argument): bool => $argument === $arguments[$count++];
+        return static fn(mixed $argument): bool => $argument === $arguments[$count++];
     }
 
     public static function provideInvalidTimeoutValues(): Generator

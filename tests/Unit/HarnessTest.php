@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -18,7 +18,12 @@ namespace Tests\Unit;
 use Oru\Harness\Contracts\ArgumentsParser;
 use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Contracts\Printer;
+use Oru\Harness\Contracts\TestRunnerMode;
+use Oru\Harness\Contracts\TestSuite;
+use Oru\Harness\Contracts\TestSuiteFactory;
 use Oru\Harness\Harness;
+use Oru\Harness\TestSuite\Exception\InvalidPathException;
+use Oru\Harness\TestSuite\Exception\MissingPathException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -29,11 +34,21 @@ final class HarnessTest extends TestCase
     public const TEMPLATE_PATH = __DIR__ . '/../../src/Template/ExecuteTest.php';
 
     private function createHarness(
+        ?TestSuiteFactory $testSuiteFactory = null,
         ?EngineFactory $engineFactory = null,
         ?ArgumentsParser $argumentsParser = null,
         ?Printer $printer = null,
     ): Harness {
+        if (is_null($testSuiteFactory)) {
+            $testSuiteFactory = $this->createConfiguredStub(TestSuiteFactory::class, [
+                'make' => $this->createCOnfiguredStub(TestSuite::class, [
+                    'testRunnerMode' => TestRunnerMode::Linear,
+                ]),
+            ]);
+        }
+
         return new Harness(
+            $testSuiteFactory,
             $engineFactory ?? $this->createStub(EngineFactory::class),
             $argumentsParser ?? $this->createStub(ArgumentsParser::class),
             $printer ?? $this->createStub(Printer::class),
@@ -73,12 +88,16 @@ final class HarnessTest extends TestCase
     #[Test]
     public function informsTheUserThatProvidedPathIsInvalid(): void
     {
-        $expected = '###this/path/does/not/exist###';
+        $expected = 'Exception message';
+
+        $testSuiteFactoryStub = $this->createStub(TestSuiteFactory::class);
+        $testSuiteFactoryStub->method('make')->willThrowException(new InvalidPathException($expected));
 
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('start');
-        $printerMock->expects($this->once())->method('writeLn')->with("Provided path `{$expected}` does not exist");
+        $printerMock->expects($this->once())->method('writeLn')->with($expected);
         $harness = $this->createHarness(
+            testSuiteFactory: $testSuiteFactoryStub,
             argumentsParser: $this->createConfiguredStub(
                 ArgumentsParser::class,
                 ['rest' => [$expected]],
@@ -94,11 +113,17 @@ final class HarnessTest extends TestCase
     #[Test]
     public function informsTheUserThatNoPathsWhereProvided(): void
     {
+        $expected = 'Exception message';
+
+        $testSuiteFactoryStub = $this->createStub(TestSuiteFactory::class);
+        $testSuiteFactoryStub->method('make')->willThrowException(new MissingPathException($expected));
+
         $printerMock = $this->createMock(Printer::class);
         $printerMock->expects($this->once())->method('start');
-        $printerMock->expects($this->once())->method('writeLn')->with('No test path specified. Aborting.');
+        $printerMock->expects($this->once())->method('writeLn')->with($expected);
 
         $harness = $this->createHarness(
+            testSuiteFactory: $testSuiteFactoryStub,
             printer: $printerMock,
         );
 

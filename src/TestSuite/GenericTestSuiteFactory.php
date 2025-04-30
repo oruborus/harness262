@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2023-2024, Felix Jahn
+ * Copyright (c) 2023-2025, Felix Jahn
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -23,6 +23,7 @@ use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\StopOnCharacteristic;
 use Oru\Harness\Contracts\TestRunnerMode;
 use Oru\Harness\Contracts\TestSuite;
+use Oru\Harness\Contracts\TestSuiteFactory;
 use Oru\Harness\TestSuite\Exception\InvalidPathException;
 use Oru\Harness\TestSuite\Exception\MissingPathException;
 use RecursiveDirectoryIterator;
@@ -34,7 +35,7 @@ use function is_file;
 use function max;
 use function min;
 
-final readonly class TestSuiteFactory
+final readonly class GenericTestSuiteFactory implements TestSuiteFactory
 {
     public const int DEFAULT_TIMEOUT = 10;
 
@@ -42,8 +43,7 @@ final readonly class TestSuiteFactory
         private ArgumentsParser $argumentsParser,
         private CoreCounter $coreCounter,
         private Printer $printer,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws InvalidPathException
