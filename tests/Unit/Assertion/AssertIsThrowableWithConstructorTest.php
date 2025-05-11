@@ -15,7 +15,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assertion;
 
-use Oru\EcmaScript\Core\Contracts\Agent;
 use Oru\EcmaScript\Core\Contracts\Values\BooleanValue;
 use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
 use Oru\EcmaScript\Core\Contracts\Values\NumberValue;
@@ -34,12 +33,10 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 
-#[CoversClass(AssertIsThrowableWithConstructor::class)]
 final class AssertIsThrowableWithConstructorTest extends TestCase
 {
     private function createAssertIsThrowableWithConstructor(?FrontmatterNegative $frontmatterNegative = null): AssertIsThrowableWithConstructor
     {
-        $agent = $this->createStub(Agent::class);
         $valueFactory = $this->createStub(ValueFactory::class);
         $valueFactory->method('createString')->willReturnCallback(
             fn(string $string): StringValue => $this->createConfiguredStub(StringValue::class, [
@@ -50,7 +47,7 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
 
         $frontmatterNegative ??= $this->createStub(FrontmatterNegative::class);
 
-        return new AssertIsThrowableWithConstructor($agent, $valueFactory, $frontmatterNegative);
+        return new AssertIsThrowableWithConstructor($valueFactory, $frontmatterNegative);
     }
 
     #[Test]

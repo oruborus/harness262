@@ -259,7 +259,7 @@ final class TestValueFactory implements ValueFactory
         throw new \RuntimeException('`TestValueFactory::createNumber()` is not implemented');
     }
 
-    public function createObject(ListValue $internalSlotsList): ObjectValue
+    public function createObject(): ObjectValue
     {
         throw new \RuntimeException('`TestValueFactory::createObject()` is not implemented');
     }

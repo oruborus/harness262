@@ -20,11 +20,7 @@ use Oru\EcmaScript\Core\Contracts\Agent;
 use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Core\Contracts\Values\ExecutionContext;
 use Oru\EcmaScript\Core\Contracts\Parser;
-use Oru\EcmaScript\Core\Contracts\Interpreter;
-use Oru\EcmaScript\Core\Contracts\Position;
 use Oru\EcmaScript\Core\Contracts\Values\ListValue;
-use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
-use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\BooleanValue;
 use Oru\EcmaScript\Core\Contracts\Values\SourceText;
 use Oru\EcmaScript\Core\Contracts\WellKnownSymbol;
@@ -125,30 +121,7 @@ final class TestAgent implements Agent
         throw new \RuntimeException('`TestAgent::setWellKnownSymbols()` is not implemented');
     }
 
-    public function getInterpreter(): Interpreter
-    {
-        return new TestInterpreter();
-    }
-
-    public function getGlobalSymbolRegistry(): ListValue
-    {
-        throw new \RuntimeException('`TestAgent::getGlobalSymbolRegistry()` is not implemented');
-    }
-
-    public function createError(string $type = 'AggregateError', string $message = '', ?ObjectValue $errors = null): ObjectValue
-    {
-        throw new \RuntimeException('`TestAgent::createError()` is not implemented');
-    }
-
-    public function createErrorThrowCompletion(string $type = 'AggregateError', string $message = '', ?ObjectValue $errors = null): ThrowCompletion
-    {
-        throw new \RuntimeException('`TestAgent::createErrorThrowCompletion()` is not implemented');
-    }
-
-    public function createSyntaxError(string $message, ?Position $position = null): ThrowCompletion
-    {
-        throw new \RuntimeException('`TestAgent::createSyntaxError()` is not implemented');
-    }
+    public ListValue $globalSymbolRegistry;
 
     public function getLittleEndian(): BooleanValue
     {

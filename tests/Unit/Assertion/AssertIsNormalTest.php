@@ -15,7 +15,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assertion;
 
-use Oru\EcmaScript\Core\Contracts\Agent;
 use Oru\EcmaScript\Core\Contracts\Values\NumberValue;
 use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
 use Oru\EcmaScript\Core\Contracts\Values\StringValue;
@@ -33,7 +32,6 @@ final class AssertIsNormalTest extends TestCase
 {
     private function createAssertIsNormal(): AssertIsNormal
     {
-        $agent = $this->createStub(Agent::class);
         $valueFactory = $this->createStub(ValueFactory::class);
         $valueFactory->method('createString')->willReturnCallback(
             fn(string $string): StringValue => $this->createConfiguredStub(StringValue::class, [
@@ -42,7 +40,7 @@ final class AssertIsNormalTest extends TestCase
             ])
         );
 
-        return new AssertIsNormal($agent, $valueFactory);
+        return new AssertIsNormal($valueFactory);
     }
 
     #[Test]

@@ -35,18 +35,17 @@ final readonly class GenericAssertionFactory implements AssertionFactory
     public function make(TestCase $testCase): Assertion
     {
         $engine       = $this->engineFactory->make();
-        $agent        = $engine->getAgent();
-        $valueFactory = $agent->get(ValueFactory::class)
+        $valueFactory = $engine->getAgent()->get(ValueFactory::class)
             ?? throw new EngineException('`Agent` is not configured properly, `ValueFactory` is not bound');
 
         if ($negative = $testCase->frontmatter()->negative()) {
-            return new AssertIsThrowableWithConstructor($agent, $valueFactory, $negative);
+            return new AssertIsThrowableWithConstructor($valueFactory, $negative);
         }
 
         if (in_array(FrontmatterFlag::async, $testCase->frontmatter()->flags())) {
-            return new AssertAsync(new AssertIsNormal($agent, $valueFactory));
+            return new AssertAsync(new AssertIsNormal($valueFactory));
         }
 
-        return new AssertIsNormal($agent, $valueFactory);
+        return new AssertIsNormal($valueFactory);
     }
 }

@@ -15,7 +15,6 @@ declare(strict_types=1);
 
 namespace Oru\Harness\Assertion;
 
-use Oru\EcmaScript\Core\Contracts\Agent;
 use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
 use Oru\EcmaScript\Core\Contracts\Values\StringValue;
@@ -34,7 +33,6 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
     private StringValue $nameString;
 
     public function __construct(
-        private Agent $agent,
         ValueFactory $valueFactory,
         private FrontmatterNegative $negative
     ) {
@@ -65,7 +63,7 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         }
 
         try {
-            $constructor = $exception->get($this->agent, $this->constructorString, $exception);
+            $constructor = $exception->get($this->constructorString, $exception);
         } catch (AbruptCompletion $throwable) {
             throw new EngineException('Could not use `get()` to retrieve `constructor`', previous: $throwable);
         }
@@ -78,7 +76,7 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         }
 
         try {
-            $hasName = $constructor->hasProperty($this->agent, $this->nameString);
+            $hasName = $constructor->hasProperty($this->nameString);
         } catch (AbruptCompletion $throwable) {
             throw new EngineException('Could not use `hasProperty()` to check existence of `name`', previous: $throwable);
         }
@@ -88,7 +86,7 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         }
 
         try {
-            $nameProperty = $constructor->get($this->agent, $this->nameString, $constructor);
+            $nameProperty = $constructor->get($this->nameString, $constructor);
         } catch (AbruptCompletion $throwable) {
             throw new EngineException('Could not use `get()` to retrieve `constructor.name`', previous: $throwable);
         }

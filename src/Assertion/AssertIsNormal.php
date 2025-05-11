@@ -15,7 +15,6 @@ declare(strict_types=1);
 
 namespace Oru\Harness\Assertion;
 
-use Oru\EcmaScript\Core\Contracts\Agent;
 use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
 use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
@@ -32,7 +31,6 @@ final readonly class AssertIsNormal implements Assertion
     private StringValue $messageString;
 
     public function __construct(
-        private Agent $agent,
         ValueFactory $valueFactory,
     ) {
         $this->messageString = $valueFactory->createString('message');
@@ -63,7 +61,7 @@ final readonly class AssertIsNormal implements Assertion
 
         try {
             /** @var bool|float|int|string|null $messageValue */
-            $messageValue = $value->get($this->agent, $this->messageString, $value)->getValue();
+            $messageValue = $value->get($this->messageString, $value)->getValue();
             $message = (string) $messageValue;
         } catch (AbruptCompletion $throwable) {
             throw new EngineException('Could not convert object property `message` to string', previous: $throwable);

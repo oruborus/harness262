@@ -15,7 +15,6 @@ declare(strict_types=1);
 
 namespace Tests\Utility\Engine;
 
-use Oru\EcmaScript\Core\Contracts\Agent;
 use Oru\EcmaScript\Core\Contracts\Values\NumberValue;
 use Oru\EcmaScript\Core\Contracts\Values\StringValue;
 use Stringable;
@@ -66,12 +65,12 @@ final class TestStringValue implements StringValue
         throw new \RuntimeException('`TestStringValue::ord()` is not implemented');
     }
 
-    public function substr(Agent $agent, NumberValue $start, NumberValue $length): StringValue
+    public function substr(NumberValue $start, NumberValue $length): StringValue
     {
         throw new \RuntimeException('`TestStringValue::substr()` is not implemented');
     }
 
-    public function stringIndexOf(Agent $agent, StringValue $searchValue, NumberValue $fromIndex): NumberValue
+    public function stringIndexOf(StringValue $searchValue, NumberValue $fromIndex): NumberValue
     {
         throw new \RuntimeException('`TestStringValue::stringIndexOf()` is not implemented');
     }
