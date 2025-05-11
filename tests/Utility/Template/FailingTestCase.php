@@ -13,4 +13,15 @@
 
 declare(strict_types=1);
 
-echo serialize(new ErrorException('THROWN IN TEST'));
+try {
+    new class {
+        public function __construct()
+        {
+            (function () {
+                throw new ErrorException('THROWN IN TEST');
+            })();
+        }
+    };
+} catch (ErrorException $exception) {
+    echo serialize($exception);
+}

@@ -16,6 +16,7 @@ declare(strict_types=1);
 namespace Oru\Harness\Storage;
 
 use Oru\Harness\Contracts\Storage;
+use Oru\Harness\Helpers\Serializer;
 
 use function assert;
 use function file_exists;
@@ -24,8 +25,6 @@ use function file_put_contents;
 use function json_decode;
 use function json_encode;
 use function mkdir;
-use function serialize;
-use function unserialize;
 
 use const DIRECTORY_SEPARATOR;
 use const JSON_THROW_ON_ERROR;
@@ -38,6 +37,7 @@ final readonly class SerializingFileStorage implements Storage
 {
     public function __construct(
         private string $basePath,
+        private Serializer $serializer = new Serializer(),
     ) {
         if (!file_exists($this->basePath)) {
             mkdir(directory: $this->basePath, recursive: true);
@@ -49,7 +49,7 @@ final readonly class SerializingFileStorage implements Storage
     {
         $prefixedKey = $this->basePath . DIRECTORY_SEPARATOR . $key;
 
-        $serializedContent = serialize($content);
+        $serializedContent = $this->serializer->serialize($content);
 
         $stringContent = json_encode($serializedContent, JSON_THROW_ON_ERROR);
 
@@ -74,6 +74,6 @@ final readonly class SerializingFileStorage implements Storage
         assert(is_string($decodedContent));
 
         /** @var TContent */
-        return unserialize($decodedContent);
+        return $this->serializer->unserialize($decodedContent);
     }
 }

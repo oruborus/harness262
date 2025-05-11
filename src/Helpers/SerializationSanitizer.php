@@ -16,6 +16,7 @@ declare(strict_types=1);
 namespace Oru\Harness\Helpers;
 
 use ReflectionClass;
+use stdClass;
 use Throwable;
 use UnitEnum;
 
@@ -107,7 +108,9 @@ final class SerializationSanitizer
         }
 
         try {
-            $newInstance = $reflectionClass->newInstanceWithoutConstructor();
+            $newInstance = $value instanceof stdClass
+                ? $value
+                : $reflectionClass->newInstanceWithoutConstructor();
         } catch (Throwable) {
             $this->checkedObjectIds[$id] = null;
             return null;

@@ -21,6 +21,7 @@ use Oru\Harness\Contracts\Printer;
 use Oru\Harness\Contracts\TestCase;
 use Oru\Harness\Contracts\TestResult;
 use Oru\Harness\Contracts\TestRunner;
+use Oru\Harness\Helpers\Serializer;
 use RuntimeException;
 use Throwable;
 
@@ -29,9 +30,7 @@ use function fclose;
 use function fwrite;
 use function proc_close;
 use function proc_open;
-use function serialize;
 use function stream_get_contents;
-use function unserialize;
 
 final class ParallelTestRunner implements TestRunner
 {
@@ -45,7 +44,8 @@ final class ParallelTestRunner implements TestRunner
 
     public function __construct(
         private readonly Printer $printer,
-        private readonly Command $command
+        private readonly Command $command,
+        private Serializer $serializer = new Serializer(),
     ) {}
 
     public function add(TestCase $testCase): void
@@ -63,7 +63,7 @@ final class ParallelTestRunner implements TestRunner
 
         foreach ($this->testCases as $testCase) {
             $this->dirty = false;
-            $serializedConfig = serialize($testCase);
+            $serializedConfig = $this->serializer->serialize($testCase);
 
             $descriptorspec = [
                 0 => ["pipe", "r"],
@@ -96,7 +96,7 @@ final class ParallelTestRunner implements TestRunner
             $exitCode = proc_close($process);
             assert($exitCode === 0, $output);
 
-            $result = unserialize($output);
+            $result = $this->serializer->unserialize($output);
 
             if ($result instanceof Throwable) {
                 throw $result;
