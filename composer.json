@@ -26,9 +26,9 @@
         }
     },
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "ext-intl": "*",
-        "symfony/yaml": "^6.2",
+        "symfony/yaml": "^7.2",
         "tc39/test262": "dev-main",
         "fidry/cpu-core-counter": "*",
         "symfony/process": "*",
