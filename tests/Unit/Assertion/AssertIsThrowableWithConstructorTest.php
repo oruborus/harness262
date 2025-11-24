@@ -22,7 +22,6 @@ use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
 use Oru\EcmaScript\Core\Contracts\Values\StringValue;
 use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\UnusedValue;
-use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 use Oru\Harness\Assertion\AssertIsThrowableWithConstructor;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Assertion\Exception\EngineException;
@@ -31,23 +30,15 @@ use Oru\Harness\Contracts\FrontmatterNegativePhase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Throwable;
 
+#[CoversClass(AssertIsThrowableWithConstructor::class)]
 final class AssertIsThrowableWithConstructorTest extends TestCase
 {
     private function createAssertIsThrowableWithConstructor(?FrontmatterNegative $frontmatterNegative = null): AssertIsThrowableWithConstructor
     {
-        $valueFactory = $this->createStub(ValueFactory::class);
-        $valueFactory->method('createString')->willReturnCallback(
-            fn(string $string): StringValue => $this->createConfiguredStub(StringValue::class, [
-                'getValue' => $string,
-                '__toString' => $string,
-            ])
-        );
-
         $frontmatterNegative ??= $this->createStub(FrontmatterNegative::class);
 
-        return new AssertIsThrowableWithConstructor($valueFactory, $frontmatterNegative);
+        return new AssertIsThrowableWithConstructor($frontmatterNegative);
     }
 
     #[Test]

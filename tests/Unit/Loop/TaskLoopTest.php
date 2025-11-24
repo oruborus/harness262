@@ -36,7 +36,7 @@ final class TaskLoopTest extends TestCase
      */
     #[Test]
     #[DataProvider('provideConcurrency')]
-    public function runsMultipleTasksInAQueueOfDefinedSize(int $concurrency, array $counts, string $expected)
+    public function runsMultipleTasksInAQueueOfDefinedSize(int $concurrency, array $counts, string $expected, string $unused): void
     {
         $actual = '';
         $loop = new TaskLoop($concurrency);

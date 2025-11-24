@@ -22,7 +22,6 @@ use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
 use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\UnusedValue;
-use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 use Tests\Utility\Engine\Exception\ObjectIdExtractionException;
 use Tests\Utility\Engine\Exception\PidExtractionException;
 
@@ -34,10 +33,9 @@ use function usleep;
 final class TestEngine implements Engine
 {
     public function __construct(
-        private Agent $agent = new TestAgent(),
-        private ValueFactory $valueFactory = new TestValueFactory(),
+        public Agent $agent = new TestAgent(),
     ) {
-        $this->agent->bind(ValueFactory::class, $this->valueFactory);
+        $this->hostDefinedProperties = [];
     }
 
     private string $print = '';
@@ -59,11 +57,6 @@ final class TestEngine implements Engine
     public function container(): Container
     {
         throw new \RuntimeException('`TestEngine::container()` is not implemented');
-    }
-
-    public function getAgent(): Agent
-    {
-        return $this->agent;
     }
 
     public function addFiles(string ...$paths): void
@@ -138,16 +131,8 @@ final class TestEngine implements Engine
         };
     }
 
-    public function hostDefinedProperty(string $key): mixed
-    {
-        return null;
-    }
-
-    /** @return array<string, mixed> */
-    public function hostDefinedProperties(): array
-    {
-        return [];
-    }
+    /** @var array<string, mixed> $hostDefinedProperties */
+    public readonly array $hostDefinedProperties;
 
     public function getSupportedFeatures(): array
     {

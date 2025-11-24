@@ -20,20 +20,19 @@ use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
 use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
 use Oru\EcmaScript\Core\Contracts\Values\StringValue;
 use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
-use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Assertion\Exception\EngineException;
 use Oru\Harness\Contracts\Assertion;
+use Oru\Harness\Helpers\TestStringValue;
 use Throwable;
 
 final readonly class AssertIsNormal implements Assertion
 {
     private StringValue $messageString;
 
-    public function __construct(
-        ValueFactory $valueFactory,
-    ) {
-        $this->messageString = $valueFactory->createString('message');
+    public function __construct()
+    {
+        $this->messageString = new TestStringValue('message');
     }
 
     /**

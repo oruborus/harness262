@@ -83,12 +83,18 @@ use Oru\EcmaScript\Core\Contracts\Values\TypedArrayType;
 use Oru\EcmaScript\Core\Contracts\Values\UnusedValue;
 use Oru\EcmaScript\Core\Contracts\Values\ReferenceRecord;
 use Oru\EcmaScript\Core\Contracts\Values\RegExpRecord;
+use Oru\EcmaScript\Core\Contracts\Values\SourceCode;
 use Oru\EcmaScript\Core\Contracts\Values\SourceText;
 use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 use Stringable;
 
 final class TestValueFactory implements ValueFactory
 {
+    public function createSourceCode(SourceText $sourceText, Parameters $parameters): SourceCode
+    {
+        throw new \RuntimeException('`TestValueFactory::createSourceCode()` is not implemented');
+    }
+
     public function createCaptureRange(NumberValue $startIndex, NumberValue $endIndex): CaptureRange
     {
         throw new \RuntimeException('`TestValueFactory::createCaptureRange()` is not implemented');
@@ -179,8 +185,15 @@ final class TestValueFactory implements ValueFactory
         throw new \RuntimeException('`TestValueFactory::createEnvironment()` is not implemented');
     }
 
-    public function createExecutionContext(ObjectValue|NullValue $function, RealmRecord $realm, ScriptRecord|ModuleRecord|NullValue $scriptOrModule, null|NullValue|EnvironmentRecord $lexicalEnvironment = null, null|NullValue|EnvironmentRecord $variableEnvironment = null, null|UndefinedValue|ObjectValue $generator = null): ExecutionContext
-    {
+    public function createExecutionContext(
+        ObjectValue|NullValue $function,
+        RealmRecord $realm,
+        ScriptRecord|ModuleRecord|NullValue $scriptOrModule,
+        null|NullValue|EnvironmentRecord $lexicalEnvironment = null,
+        null|NullValue|EnvironmentRecord $variableEnvironment = null,
+        null|NullValue|EnvironmentRecord $privateEnvironment = null,
+        null|UndefinedValue|ObjectValue $generator = null,
+    ): ExecutionContext {
         throw new \RuntimeException('`TestValueFactory::createExecutionContext()` is not implemented');
     }
 

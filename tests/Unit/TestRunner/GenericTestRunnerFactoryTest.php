@@ -100,7 +100,7 @@ final class GenericTestRunnerFactoryTest extends TestCase
 
     #[Test]
     #[DataProvider('provideNonDebugTestRunnerMode')]
-    public function createsCacheTestRunnerWhenCachingIsEnabledForNonDebugModes(TestRunnerMode $mode): void
+    public function createsCacheTestRunnerWhenCachingIsEnabledForNonDebugModes(TestRunnerMode $mode, string $unused): void
     {
         $cacheRepositoryStub = $this->createStub(CacheRepository::class);
 

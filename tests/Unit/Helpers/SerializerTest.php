@@ -28,7 +28,12 @@ final class SerializerTest extends TestCase
     {
         $serializer = new Serializer();
 
-        $expected = $this;
+        $expected = (object) [
+            'int' => 123,
+            'float' => \M_PI,
+            'string' => 'string',
+            'array' => [1, 2, 3, '4' => 4],
+        ];
         $intermediate = $serializer->serialize($expected);
         $actual = $serializer->unserialize($intermediate);
 

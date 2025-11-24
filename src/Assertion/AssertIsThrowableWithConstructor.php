@@ -19,11 +19,11 @@ use Oru\EcmaScript\Core\Contracts\Values\AbruptCompletion;
 use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
 use Oru\EcmaScript\Core\Contracts\Values\StringValue;
 use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
-use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 use Oru\Harness\Contracts\Assertion;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Assertion\Exception\EngineException;
 use Oru\Harness\Contracts\FrontmatterNegative;
+use Oru\Harness\Helpers\TestStringValue;
 use Throwable;
 
 final readonly class AssertIsThrowableWithConstructor implements Assertion
@@ -33,11 +33,10 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
     private StringValue $nameString;
 
     public function __construct(
-        ValueFactory $valueFactory,
         private FrontmatterNegative $negative
     ) {
-        $this->constructorString = $valueFactory->createString('constructor');
-        $this->nameString = $valueFactory->createString('name');
+        $this->constructorString = new TestStringValue('constructor');
+        $this->nameString = new TestStringValue('name');
     }
 
     /**

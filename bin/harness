@@ -13,8 +13,7 @@
 
 declare(strict_types=1);
 
-use Oru\EcmaScript\Core\Contracts\Agent;
-use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
+use DI\Container;
 use Oru\Harness\ArgumentsParser\InputArgumentsParser;
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Cache\GenericCacheRepositoryFactory;
@@ -82,20 +81,20 @@ include './vendor/autoload.php';
             );
             $temporaryFileHandler = new TemporaryFileHandler($contents);
 
-            $agent = $engineFactory->make()->getAgent();
-            $agent->bind(EngineFactory::class, $engineFactory);
-            $agent->bind(ArgumentsParser::class, new InputArgumentsParser($input));
-            $agent->bind(Printer::class, new NormalPrinter(new OutputAdapter($output)));
-            $agent->bind(CoreCounter::class, LogicalCoreCounter::class);
-            $agent->bind(FilterFactory::class, GenericFilterFactory::class);
-            $agent->bind(TestSuiteFactory::class, GenericTestSuiteFactory::class);
-            $agent->bind(TestCaseFactory::class, new GenericTestCaseFactory(new FileStorage('.')));
-            $agent->bind(AssertionFactory::class, GenericAssertionFactory::class);
-            $agent->bind(TestResultFactory::class, new GenericTestResultFactory());
-            $agent->bind(CacheRepositoryFactory::class, GenericCacheRepositoryFactory::class);
-            $agent->bind(Command::class, new FileCommand((string) realpath($temporaryFileHandler->path())));
-            $agent->bind(TestRunnerFactory::class, GenericTestRunnerFactory::class);
+            $container = new Container();
+            $container->set(EngineFactory::class, $engineFactory);
+            $container->set(ArgumentsParser::class, new InputArgumentsParser($input));
+            $container->set(Printer::class, new NormalPrinter(new OutputAdapter($output)));
+            $container->set(CoreCounter::class, $container->make(LogicalCoreCounter::class));
+            $container->set(FilterFactory::class, $container->make(GenericFilterFactory::class));
+            $container->set(TestSuiteFactory::class, $container->make(GenericTestSuiteFactory::class));
+            $container->set(TestCaseFactory::class, new GenericTestCaseFactory(new FileStorage('.')));
+            $container->set(AssertionFactory::class, $container->make(GenericAssertionFactory::class));
+            $container->set(TestResultFactory::class, new GenericTestResultFactory());
+            $container->set(CacheRepositoryFactory::class, $container->make(GenericCacheRepositoryFactory::class));
+            $container->set(Command::class, new FileCommand((string) realpath($temporaryFileHandler->path())));
+            $container->set(TestRunnerFactory::class, $container->make(GenericTestRunnerFactory::class));
 
-            return $agent->make(Harness::class)->run();
+            return $container->make(Harness::class)->run();
         }
     )->run();

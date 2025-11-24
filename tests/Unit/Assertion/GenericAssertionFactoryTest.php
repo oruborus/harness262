@@ -15,12 +15,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assertion;
 
-use Oru\EcmaScript\Core\Contracts\Agent;
 use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\Harness\Assertion\AssertAsync;
 use Oru\Harness\Assertion\AssertIsNormal;
 use Oru\Harness\Assertion\AssertIsThrowableWithConstructor;
-use Oru\Harness\Assertion\Exception\EngineException;
 use Oru\Harness\Assertion\GenericAssertionFactory;
 use Oru\Harness\Contracts\EngineFactory;
 use Oru\Harness\Contracts\Frontmatter;
@@ -34,30 +32,13 @@ use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 #[CoversClass(GenericAssertionFactory::class)]
 final class GenericAssertionFactoryTest extends PHPUnitTestCase
 {
-    private function createEngineFactoryStub(bool $hasBoundValueFactory = true): EngineFactory
+    private function createEngineFactoryStub(): EngineFactory
     {
-        $agentStub = $this->createStub(Agent::class);
-        if ($hasBoundValueFactory) {
-            $agentStub->method('get')->willReturnCallback(fn($classString) => $this->createStub($classString));
-        }
-
-        $engineStub = $this->createConfiguredStub(Engine::class, [
-            'getAgent' => $agentStub,
-        ]);
+        $engineStub = $this->createStub(Engine::class);
 
         return $this->createConfiguredStub(EngineFactory::class, [
             'make' => $engineStub,
         ]);
-    }
-
-    #[Test]
-    public function failsWhenAgentHasNoBoundValueFactory(): void
-    {
-        $this->expectException(EngineException::class);
-
-        $factory = new GenericAssertionFactory($this->createEngineFactoryStub(hasBoundValueFactory: false));
-
-        $factory->make($this->createStub(TestCase::class));
     }
 
     #[Test]

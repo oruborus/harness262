@@ -17,74 +17,62 @@ namespace Tests\Utility\Engine;
 
 use DI\Container;
 use Oru\EcmaScript\Core\Contracts\Agent;
-use Oru\EcmaScript\Core\Contracts\Engine;
 use Oru\EcmaScript\Core\Contracts\Values\ExecutionContext;
-use Oru\EcmaScript\Core\Contracts\Parser;
 use Oru\EcmaScript\Core\Contracts\Values\ListValue;
 use Oru\EcmaScript\Core\Contracts\Values\BooleanValue;
+use Oru\EcmaScript\Core\Contracts\Values\GoalSymbol;
 use Oru\EcmaScript\Core\Contracts\Values\SourceText;
 use Oru\EcmaScript\Core\Contracts\WellKnownSymbol;
 use Oru\EcmaScript\Core\Contracts\Values\SymbolValue;
+use Oru\EcmaScript\Core\Contracts\Values\ValueFactory;
 
 use function is_string;
 
 final class TestAgent implements Agent
 {
+    public readonly BooleanValue $littleEndian;
+
+    public BooleanValue $canBlock;
+
+    public readonly string $signifier;
+
+    public readonly BooleanValue $isLockFree1;
+
+    public readonly BooleanValue $isLockFree2;
+
+    public readonly BooleanValue $isLockFree8;
+
+    // FIXME: Implement Agent::[[CandidateExecution]]
+    // public CandidateExecutionRecord $candidateExecution ;
+
+    /** @var ListValue<ObjectValue|SymbolValue> $keptAlive */
+    public ListValue $keptAlive;
+
+    public int $moduleAsyncEvaluationCount;
+
+    public GoalSymbol $goalSymbol;
+
+    public ?string $currentFile = null;
+
+    public bool $strict = false;
+
+    public bool $inEval = false;
+
+    /** @var string[] $currentLabelSet */
+    public array $currentLabelSet = [];
+
+    public bool $inIterationStatement = false;
+
+    public bool $inSwitchStatement = false;
+
+    public ?SourceText $currentSourceText = null;
+
+    public ListValue $globalSymbolRegistry;
+
+    /** @param ListValue<array{key: StringValue, symbol: SymbolValue}> $globalSymbolRegistry */
     public function __construct(
         private Container $container = new Container(),
     ) {}
-
-    public function setStrict(bool $strict): void {}
-
-    public function isStrictCode(): bool
-    {
-        return false;
-    }
-
-    public function setInEval(bool $inEval): void {}
-
-    public function inEval(): bool
-    {
-        return false;
-    }
-
-    /** @param string[] $currentLabelSet */
-    public function setCurrentLabelSet(array $currentLabelSet): void {}
-
-    /** @return string[] */
-    public function currentLabelSet(): array
-    {
-        return [];
-    }
-
-    public function setInIterationOrSwitchStatement(bool $inIterationOrSwitchStatement): void {}
-
-    public function inIterationOrSwitchStatement(): bool
-    {
-        return false;
-    }
-
-    public function setCurrentSourceText(?SourceText $sourceText = null): void {}
-
-    public function getCurrentSourceText(): ?SourceText
-    {
-        return null;
-    }
-
-    public function setCurrentFile(?string $file = null): void
-    {
-        throw new \RuntimeException('`TestAgent::setCurrentFile()` is not implemented');
-    }
-
-    public function getCurrentFile(): ?string
-    {
-        throw new \RuntimeException('`TestAgent::getCurrentFile()` is not implemented');
-    }
-
-    public function engine(): Engine
-    {
-        throw new \RuntimeException('`TestAgent::engine()` is not implemented');
-    }
 
     public function getRunningExecutionContext(): ExecutionContext
     {
@@ -106,26 +94,9 @@ final class TestAgent implements Agent
         throw new \RuntimeException('`TestAgent::pushExecutionContextStack()` is not implemented');
     }
 
-    public function getParser(): Parser
-    {
-        throw new \RuntimeException('`TestAgent::getParser()` is not implemented');
-    }
-
-    public function setParser(Parser $parser): void
-    {
-        throw new \RuntimeException('`TestAgent::setParser()` is not implemented');
-    }
-
     public function setWellKnownSymbols(array $wellKnownSymbols): void
     {
         throw new \RuntimeException('`TestAgent::setWellKnownSymbols()` is not implemented');
-    }
-
-    public ListValue $globalSymbolRegistry;
-
-    public function getLittleEndian(): BooleanValue
-    {
-        throw new \RuntimeException('`TestAgent::getLittleEndian()` is not implemented');
     }
 
     public function getWellKnownSymbol(WellKnownSymbol $wellKnownSymbol): SymbolValue
