@@ -53,15 +53,11 @@ final readonly class AssertIsNormal implements Assertion
         $value = $actual->getValue();
 
         if (!$value instanceof ObjectValue) {
-            /** @var bool|float|int|string|null $valueValue */
-            $valueValue = $value->getValue();
-            throw new AssertionFailedException((string) $valueValue, previous: $actual);
+            throw new AssertionFailedException((string) $value, previous: $actual);
         }
 
         try {
-            /** @var bool|float|int|string|null $messageValue */
-            $messageValue = $value->get($this->messageString, $value)->getValue();
-            $message = (string) $messageValue;
+            $message = (string) $value->get($this->messageString, $value);
         } catch (AbruptCompletion $throwable) {
             throw new EngineException('Could not convert object property `message` to string', previous: $throwable);
         }

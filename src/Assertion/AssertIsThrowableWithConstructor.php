@@ -53,10 +53,8 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         $exception = $actual->getValue();
 
         if (!$exception instanceof ObjectValue) {
-            /** @var bool|float|int|string|null $exceptionValue */
-            $exceptionValue = $exception->getValue();
             throw new AssertionFailedException(
-                "`ThrowCompletion` does not contain an `ObjectValue`, got '{$exceptionValue}'",
+                "`ThrowCompletion` does not contain an `ObjectValue`, got '{$exception}'",
                 previous: $actual,
             );
         }
@@ -80,7 +78,7 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
             throw new EngineException('Could not use `hasProperty()` to check existence of `name`', previous: $throwable);
         }
 
-        if (!$hasName->getValue()) {
+        if (!$hasName->bool) {
             throw new AssertionFailedException('Constructor does not have a name', previous: $actual,);
         }
 
@@ -91,9 +89,7 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         }
 
         try {
-            /** @var bool|float|int|string|null $namePropertyValue */
-            $namePropertyValue = $nameProperty->getValue();
-            $name = (string) $namePropertyValue;
+            $name = (string) $nameProperty;
         } catch (Throwable $throwable) {
             throw new EngineException('Could not convert `name` to string', previous: $throwable);
         }
