@@ -78,7 +78,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
 
         $testRunner = new LinearTestRunner(
             $engineFactoryStub,
-            $this->createMock(AssertionFactory::class),
+            $this->createStub(AssertionFactory::class),
             $printerMock,
             $testResultFactoryMock,
         );
@@ -238,7 +238,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
                     'run' => $this->createStub(UnusedValue::class),
                 ])
             ]),
-            $this->createConfiguredMock(AssertionFactory::class, [
+            $this->createConfiguredStub(AssertionFactory::class, [
                 'make' => $assertionStub
             ]),
             $printerMock,
@@ -327,7 +327,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         $engineFactoryStub = $this->createConfiguredStub(EngineFactory::class, ['make' => $engineStub]);
         $assertionMock = $this->createMock(Assertion::class);
         $assertionMock->expects($this->once())->method('assert')->with($this->identicalTo($expected));
-        $assertionFactoryMock = $this->createConfiguredMock(AssertionFactory::class, [
+        $assertionFactoryStub = $this->createConfiguredStub(AssertionFactory::class, [
             'make' => $assertionMock
         ]);
         $testResultFactoryStub = $this->createTestResultFactoryStub();
@@ -342,7 +342,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
 
         $testRunner = new LinearTestRunner(
             $engineFactoryStub,
-            $assertionFactoryMock,
+            $assertionFactoryStub,
             $this->createStub(Printer::class),
             $testResultFactoryStub,
         );
@@ -364,7 +364,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
         $engineFactoryStub = $this->createConfiguredStub(EngineFactory::class, ['make' => $engineStub]);
         $assertionMock = $this->createMock(Assertion::class);
         $assertionMock->expects($this->once())->method('assert')->with($this->identicalTo($expected));
-        $assertionFactoryMock = $this->createConfiguredMock(AssertionFactory::class, [
+        $assertionFactoryStub = $this->createConfiguredStub(AssertionFactory::class, [
             'make' => $assertionMock
         ]);
         $testResultFactoryStub = $this->createTestResultFactoryStub();
@@ -379,7 +379,7 @@ final class LinearTestRunnerTest extends PHPUnitTestCase
 
         $testRunner = new LinearTestRunner(
             $engineFactoryStub,
-            $assertionFactoryMock,
+            $assertionFactoryStub,
             $this->createStub(Printer::class),
             $testResultFactoryStub,
         );

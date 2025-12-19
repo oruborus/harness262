@@ -30,13 +30,13 @@ final class SingleTestSubprocessTest extends PHPUnitTestCase
     #[Test]
     public function forwardsTheSingleTestResultFromTheProvidedTestRunner(): void
     {
-        $expected = $this->createMock(TestResult::class);
+        $expected = $this->createStub(TestResult::class);
         $testRunnerMock = $this->createMock(TestRunner::class);
         $testRunnerMock->expects($this->once())->method('add');
         $testRunnerMock->method('run')->willReturn([$expected]);
-        $testCaseMock = $this->createMock(TestCase::class);
+        $testCaseStub = $this->createStub(TestCase::class);
 
-        $subprocess = new SingleTestSubprocess($testRunnerMock, $testCaseMock);
+        $subprocess = new SingleTestSubprocess($testRunnerMock, $testCaseStub);
         $actual = $subprocess->run();
 
         $this->assertSame($expected, $actual);
@@ -47,11 +47,11 @@ final class SingleTestSubprocessTest extends PHPUnitTestCase
     {
         $this->expectExceptionObject(new InvalidReturnValueException('Test runner returned more than one test result'));
 
-        $testRunnerMock = $this->createMock(TestRunner::class);
-        $testRunnerMock->method('run')->willReturn([$this->createMock(TestResult::class), $this->createMock(TestResult::class)]);
-        $testCaseMock = $this->createMock(TestCase::class);
+        $testRunnerStub = $this->createStub(TestRunner::class);
+        $testRunnerStub->method('run')->willReturn([$this->createStub(TestResult::class), $this->createStub(TestResult::class)]);
+        $testCaseStub = $this->createStub(TestCase::class);
 
-        (new SingleTestSubprocess($testRunnerMock, $testCaseMock))->run();
+        (new SingleTestSubprocess($testRunnerStub, $testCaseStub))->run();
     }
 
     #[Test]
@@ -59,10 +59,10 @@ final class SingleTestSubprocessTest extends PHPUnitTestCase
     {
         $this->expectExceptionObject(new InvalidReturnValueException('Test runner returned no test result'));
 
-        $testRunnerMock = $this->createMock(TestRunner::class);
-        $testRunnerMock->method('run')->willReturn([]);
-        $testCaseMock = $this->createMock(TestCase::class);
+        $testRunnerStub = $this->createStub(TestRunner::class);
+        $testRunnerStub->method('run')->willReturn([]);
+        $testCaseStub = $this->createStub(TestCase::class);
 
-        (new SingleTestSubprocess($testRunnerMock, $testCaseMock))->run();
+        (new SingleTestSubprocess($testRunnerStub, $testCaseStub))->run();
     }
 }

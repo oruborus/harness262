@@ -30,7 +30,7 @@ final class NoCacheRepositoryTest extends PHPUnitTestCase
     public function returnsNullOnGet(): void
     {
         $repository = new NoCacheRepository();
-        $testCase = $this->createMock(TestCase::class);
+        $testCase = $this->createStub(TestCase::class);
 
         $actual = $repository->get($testCase);
 
@@ -41,8 +41,8 @@ final class NoCacheRepositoryTest extends PHPUnitTestCase
     public function returnsNullOnSet(): void
     {
         $repository = new NoCacheRepository();
-        $testCase = $this->createMock(TestCase::class);
-        $result = $this->createConfiguredMock(TestResult::class, [
+        $testCase = $this->createStub(TestCase::class);
+        $result = $this->createConfiguredStub(TestResult::class, [
             'state' => TestResultState::Success,
             'usedFiles' => [],
             'duration' => 0,

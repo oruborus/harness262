@@ -124,9 +124,9 @@ final class TestEngine implements Engine
     {
         return new class implements UnusedValue
         {
-            public function getValue(): never
+            public function __toString(): never
             {
-                throw new \RuntimeException('`UnusedValue::getValue()` should not be called');
+                throw new \RuntimeException('`UnusedValue::__toString()` should not be called');
             }
         };
     }

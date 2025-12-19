@@ -65,7 +65,7 @@ final class GenericAssertionFactoryTest extends PHPUnitTestCase
         $actual = $factory->make(
             $this->createConfiguredStub(TestCase::class, [
                 'frontmatter' => $this->createConfiguredStub(Frontmatter::class, [
-                    'negative' => $this->createMock(FrontmatterNegative::class)
+                    'negative' => $this->createStub(FrontmatterNegative::class)
                 ])
             ])
         );

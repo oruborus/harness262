@@ -24,7 +24,6 @@ use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Assertion\Exception\EngineException;
 use Oru\Harness\Contracts\FrontmatterNegative;
 use Oru\Harness\Helpers\TestStringValue;
-use Throwable;
 
 final readonly class AssertIsThrowableWithConstructor implements Assertion
 {
@@ -48,7 +47,6 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         if (!$actual instanceof ThrowCompletion) {
             throw new AssertionFailedException('Expected `ThrowCompletion`');
         }
-        /** @var Throwable&ThrowCompletion $actual */
 
         $exception = $actual->getValue();
 
@@ -60,9 +58,12 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         }
 
         try {
-            $constructor = $exception->get($this->constructorString, $exception);
+            $constructor = $exception->⟦Get⟧($this->constructorString, $exception);
         } catch (AbruptCompletion $throwable) {
-            throw new EngineException('Could not use `get()` to retrieve `constructor`', previous: $throwable);
+            throw new EngineException(
+                'Could not use `⟦Get⟧()` to retrieve `constructor`',
+                previous: $throwable,
+            );
         }
 
         if (!$constructor instanceof ObjectValue) {
@@ -73,29 +74,35 @@ final readonly class AssertIsThrowableWithConstructor implements Assertion
         }
 
         try {
-            $hasName = $constructor->hasProperty($this->nameString);
+            $hasName = $constructor->⟦HasProperty⟧($this->nameString);
         } catch (AbruptCompletion $throwable) {
-            throw new EngineException('Could not use `hasProperty()` to check existence of `name`', previous: $throwable);
+            throw new EngineException(
+                'Could not use `⟦HasProperty⟧()` to check existence of `name`',
+                previous: $throwable,
+            );
         }
 
         if (!$hasName->bool) {
-            throw new AssertionFailedException('Constructor does not have a name', previous: $actual,);
+            throw new AssertionFailedException(
+                'Constructor does not have a name',
+                previous: $actual,
+            );
         }
 
         try {
-            $nameProperty = $constructor->get($this->nameString, $constructor);
+            $nameProperty = $constructor->⟦Get⟧($this->nameString, $constructor);
         } catch (AbruptCompletion $throwable) {
-            throw new EngineException('Could not use `get()` to retrieve `constructor.name`', previous: $throwable);
+            throw new EngineException(
+                'Could not use `⟦Get⟧()` to retrieve `constructor.name`',
+                previous: $throwable,
+            );
         }
 
-        try {
-            $name = (string) $nameProperty;
-        } catch (Throwable $throwable) {
-            throw new EngineException('Could not convert `name` to string', previous: $throwable);
-        }
-
-        if ($this->negative->type() !== $name) {
-            throw new AssertionFailedException("Expected `{$this->negative->type()}` but got `{$name}`", previous: $actual);
+        if ($this->negative->type() !== (string) $nameProperty) {
+            throw new AssertionFailedException(
+                "Expected `{$this->negative->type()}` but got `{$nameProperty}`",
+                previous: $actual,
+            );
         }
     }
 }

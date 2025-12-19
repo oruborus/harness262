@@ -31,22 +31,22 @@ final class GenericTestCaseTest extends TestCase
     {
         $expectedPath               = 'path/to/file';
         $expectedContent            = 'CONTENT';
-        $expectedFrontmatter        = $this->createMock(Frontmatter::class);
-        $expectedTestSuiteMock      = $this->createMock(TestSuite::class);
+        $expectedFrontmatter        = $this->createStub(Frontmatter::class);
+        $expectedTestSuiteStub      = $this->createStub(TestSuite::class);
         $expectedImplicitStrictness = ImplicitStrictness::Unknown;
 
         $actual = new GenericTestCase(
             $expectedPath,
             $expectedContent,
             $expectedFrontmatter,
-            $expectedTestSuiteMock,
+            $expectedTestSuiteStub,
             $expectedImplicitStrictness,
         );
 
         $this->assertSame($expectedPath, $actual->path());
         $this->assertSame($expectedContent, $actual->content());
         $this->assertSame($expectedFrontmatter, $actual->frontmatter());
-        $this->assertSame($expectedTestSuiteMock, $actual->testSuite());
+        $this->assertSame($expectedTestSuiteStub, $actual->testSuite());
         $this->assertSame($expectedImplicitStrictness, $actual->implicitStrictness());
     }
 }

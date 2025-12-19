@@ -48,24 +48,32 @@ final readonly class AssertIsNormal implements Assertion
         if (!$actual instanceof ThrowCompletion) {
             throw new AssertionFailedException('Expected `NormalCompletion`');
         }
-        /** @var Throwable&ThrowCompletion $actual */
 
         $value = $actual->getValue();
 
         if (!$value instanceof ObjectValue) {
-            throw new AssertionFailedException((string) $value, previous: $actual);
+            throw new AssertionFailedException(
+                (string) $value,
+                previous: $actual,
+            );
         }
 
         try {
-            $message = (string) $value->get($this->messageString, $value);
+            $message = $value->⟦Get⟧($this->messageString, $value);
         } catch (AbruptCompletion $throwable) {
-            throw new EngineException('Could not convert object property `message` to string', previous: $throwable);
+            throw new EngineException(
+                'Could not use `⟦Get⟧()` to retrieve `message`',
+                previous: $throwable,
+            );
         }
 
-        if ($message === '') {
+        if ((string) $message === '') {
             throw new EngineException('Object property `message` was empty');
         }
 
-        throw new AssertionFailedException($message, previous: $actual);
+        throw new AssertionFailedException(
+            (string) $message,
+            previous: $actual,
+        );
     }
 }

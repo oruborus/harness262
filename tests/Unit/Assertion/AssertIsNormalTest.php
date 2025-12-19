@@ -62,7 +62,7 @@ final class AssertIsNormalTest extends TestCase
         $value = $this->createStub(ThrowCompletion::class);
         $value->method('getValue')->willReturn(
             $this->createConfiguredStub(NumberValue::class, [
-                'getValue' => 123.1,
+                '__toString' => '123.1',
             ]),
         );
 
@@ -78,8 +78,7 @@ final class AssertIsNormalTest extends TestCase
         $value = $this->createStub(ThrowCompletion::class);
         $value->method('getValue')->willReturn(
             $this->createConfiguredStub(ObjectValue::class, [
-                'get' => $this->createConfiguredStub(StringValue::class, [
-                    'getValue' => '',
+                '⟦Get⟧' => $this->createConfiguredStub(StringValue::class, [
                     '__toString' => '',
                 ])
             ]),
@@ -89,13 +88,13 @@ final class AssertIsNormalTest extends TestCase
     }
 
     #[Test]
-    public function throwsWhenExceptionMessageStringConversionFails(): void
+    public function throwsWhenExceptionMessageCouldNotBeExtracted(): void
     {
-        $this->expectExceptionObject(new EngineException('Could not convert object property `message` to string'));
+        $this->expectExceptionObject(new EngineException('Could not use `⟦Get⟧()` to retrieve `message`'));
 
         $assertion = $this->createAssertIsNormal();
         $object = $this->createStub(ObjectValue::class);
-        $object->method('get')->willThrowException(
+        $object->method('⟦Get⟧')->willThrowException(
             $this->createStub(ThrowCompletion::class)
         );
 
@@ -119,15 +118,15 @@ final class AssertIsNormalTest extends TestCase
     #[Test]
     public function throwsWithTheContainedMessageInProvidedThrowCompletion(): void
     {
-        $expectedMessage = 12345678.9;
-        $this->expectExceptionObject(new AssertionFailedException((string) $expectedMessage));
+        $expectedMessage = '12345678.9';
+        $this->expectExceptionObject(new AssertionFailedException($expectedMessage));
 
         $assertion = $this->createAssertIsNormal();
         $value = $this->createStub(ThrowCompletion::class);
         $value->method('getValue')->willReturn(
             $this->createConfiguredStub(ObjectValue::class, [
-                'get' => $this->createConfiguredStub(NumberValue::class, [
-                    'getValue' => $expectedMessage,
+                '⟦Get⟧' => $this->createConfiguredStub(NumberValue::class, [
+                    '__toString' => $expectedMessage,
                 ])
             ]),
         );

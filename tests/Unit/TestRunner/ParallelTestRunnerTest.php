@@ -51,11 +51,11 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
         $this->expectExceptionObject(new RuntimeException('Could not open process'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Printer::class),
-            $this->createConfiguredMock(Command::class, ['__toString' => 'Ê↕'])
+            $this->createStub(Printer::class),
+            $this->createConfiguredStub(Command::class, ['__toString' => 'Ê↕'])
         );
 
-        $testRunner->add($this->createMock(TestCase::class));
+        $testRunner->add($this->createStub(TestCase::class));
         $testRunner->run();
     }
 
@@ -65,11 +65,11 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
         $this->expectExceptionObject(new ErrorException('THROWN IN TEST'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Printer::class),
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/FailingTestCase.php')])
+            $this->createStub(Printer::class),
+            $this->createConfiguredStub(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/FailingTestCase.php')])
         );
 
-        $testRunner->add($this->createMock(TestCase::class));
+        $testRunner->add($this->createStub(TestCase::class));
         $testRunner->run();
     }
 
@@ -79,11 +79,11 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
         $this->expectExceptionObject(new RuntimeException('Subprocess did not return a `TestResult` - Returned: O:8:"stdClass":1:{s:3:"AAA";s:3:"BBB";}'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Printer::class),
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/NonTestResultReturningTestCase.php')])
+            $this->createStub(Printer::class),
+            $this->createConfiguredStub(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/NonTestResultReturningTestCase.php')])
         );
 
-        $testRunner->add($this->createMock(TestCase::class));
+        $testRunner->add($this->createStub(TestCase::class));
         $testRunner->run();
     }
 
@@ -91,12 +91,12 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
     public function aggregatesTestResults(): void
     {
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Printer::class),
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/SuccessfulTestCase.php')])
+            $this->createStub(Printer::class),
+            $this->createConfiguredStub(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/SuccessfulTestCase.php')])
         );
 
-        $testRunner->add($this->createMock(TestCase::class));
-        $testRunner->add($this->createMock(TestCase::class));
+        $testRunner->add($this->createStub(TestCase::class));
+        $testRunner->add($this->createStub(TestCase::class));
         $actual = $testRunner->run();
 
         $this->assertContainsOnlyInstancesOf(TestResult::class, $actual);
@@ -111,11 +111,11 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
 
         $testRunner = new ParallelTestRunner(
             $printerMock,
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/SuccessfulTestCase.php')])
+            $this->createConfiguredStub(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/SuccessfulTestCase.php')])
         );
 
-        $testRunner->add($this->createMock(TestCase::class));
-        $testRunner->add($this->createMock(TestCase::class));
+        $testRunner->add($this->createStub(TestCase::class));
+        $testRunner->add($this->createStub(TestCase::class));
         $testRunner->run();
     }
 
@@ -125,8 +125,8 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
         $this->expectExceptionObject(new RuntimeException('SUCCESS'));
 
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Printer::class),
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/FailsOnMissingInputTestCase.php')])
+            $this->createStub(Printer::class),
+            $this->createConfiguredStub(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/FailsOnMissingInputTestCase.php')])
         );
 
         $testCaseMock = new GenericTestCase(
@@ -145,12 +145,12 @@ final class ParallelTestRunnerTest extends PHPUnitTestCase
     public function willBeSuspendedWhenRunningInAFiber(): void
     {
         $testRunner = new ParallelTestRunner(
-            $this->createMock(Printer::class),
-            $this->createConfiguredMock(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/DelayedTestCase.php')])
+            $this->createStub(Printer::class),
+            $this->createConfiguredStub(Command::class, ['__toString' => 'php ' . realpath('./tests/Utility/Template/DelayedTestCase.php')])
         );
 
         $fiber = new Fiber(function () use ($testRunner) {
-            $testRunner->add($this->createMock(TestCase::class));
+            $testRunner->add($this->createStub(TestCase::class));
             $testRunner->run();
         });
         $fiber->start();

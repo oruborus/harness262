@@ -242,14 +242,14 @@ final class NormalPrinterTest extends TestCase
 
         $printer = new NormalPrinter($output);
         $printer->end([
-            $this->createConfiguredMock(TestResult::class, [
+            $this->createConfiguredStub(TestResult::class, [
                 'state' => TestResultState::Fail,
                 'path' => 'path1',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $exception1
             ]),
-            $this->createConfiguredMock(TestResult::class, [
+            $this->createConfiguredStub(TestResult::class, [
                 'state' => TestResultState::Fail,
                 'path' => 'path2',
                 'usedFiles' => [],
@@ -286,14 +286,14 @@ final class NormalPrinterTest extends TestCase
 
         $printer = new NormalPrinter($output);
         $printer->end([
-            $this->createConfiguredMock(TestResult::class, [
+            $this->createConfiguredStub(TestResult::class, [
                 'state' => TestResultState::Error,
                 'path' => 'path1',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $error1
             ]),
-            $this->createConfiguredMock(TestResult::class, [
+            $this->createConfiguredStub(TestResult::class, [
                 'state' => TestResultState::Error,
                 'path' => 'path2',
                 'usedFiles' => [],
@@ -341,28 +341,28 @@ final class NormalPrinterTest extends TestCase
 
         $printer = new NormalPrinter($output);
         $printer->end([
-            $this->createConfiguredMock(TestResult::class, [
+            $this->createConfiguredStub(TestResult::class, [
                 'state' => TestResultState::Fail,
                 'path' => 'path1',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $exception1
             ]),
-            $this->createConfiguredMock(TestResult::class, [
+            $this->createConfiguredStub(TestResult::class, [
                 'state' => TestResultState::Error,
                 'path' => 'path3',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $error1
             ]),
-            $this->createConfiguredMock(TestResult::class, [
+            $this->createConfiguredStub(TestResult::class, [
                 'state' => TestResultState::Fail,
                 'path' => 'path2',
                 'usedFiles' => [],
                 'duration' => 0,
                 'throwable' => $exception2
             ]),
-            $this->createConfiguredMock(TestResult::class, [
+            $this->createConfiguredStub(TestResult::class, [
                 'state' => TestResultState::Error,
                 'path' => 'path4',
                 'usedFiles' => [],
@@ -391,7 +391,7 @@ final class NormalPrinterTest extends TestCase
 
         $printer = new NormalPrinter($output);
         $printer->end([
-            $this->createConfiguredMock(TestResult::class, [
+            $this->createConfiguredStub(TestResult::class, [
                 'state' => TestResultState::Timeout,
                 'path' => 'path1',
                 'usedFiles' => [],

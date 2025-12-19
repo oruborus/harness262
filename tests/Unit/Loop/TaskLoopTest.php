@@ -46,7 +46,7 @@ final class TaskLoopTest extends TestCase
             $current = &$currents[$i];
             $count   = $counts[$i];
 
-            $task = $this->createMock(Task::class);
+            $task = $this->createStub(Task::class);
             $task->method('continue')->willReturnCallback(
                 static function () use (&$actual, $i, $count, &$current) {
                     if ($count >= $current++) {

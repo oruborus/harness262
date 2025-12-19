@@ -29,7 +29,7 @@ final class GenericCacheResultRecordTest extends TestCase
     {
         $expectedHash = 'SOME_HASH';
         $expectedUsedFiles = ['usedFile1', 'usedFile2', 'usedFile3'];
-        $expectedResult = $this->createMock(TestResult::class);
+        $expectedResult = $this->createStub(TestResult::class);
 
         $cacheResultRecord = new GenericCacheResultRecord($expectedHash, $expectedUsedFiles, $expectedResult);
 

@@ -47,14 +47,14 @@ final class AssertMultipleTest extends TestCase
     #[Test]
     public function returnsGivenAssertionsInOrder(): void
     {
-        $assertionMocks = [];
+        $assertionStub = [];
         for ($index = 0; $index < 5; $index++) {
-            $assertionMocks[] = $this->createMock(Assertion::class);
+            $assertionStub[] = $this->createStub(Assertion::class);
         }
 
-        $assertion = new AssertMultiple(...$assertionMocks);
+        $assertion = new AssertMultiple(...$assertionStub);
         $actual = $assertion->assertions();
 
-        $this->assertSame($assertionMocks, $actual);
+        $this->assertSame($assertionStub, $actual);
     }
 }

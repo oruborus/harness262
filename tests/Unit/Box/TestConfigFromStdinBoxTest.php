@@ -78,7 +78,7 @@ final class TestConfigFromStdinBoxTest extends PHPUnitTestCase
         $_ = new StreamWrapperOverride('php', TestStreamWrapper::class);
 
         $stdin = fopen('php://stdin', 'w');
-        fwrite($stdin, serialize($this->createMock(TestCase::class)));
+        fwrite($stdin, serialize($this->createStub(TestCase::class)));
         fclose($stdin);
 
         $actual = (new TestCaseFromStdinBox())->unbox();

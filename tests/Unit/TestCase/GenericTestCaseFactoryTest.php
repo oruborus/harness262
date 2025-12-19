@@ -45,10 +45,13 @@ final class GenericTestCaseFactoryTest extends TestCase
         $this->expectExceptionMessage("Could not open `{$path}`");
 
         $factory = new GenericTestCaseFactory(
-            $this->createMock(Storage::class),
+            $this->createStub(Storage::class),
         );
 
-        $factory->make($this->createStub(TestSuite::class), [$path]);
+        $factory->make(
+            $this->createStub(TestSuite::class),
+            [$path],
+        );
     }
 
     #[Test]
@@ -57,10 +60,13 @@ final class GenericTestCaseFactoryTest extends TestCase
         $this->expectExceptionObject(new MissingFrontmatterException('Provided test file does not contain a frontmatter section'));
 
         $factory = new GenericTestCaseFactory(
-            $this->createConfiguredMock(Storage::class, ['get' => '']),
+            $this->createConfiguredStub(Storage::class, ['get' => '']),
         );
 
-        $factory->make($this->createStub(TestSuite::class), ['content']);
+        $factory->make(
+            $this->createStub(TestSuite::class),
+            ['content'],
+        );
     }
 
     #[Test]
@@ -69,10 +75,13 @@ final class GenericTestCaseFactoryTest extends TestCase
     {
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
         $factory = new GenericTestCaseFactory(
-            $this->createConfiguredMock(Storage::class, ['get' => $expected]),
+            $this->createConfiguredStub(Storage::class, ['get' => $expected]),
         );
 
-        $actual = $factory->make($this->createStub(TestSuite::class), ['content']);
+        $actual = $factory->make(
+            $this->createStub(TestSuite::class),
+            ['content'],
+        );
 
         $this->assertCount(1, $actual);
         $this->assertSame($expected, array_shift($actual)->content());
@@ -94,10 +103,13 @@ final class GenericTestCaseFactoryTest extends TestCase
     {
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
         $factory = new GenericTestCaseFactory(
-            $this->createConfiguredMock(Storage::class, ['get' => $expected]),
+            $this->createConfiguredStub(Storage::class, ['get' => $expected]),
         );
 
-        $actual = $factory->make($this->createStub(TestSuite::class), ['content']);
+        $actual = $factory->make(
+            $this->createStub(TestSuite::class),
+            ['content'],
+        );
 
         $this->assertCount(1, $actual);
         $this->assertSame("\"use strict\";\n" . $expected, array_shift($actual)->content());
@@ -117,10 +129,13 @@ final class GenericTestCaseFactoryTest extends TestCase
     {
         $expected = "/*---\ndescription: required\nflags: [{$flag->value}]\n---*/\n// CONTENT";
         $factory = new GenericTestCaseFactory(
-            $this->createConfiguredMock(Storage::class, ['get' => $expected]),
+            $this->createConfiguredStub(Storage::class, ['get' => $expected]),
         );
 
-        $actual = $factory->make($this->createStub(TestSuite::class), ['content']);
+        $actual = $factory->make(
+            $this->createStub(TestSuite::class),
+            ['content'],
+        );
 
         $this->assertCount(2, $actual);
         [$first, $second] = $actual;
@@ -157,10 +172,13 @@ final class GenericTestCaseFactoryTest extends TestCase
         $frontmatter = "description: required\nflags: [noStrict]\n\n\nincludes: [doneprintHandle.js]";
         $expected = "/*---\n{$frontmatter}\n---*/";
         $factory = new GenericTestCaseFactory(
-            $this->createConfiguredMock(Storage::class, ['get' => $expected]),
+            $this->createConfiguredStub(Storage::class, ['get' => $expected]),
         );
 
-        $actual = $factory->make($this->createStub(TestSuite::class), ['content']);
+        $actual = $factory->make(
+            $this->createStub(TestSuite::class),
+            ['content'],
+        );
 
         $this->assertCount(1, $actual);
         $this->assertSame($expected, array_shift($actual)->content());
@@ -171,10 +189,13 @@ final class GenericTestCaseFactoryTest extends TestCase
     {
         $expected = "/*---\n   description: required\n   flags: [noStrict]\n   includes: [doneprintHandle.js]\n---*/";
         $factory = new GenericTestCaseFactory(
-            $this->createConfiguredMock(Storage::class, ['get' => $expected]),
+            $this->createConfiguredStub(Storage::class, ['get' => $expected]),
         );
 
-        $actual = $factory->make($this->createStub(TestSuite::class), ['content']);
+        $actual = $factory->make(
+            $this->createStub(TestSuite::class),
+            ['content'],
+        );
 
         $this->assertCount(1, $actual);
         $this->assertSame($expected, array_shift($actual)->content());
@@ -184,12 +205,15 @@ final class GenericTestCaseFactoryTest extends TestCase
     public function canHandleMultipleInputPaths(): void
     {
         $factory = new GenericTestCaseFactory(
-            $this->createConfiguredMock(Storage::class, [
+            $this->createConfiguredStub(Storage::class, [
                 'get' => "/*---\ndescription: required\nflags: [raw]\n---*/\n// CONTENT"
             ]),
         );
 
-        $actual = $factory->make($this->createStub(TestSuite::class), ['path1', 'path2', 'path3']);
+        $actual = $factory->make(
+            $this->createStub(TestSuite::class),
+            ['path1', 'path2', 'path3'],
+        );
 
         $this->assertCount(3, $actual);
     }

@@ -31,7 +31,7 @@ final class ErrorHandlerTest extends TestCase
     #[Test]
     public function callsProvidedMethodWhenErrorOfAppropriateLevelWasTriggered(): void
     {
-        $expectedException = $this->createMock(Throwable::class);
+        $expectedException = $this->createStub(Throwable::class);
         $this->expectExceptionObject($expectedException);
         $level = E_USER_WARNING;
 

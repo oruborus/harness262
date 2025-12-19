@@ -56,20 +56,20 @@ final class GenericCacheRepositoryTest extends PHPUnitTestCase
     public function returnsNullWhenNoCacheForConfigExists(): void
     {
         $repository = new GenericCacheRepository(
-            $this->createMock(Storage::class),
+            $this->createStub(Storage::class),
             static fn(TestCase $i): string => md5(serialize($i)),
             static fn(string $i): string => hash_file('haval160,4', $i)
         );
-        $testCaseMock = $this->createMock(TestCase::class);
+        $testCaseStub = $this->createStub(TestCase::class);
 
-        $actual = $repository->get($testCaseMock);
+        $actual = $repository->get($testCaseStub);
 
         $this->assertNull($actual);
     }
 
     private function getStorage(array $predefined = []): Storage
     {
-        return new class ($predefined) implements Storage {
+        return new class($predefined) implements Storage {
             public function __construct(
                 private array $storage
             ) {}
@@ -94,16 +94,16 @@ final class GenericCacheRepositoryTest extends PHPUnitTestCase
             static fn(TestCase $i): string => md5(serialize($i)),
             static fn(string $i): string => hash_file('haval160,4', $i)
         );
-        $testCaseMock = $this->createMock(TestCase::class);
-        $result = $this->createConfiguredMock(TestResult::class, [
+        $testCaseStub = $this->createStub(TestCase::class);
+        $result = $this->createConfiguredStub(TestResult::class, [
             'state' => TestResultState::Success,
             'usedFiles' => [__DIR__ . '/A', __DIR__ . '/B'],
             'duration' => 0,
             'throwable' => null
         ]);
 
-        $repository->set($testCaseMock, $result);
-        $actual = $repository->get($testCaseMock);
+        $repository->set($testCaseStub, $result);
+        $actual = $repository->get($testCaseStub);
 
         $this->assertEquals($result, $actual);
     }
@@ -116,17 +116,17 @@ final class GenericCacheRepositoryTest extends PHPUnitTestCase
             static fn(TestCase $i): string => md5(serialize($i)),
             static fn(string $i): string => hash_file('haval160,4', $i)
         );
-        $testCaseMock = $this->createMock(TestCase::class);
-        $result = $this->createConfiguredMock(TestResult::class, [
+        $testCaseStub = $this->createStub(TestCase::class);
+        $result = $this->createConfiguredStub(TestResult::class, [
             'state' => TestResultState::Success,
             'usedFiles' => [__DIR__ . '/A', __DIR__ . '/B'],
             'duration' => 0,
             'throwable' => null
         ]);
 
-        $repository->set($testCaseMock, $result);
+        $repository->set($testCaseStub, $result);
         file_put_contents(__DIR__ . '/A', 'Changed contents of A');
-        $actual = $repository->get($testCaseMock);
+        $actual = $repository->get($testCaseStub);
 
         $this->assertNull($actual);
     }
@@ -134,8 +134,8 @@ final class GenericCacheRepositoryTest extends PHPUnitTestCase
     #[Test]
     public function standardKeyHashDefinitionMatches(): void
     {
-        $testCaseMock = $this->createMock(TestCase::class);
-        $expected = md5(serialize($testCaseMock));
+        $testCaseStub = $this->createStub(TestCase::class);
+        $expected = md5(serialize($testCaseStub));
         $storageMock = $this->createMock(Storage::class);
         $storageMock->expects($this->once())->method('get')->with($expected);
         $repository = new GenericCacheRepository(
@@ -144,6 +144,6 @@ final class GenericCacheRepositoryTest extends PHPUnitTestCase
             static fn(string $i): string => hash_file('haval160,4', $i)
         );
 
-        $repository->get($testCaseMock);
+        $repository->get($testCaseStub);
     }
 }

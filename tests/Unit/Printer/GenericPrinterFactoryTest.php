@@ -41,7 +41,7 @@ final class GenericPrinterFactoryTest extends TestCase
     public function returnsTheCorrectPrinterClassBasedOnConfiguration(PrinterConfig $config, string $printerClassname): void
     {
         $factory = new GenericPrinterFactory();
-        $output = $this->createMock(Output::class);
+        $output = $this->createStub(Output::class);
 
         $actual = $factory->make($config, $output, 0);
 
@@ -65,7 +65,7 @@ final class GenericPrinterFactoryTest extends TestCase
         $this->expectExceptionMessage('NOT IMPLEMENTED');
 
         $factory = new GenericPrinterFactory();
-        $output = $this->createMock(Output::class);
+        $output = $this->createStub(Output::class);
 
         $factory->make($config, $output, 0);
     }
@@ -80,7 +80,7 @@ final class GenericPrinterFactoryTest extends TestCase
 
     private static function createPrinterConfig(PrinterVerbosity $printerVerbosity): PrinterConfig
     {
-        return new class ($printerVerbosity) implements PrinterConfig {
+        return new class($printerVerbosity) implements PrinterConfig {
             public function __construct(
                 private PrinterVerbosity $printerVerbosity
             ) {}

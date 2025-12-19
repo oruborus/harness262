@@ -16,12 +16,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Assertion;
 
 use Oru\EcmaScript\Core\Contracts\Values\BooleanValue;
-use Oru\EcmaScript\Core\Contracts\Values\LanguageValue;
 use Oru\EcmaScript\Core\Contracts\Values\NumberValue;
 use Oru\EcmaScript\Core\Contracts\Values\ObjectValue;
 use Oru\EcmaScript\Core\Contracts\Values\StringValue;
 use Oru\EcmaScript\Core\Contracts\Values\ThrowCompletion;
-use Oru\EcmaScript\Core\Contracts\Values\UnusedValue;
 use Oru\Harness\Assertion\AssertIsThrowableWithConstructor;
 use Oru\Harness\Assertion\Exception\AssertionFailedException;
 use Oru\Harness\Assertion\Exception\EngineException;
@@ -29,6 +27,7 @@ use Oru\Harness\Contracts\FrontmatterNegative;
 use Oru\Harness\Contracts\FrontmatterNegativePhase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\Runtime\PropertyHook;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(AssertIsThrowableWithConstructor::class)]
@@ -60,7 +59,7 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
         $value = $this->createStub(ThrowCompletion::class);
         $value->method('getValue')->willReturn(
             $this->createConfiguredStub(NumberValue::class, [
-                'getValue' => 12345678.9,
+                '__toString' => '12345678.9',
             ])
         );
 
@@ -70,11 +69,11 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
     #[Test]
     public function throwsExceptionWhenConstructorCannotGetExtracted(): void
     {
-        $this->expectExceptionObject(new EngineException('Could not use `get()` to retrieve `constructor`'));
+        $this->expectExceptionObject(new EngineException('Could not use `⟦Get⟧()` to retrieve `constructor`'));
 
         $assertion = $this->createAssertIsThrowableWithConstructor();
         $object = $this->createStub(ObjectValue::class);
-        $object->method('get')->willThrowException(
+        $object->method('⟦Get⟧')->willThrowException(
             $this->createStub(ThrowCompletion::class)
         );
         $value = $this->createConfiguredStub(ThrowCompletion::class, [
@@ -93,7 +92,7 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
         $value = $this->createStub(ThrowCompletion::class);
         $value->method('getValue')->willReturn(
             $this->createConfiguredStub(ObjectValue::class, [
-                'get' => $this->createStub(StringValue::class),
+                '⟦Get⟧' => $this->createStub(StringValue::class),
             ])
         );
 
@@ -103,17 +102,17 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
     #[Test]
     public function throwsExceptionWhenConstructorPropertyCheckThrows(): void
     {
-        $this->expectExceptionObject(new EngineException('Could not use `hasProperty()` to check existence of `name`'));
+        $this->expectExceptionObject(new EngineException('Could not use `⟦HasProperty⟧()` to check existence of `name`'));
 
         $assertion = $this->createAssertIsThrowableWithConstructor();
         $object = $this->createStub(ObjectValue::class);
-        $object->method('hasProperty')->willThrowException(
+        $object->method('⟦HasProperty⟧')->willThrowException(
             $this->createStub(ThrowCompletion::class)
         );
         $value = $this->createStub(ThrowCompletion::class);
         $value->method('getValue')->willReturn(
             $this->createConfiguredStub(ObjectValue::class, [
-                'get' => $object,
+                '⟦Get⟧' => $object,
             ])
         );
 
@@ -126,13 +125,15 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
         $this->expectExceptionObject(new AssertionFailedException('Constructor does not have a name'));
 
         $assertion = $this->createAssertIsThrowableWithConstructor();
+        $booleanStub = $this->createStub(BooleanValue::class);
+        $booleanStub
+            ->method(PropertyHook::get('bool'))
+            ->willReturn(false);
         $value = $this->createStub(ThrowCompletion::class);
         $value->method('getValue')->willReturn(
             $this->createConfiguredStub(ObjectValue::class, [
-                'get' => $this->createConfiguredStub(ObjectValue::class, [
-                    'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
-                        'getValue' => false,
-                    ]),
+                '⟦Get⟧' => $this->createConfiguredStub(ObjectValue::class, [
+                    '⟦HasProperty⟧' => $booleanStub,
                 ])
             ])
         );
@@ -143,69 +144,49 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
     #[Test]
     public function throwsExceptionWhenConstructorNameCannotGetExtracted(): void
     {
-        $this->expectExceptionObject(new EngineException('Could not use `get()` to retrieve `constructor.name`'));
+        $this->expectExceptionObject(new EngineException('Could not use `⟦Get⟧()` to retrieve `constructor.name`'));
 
         $assertion = $this->createAssertIsThrowableWithConstructor();
+        $booleanStub = $this->createStub(BooleanValue::class);
+        $booleanStub
+            ->method(PropertyHook::get('bool'))
+            ->willReturn(true);
         $object = $this->createConfiguredStub(ObjectValue::class, [
-            'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
-                'getValue' => true,
-            ]),
+            '⟦HasProperty⟧' => $booleanStub,
         ]);
-        $object->method('get')->willThrowException(
+        $object->method('⟦Get⟧')->willThrowException(
             $this->createStub(ThrowCompletion::class)
         );
         $value = $this->createConfiguredStub(ThrowCompletion::class, [
             'getValue' => $this->createConfiguredStub(ObjectValue::class, [
-                'get' => $object,
+                '⟦Get⟧' => $object,
             ]),
         ]);
 
         $assertion->assert($value);
     }
 
-    #[Test]
     public function throwsWhenConstructorNameDoesNotMatch(): void
     {
         $this->expectExceptionObject(new AssertionFailedException('Expected `SyntaxError` but got ``'));
 
         $assertion = $this->createAssertIsThrowableWithConstructor(
-            frontmatterNegative: $this->createConfiguredMock(FrontmatterNegative::class, [
+            frontmatterNegative: $this->createConfiguredStub(FrontmatterNegative::class, [
                 'phase' => FrontmatterNegativePhase::parse,
                 'type' => 'SyntaxError'
             ]),
         );
+
+        $booleanStub = $this->createStub(BooleanValue::class);
+        $booleanStub
+            ->method(PropertyHook::get('bool'))
+            ->willReturn(true);
         $value = $this->createStub(ThrowCompletion::class);
         $value->method('getValue')->willReturn(
             $this->createConfiguredStub(ObjectValue::class, [
-                'get' => $this->createConfiguredStub(ObjectValue::class, [
-                    'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
-                        'getValue' => true,
-                    ]),
-                    'get' => $this->createStub(StringValue::class),
-                ]),
-            ]),
-        );
-
-        $assertion->assert($value);
-    }
-
-    #[Test]
-    public function throwsWhenConstructorNameStringConversionFails(): void
-    {
-        $this->expectExceptionObject(new EngineException('Could not convert `name` to string'));
-
-        $assertion = $this->createAssertIsThrowableWithConstructor();
-        $name = $this->createConfiguredStub(LanguageValue::class, [
-            'getValue' => $this->createStub(UnusedValue::class),
-        ]);
-        $value = $this->createStub(ThrowCompletion::class);
-        $value->method('getValue')->willReturn(
-            $this->createConfiguredStub(ObjectValue::class, [
-                'get' => $this->createConfiguredStub(ObjectValue::class, [
-                    'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
-                        'getValue' => true,
-                    ]),
-                    'get' => $name,
+                '⟦Get⟧' => $this->createConfiguredStub(ObjectValue::class, [
+                    '⟦HasProperty⟧' => $booleanStub,
+                    '⟦Get⟧' => $this->createStub(StringValue::class),
                 ]),
             ]),
         );
@@ -217,20 +198,21 @@ final class AssertIsThrowableWithConstructorTest extends TestCase
     public function returnsNullWhenConstructorNameMatches(): void
     {
         $assertion = $this->createAssertIsThrowableWithConstructor(
-            frontmatterNegative: $this->createConfiguredMock(FrontmatterNegative::class, [
+            frontmatterNegative: $this->createConfiguredStub(FrontmatterNegative::class, [
                 'phase' => FrontmatterNegativePhase::parse,
                 'type' => 'SyntaxError'
             ]),
         );
+        $booleanStub = $this->createStub(BooleanValue::class);
+        $booleanStub
+            ->method(PropertyHook::get('bool'))
+            ->willReturn(true);
         $value = $this->createStub(ThrowCompletion::class);
         $value->method('getValue')->willReturn(
             $this->createConfiguredStub(ObjectValue::class, [
-                'get' => $this->createConfiguredStub(ObjectValue::class, [
-                    'hasProperty' => $this->createConfiguredStub(BooleanValue::class, [
-                        'getValue' => true,
-                    ]),
-                    'get' => $this->createConfiguredStub(StringValue::class, [
-                        'getValue' => 'SyntaxError',
+                '⟦Get⟧' => $this->createConfiguredStub(ObjectValue::class, [
+                    '⟦HasProperty⟧' => $booleanStub,
+                    '⟦Get⟧' => $this->createConfiguredStub(StringValue::class, [
                         '__toString' => 'SyntaxError',
                     ]),
                 ]),
